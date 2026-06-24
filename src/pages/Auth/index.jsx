@@ -108,7 +108,7 @@ export function Auth() {
                     onSubmit={(e) => setAuth(e)}
                 >
                     <img
-                        src="./src/assets/logo.png"
+                        src="/logo.png"
                         alt="Logo"
                         height={150}
                     />
