@@ -1,0 +1,15 @@
+.p-password {
+  width: 100% !important;
+
+  & input {
+    width: 100% !important;
+  }
+}
+
+.p-icon-field {
+  width: 100% !important;
+}
+
+img{
+  object-fit: cover;
+}

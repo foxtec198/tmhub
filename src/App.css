@@ -1,0 +1,34 @@
+body, html, :root {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+:root{
+    --accent: #4BD66E;
+    --text-secondary: #757575;
+    --text-primary: #272323;
+}
+
+/* Backgrounds */
+.bg-primary{
+    background-color: var(--primary-color) !important;
+    color: white;
+}
+
+.bg-secondary{
+    background-color: var(--secondary-color) !important;
+    color: white;
+}
+
+/* Textos */
+.text-accent{
+    color: var(--accent);
+    & a {
+        text-decoration: none;
+        color: var(--accent);
+        cursor: pointer;
+        font-weight: 700;
+    }
+}
