@@ -9,12 +9,17 @@ body, html, :root {
     --accent: #4BD66E;
     --text-secondary: #757575;
     --text-primary: #272323;
+    --primary-color: #155C27;
+    --secondary-color: #10451D;
 }
-
 /* Backgrounds */
 .bg-primary{
     background-color: var(--primary-color) !important;
-    color: white;
+    color: white !important;
+}
+
+.text-primary{
+    color: var(--primary-color) !important;
 }
 
 .bg-secondary{

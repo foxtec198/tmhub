@@ -72,9 +72,10 @@ export function Auth() {
                 return showToast("info", "Bloqueio Temporario", "Voce esta temporariamente bloqueado. Tente novamente mais tarde!");
             };
 
-            await connect.post("/login", { username: user, password: pwd });
+            const res = await connect.post("/login", { username: user, password: pwd });
             setTentativas(0);
             localStorage.removeItem("tentativas");
+            localStorage.setItem("display_name", res.data.display_name);
             navigate("/frotas")
         } catch (error) {
             const msg = error.response.data

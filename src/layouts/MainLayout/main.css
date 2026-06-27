@@ -1,0 +1,33 @@
+.p-menuitem-icon,
+.p-panelmenu-icon,
+.p-icon,
+.p-menuitem-text {
+  color: white;
+}
+
+.p-panelmenu,
+.p-panelmenu-panel,
+.p-panelmenu-header-content,
+.p-panelmenu-header-action,
+.p-panelmenu-content,
+.p-menuitem-content,
+.p-menuitem-link {
+  background: transparent !important;
+  border: none !important;
+}
+
+
+.nav {
+  min-height: 10dvh;
+  max-height: 10dvh;
+}
+
+.frame {
+  min-height: 90dvh;
+  max-height: 90dvh;
+  overflow-y: auto;
+}
+
+.panel_frame {
+  min-height: 85dvh;
+}
