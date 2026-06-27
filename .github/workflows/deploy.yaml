@@ -1,4 +1,4 @@
-name: Atualização na API - TM Hub
+name: Atualização para o TM HUB - Front End
 on: # Call event
   push: # This is a PUSH event listener
     branches: [ "main" ] # Is a main branch
