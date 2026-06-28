@@ -3,6 +3,7 @@ import { Button } from "primereact/button";
 import { FloatLabel } from "primereact/floatlabel";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
+import { Divider } from "primereact/divider";
 
 // Utils
 import { useEffect, useState } from "react";
@@ -76,7 +77,8 @@ export function Auth() {
             setTentativas(0);
             localStorage.removeItem("tentativas");
             localStorage.setItem("display_name", res.data.display_name);
-            navigate("/frotas")
+            localStorage.setItem("role", res.data.role);
+            navigate("/init")
         } catch (error) {
             const msg = error.response.data
             const isPwdError = msg.toLowerCase().includes("senha")
@@ -109,15 +111,22 @@ export function Auth() {
                     onSubmit={(e) => setAuth(e)}
                 >
                     <img
-                        src="/logo.png"
+                        className="p-5"
+                        src="/brands/main_brand.svg"
                         alt="Logo"
-                        height={150}
+                        style={{
+                            maxHeight: "20dvh",
+                            maxWidth: "90%"
+
+                        }}
                     />
+                    <Divider/>
                     <FloatLabel className="w-full">
                         <InputText
                             className="w-full"
                             value={user}
                             onChange={(e) => setUser(e.target.value)}
+                            autoComplete="username"
                             required
                         />
                         <label>Email ou CPF</label>
@@ -131,6 +140,7 @@ export function Auth() {
                             value={pwd}
                             onChange={(e) => setPwd(e.target.value)}
                             toggleMask
+                            autoComplete="current-password"
                             required
                         />
                         <label>Senha</label>

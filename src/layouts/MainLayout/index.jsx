@@ -21,19 +21,67 @@ export function MainLayout() {
       ]
     },
     {
-      label: 'Sign Out',
+      label: "RPA's",
+      icon: 'pi pi-verified',
+      items: [
+        {
+          label: 'HK',
+          icon: 'pi pi-clock',
+          command: () => {}
+        },
+      ]
+    },
+    {
+      label: "Reposições",
+      icon: 'pi pi-sync',
+      items: [
+        {
+          label: 'Requisições',
+          icon: 'pi pi-question',
+          command: () => {navigate("/requisicoes")}
+        },
+        {
+          label: 'Historico',
+          icon: 'pi pi-history',
+          command: () => {}
+        },
+      ]
+    },
+    {
+      label: "Estoque",
+      icon: 'pi pi-box',
+      items: [
+        {
+          label: 'Itens',
+          icon: 'pi pi-list',
+          command: () => {}
+        },
+        {
+          label: 'Movimentações',
+          icon: 'pi pi-list-check',
+          command: () => {}
+        },
+      ]
+    },
+    {
+      label: 'Frotas',
+      disabled: "True",
+      icon: 'pi pi-car',
+      command: () => { navigate("/frotas") }
+    },
+    {
+      label: 'Sair',
       icon: 'pi pi-sign-out',
-      command: () => { }
-    }
+      command: () => { localStorage.clear(); navigate("/") }
+    },
   ];
 
   useEffect(() => {
     const dn = localStorage.getItem("display_name");
-    const role = localStorage.getItem("role") || true
+    const role = localStorage.getItem("role")
 
-    if(dn && role){
+    if (dn && role) {
       setDisplayName(dn);
-      // setRole(role);
       return;
     };
 
@@ -45,14 +93,18 @@ export function MainLayout() {
     <div className="flex flex-column" style={{ minHeight: "100dvh", padding: "0px" }}>
       {/* DOCKER */}
       <div className="flex nav shadow-6 px-3 align-items-center justify-content-between">
-        <img src="/logo.png" width={200} />
+        <div className="flex">
+          <img src="/brands/main_brand.svg" width={200} className="p-5" />
+        </div>
         <div className="flex gap-2 align-items-center">
-          <span>{displayName}</span>
-          <span>{role}</span>
-          <Avatar 
+          <div className="flex flex-column text-right">
+            <span className="font-bold">{displayName}</span>
+            <span className="text-700 font-italic">{role}</span>
+          </div>
+          <Avatar
             label={displayName[0]}
             shape="circle"
-            size="small"
+            size="large"
           />
         </div>
       </div>

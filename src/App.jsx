@@ -2,14 +2,18 @@ import { createRoot } from 'react-dom/client';
 import { PrimeReactProvider } from 'primereact/api';
 import { LoadingProvider } from './contexts/LoadingContext';
 import { MainLayout } from "./layouts/MainLayout"
-import { Frotas } from "./pages/Frotas"
-import { Auth } from "./pages/Auth"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import 'primereact/resources/themes/saga-green/theme.css';
 import { ToastProvider } from "./contexts/ToastContext";
-import "./App.css"
+import "./index.css"
+
+// Routes
+import { Frotas } from "./pages/Frotas"
+import { Auth } from "./pages/Auth"
+import { Init } from "./pages/Init"
+import { Requisicoes } from "./pages/Requisicoes"
 
 export function AppRoutes() {
   const token = function () { return !!sessionStorage.getItem("token") };
@@ -23,6 +27,8 @@ export function AppRoutes() {
 
         <Route element={<MainLayout />}>
           <Route path="/frotas" element={<Frotas />} />
+          <Route path="/requisicoes" element={<Requisicoes />} />
+          <Route path="/init" element={<Init />} />
         </Route>
 
         <Route path="*" element={<Navigate to={token() ? "/init" : "/"} />} />

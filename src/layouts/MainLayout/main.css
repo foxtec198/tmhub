@@ -16,6 +16,9 @@
   border: none !important;
 }
 
+.p-menuitem-link{
+  padding-left: 60px;
+}
 
 .nav {
   min-height: 10dvh;
@@ -29,5 +32,5 @@
 }
 
 .panel_frame {
-  min-height: 85dvh;
+  min-height: 90dvh;
 }
