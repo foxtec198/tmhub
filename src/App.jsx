@@ -3,17 +3,19 @@ import { PrimeReactProvider } from 'primereact/api';
 import { LoadingProvider } from './contexts/LoadingContext';
 import { MainLayout } from "./layouts/MainLayout"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { ToastProvider } from "./contexts/ToastContext";
+
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import 'primereact/resources/themes/saga-green/theme.css';
-import { ToastProvider } from "./contexts/ToastContext";
 import "./index.css"
 
 // Routes
+import { Requisicoes } from "./pages/Requisicoes"
+import { Request } from "./pages/Requisicoes/request.jsx"
 import { Frotas } from "./pages/Frotas"
 import { Auth } from "./pages/Auth"
 import { Init } from "./pages/Init"
-import { Requisicoes } from "./pages/Requisicoes"
 
 export function AppRoutes() {
   const token = function () { return !!sessionStorage.getItem("token") };
@@ -24,6 +26,7 @@ export function AppRoutes() {
         <Route path="" element={<Auth />} />
         <Route path="/" element={<Auth />} />
         <Route path="/login" element={<Auth />} />
+        <Route path="/reposicoes/requisicao" element={<Request />} />
 
         <Route element={<MainLayout />}>
           <Route path="/frotas" element={<Frotas />} />

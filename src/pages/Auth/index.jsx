@@ -3,7 +3,6 @@ import { Button } from "primereact/button";
 import { FloatLabel } from "primereact/floatlabel";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
-import { Divider } from "primereact/divider";
 
 // Utils
 import { useEffect, useState } from "react";
@@ -107,11 +106,11 @@ export function Auth() {
         <>
             <div className="flex h-screen p-4 bg-primary justify-content-center align-items-center">
                 <form
-                    className="flex bg-white border-round-xl flex-column gap-2 p-5"
+                    className="flex justify-content-center align-items-center text-center bg-white border-round-xl flex-column gap-2 p-5"
                     onSubmit={(e) => setAuth(e)}
                 >
                     <img
-                        className="p-5"
+                        className="p-5 mb-4"
                         src="/brands/main_brand.svg"
                         alt="Logo"
                         style={{
@@ -120,7 +119,6 @@ export function Auth() {
 
                         }}
                     />
-                    <Divider/>
                     <FloatLabel className="w-full">
                         <InputText
                             className="w-full"

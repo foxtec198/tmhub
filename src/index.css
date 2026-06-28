@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
 body, html, :root {
     width: 100%;
     height: 100%;
@@ -7,11 +9,12 @@ body, html, :root {
 
 :root{
     --accent: #4BD66E;
-    --text-secondary: #757575;
+    --text-secondary: #555;
     --text-primary: #272323;
-    --primary-color: #155C27;
     --secondary-color: #10451D;
+    --primary-color: #155C27;
 }
+
 /* Backgrounds */
 .bg-primary{
     background-color: var(--primary-color) !important;
@@ -36,4 +39,22 @@ body, html, :root {
         cursor: pointer;
         font-weight: 700;
     }
+}
+
+.text-secondary{
+    color: var(--text-secondary) !important;
+}
+
+.p-button{
+    background: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.inter{
+    font-family: "Inter", sans-serif;
+}
+
+.p-toast {
+  width: 90vw !important;
+  max-width: 400px !important;
 }
