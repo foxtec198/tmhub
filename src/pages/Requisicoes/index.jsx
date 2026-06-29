@@ -86,7 +86,9 @@ export function Requisicoes() {
     }, [refresh]);
 
     useEffect(() => {
-        socketio.on("new_request", () => setRefresh(prev => !prev));
+        socketio.on("connect", () => console.info("WebSocket Conectado"));
+        socketio.on("disconnect", () => console.info("WebSocket Disconectado"));
+        socketio.on("new_request", () => {console.info("EMIT RECEBIDO"); setRefresh(prev => !prev)});
     }, []);
 
     return (
