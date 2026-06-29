@@ -2,6 +2,7 @@
 import { Table } from "../../components/tables/Table";
 import { Button } from "primereact/button";
 import { ButtonGroup } from "primereact/buttongroup"
+import { Tag } from "primereact/tag";
 
 // Utils
 import { useEffect, useState } from "react"
@@ -12,13 +13,11 @@ export function Requisicoes() {
     const [requests, setRequests] = useState(null);
     const [refresh, setRefresh] = useState(null);
 
-    socketio.on("new_request", ()=> setRefresh(prev => !prev))
-    
     const table_itens = [
         {
             field: "data",
             header: "Data",
-            body: (row) => new Date(row.data).toLocaleDateString("pt-br")
+            body: (row) => new Date(row.data).toLocaleDateString("pt-br", {day:"2-digit", month:"long", hour:"2-digit", minute:"2-digit"})
         },
         {
             field: "ausencia",
@@ -41,8 +40,20 @@ export function Requisicoes() {
             class: "text-truncate",
         },
         {
-            field: "status",
-            header: "Medida"
+            header: "Advertência",
+            body: (row) => {
+                const waiting = row.waiting_certificate
+                const warning = row.warning
+
+                return <>
+                    <Tag
+                        severity={waiting ? "warning" : warning ? "info" : "danger"}
+                        icon={`pi pi-${waiting ? "hourglass" : warning ? "pencil" : "tag"}`}
+                        value={waiting ? "Atestado." : warning ? "Aplicado" : "Não Aplicado"}
+                        rounded
+                    />
+                </>
+            }
         },
         {
             header: "Ações",
@@ -53,7 +64,7 @@ export function Requisicoes() {
                         severity="danger"
                         onClick={(e) => { row }}
                         data-pr-tooltip="Reprovar Solicitação"
-                        />
+                    />
                     <Button
                         data-pr-tooltip="Aprovar Solicitação"
                         icon="pi pi-check-circle"
@@ -74,10 +85,14 @@ export function Requisicoes() {
         get_requests();
     }, [refresh]);
 
+    useEffect(() => {
+        socketio.on("new_request", () => setRefresh(prev => !prev));
+    }, []);
+
     return (
         <>
             <h2>Requisições</h2>
-            <div className="flex">
+            <div className="flex flex-column">
                 <Table
                     data={requests}
                     tableClassName="w-full"

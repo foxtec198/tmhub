@@ -10,12 +10,13 @@ import { ToastProvider } from "./contexts/ToastContext";
 
 // Styles
 import 'primeicons/primeicons.css';
-import 'primeflex/primeflex.css';
 import 'primereact/resources/themes/saga-green/theme.css';
+import 'primeflex/primeflex.css';
 import "./index.css"
 
 // Routes
 import { Requisicoes } from "./pages/Requisicoes"
+import { RequestReport } from "./pages/Dashboards/requests"
 import { Request } from "./pages/Requisicoes/request.jsx"
 import { Frotas } from "./pages/Frotas"
 import { Auth } from "./pages/Auth"
@@ -36,6 +37,7 @@ export function AppRoutes() {
           <Route path="/frotas" element={<Frotas />} />
           <Route path="/requisicoes" element={<Requisicoes />} />
           <Route path="/init" element={<Init />} />
+          <Route path="/reports/reposicoes" element={<RequestReport />} />
         </Route>
 
         <Route path="*" element={<Navigate to={token() ? "/init" : "/"} />} />

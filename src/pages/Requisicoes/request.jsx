@@ -36,14 +36,13 @@ export function Request() {
     async function createRequest() {
         setLoading(true);
         try {
-            if (user, replace, local, absent, warning) {
+            if (user, replace, local, absent) {
                 const data = {
                     supervisor_id: user.id,
                     reserva_id: replace.id,
                     centro_id: local.id,
                     colaborador_id: absent.id,
                     advertencia: warning
-
                 }
                 await connect.post("/repo/request", data)
                 showToast("success", "Sucesso na requisição", "Sua requisição foi criada com sucesso, aguarde novidades por email!")

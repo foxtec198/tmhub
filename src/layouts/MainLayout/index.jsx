@@ -14,9 +14,9 @@ export function MainLayout() {
       icon: 'pi pi-file',
       items: [
         {
-          label: 'New',
-          icon: 'pi pi-plus',
-          command: () => { }
+          label: 'Requisições',
+          icon: 'pi pi-sync',
+          command: () => {navigate("/reports/reposicoes")}
         },
       ]
     },
@@ -50,6 +50,7 @@ export function MainLayout() {
     {
       label: "Estoque",
       icon: 'pi pi-box',
+      disabled: true,
       items: [
         {
           label: 'Itens',
@@ -93,10 +94,10 @@ export function MainLayout() {
     <div className="flex flex-column" style={{ minHeight: "100dvh", padding: "0px" }}>
       {/* DOCKER */}
       <div className="flex nav shadow-6 px-3 align-items-center justify-content-between">
-        <div className="flex">
-          <img src="/brands/main_brand.svg" width={200} className="p-5" />
-        </div>
-        <div className="flex gap-2 align-items-center">
+        <a className="cursor-pointer fadein animation-duration-2000" onClick={() => {navigate("/init")}}>
+          <img src="/brands/main_brand.svg" width={180} className="p-5" />
+        </a>
+        <div className="flex gap-2 align-items-center flipup animation-duration-500">
           <div className="flex flex-column text-right">
             <span className="font-bold">{displayName}</span>
             <span className="text-700 font-italic">{role}</span>
@@ -112,7 +113,7 @@ export function MainLayout() {
       {/* MAIN CONTENT */}
       <main className="w-full frame flex gap-2">
         {/* MENU BAR */}
-        <div className="flex p-2 bg-primary shadow-4 w-15rem flex-column">
+        <div className="flex p-2 bg-primary overflow-x-hidden shadow-4 w-18rem flex-column">
           <PanelMenu model={items} className="w-full md:w-20rem mt-5" />
         </div>
 
