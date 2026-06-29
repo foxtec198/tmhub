@@ -1,10 +1,14 @@
-import { createRoot } from 'react-dom/client';
-import { PrimeReactProvider } from 'primereact/api';
-import { LoadingProvider } from './contexts/LoadingContext';
+// Utils
 import { MainLayout } from "./layouts/MainLayout"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { createRoot } from 'react-dom/client';
+
+// Providers
+import { PrimeReactProvider } from 'primereact/api';
+import { LoadingProvider } from './contexts/LoadingContext';
 import { ToastProvider } from "./contexts/ToastContext";
 
+// Styles
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import 'primereact/resources/themes/saga-green/theme.css';

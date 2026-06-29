@@ -1,0 +1,37 @@
+.p-datatable{
+  border-radius: var(--radius) !important;
+}
+
+.p-datatable-emptymessage td{
+  text-align: center;
+  padding: 100px;
+}
+
+.p-paginator{
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+}
+
+/* main.css */
+@media screen and (max-width: 768px) {
+  .p-datatable.p-datatable-responsive-stack .p-datatable-tbody > tr {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 2px solid var(--surface-border);
+    margin-bottom: 0.5rem;
+  }
+
+  .p-datatable.p-datatable-responsive-stack .p-datatable-tbody > tr > td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: none;
+    padding: 0.5rem 1rem;
+  }
+
+  .p-datatable.p-datatable-responsive-stack .p-datatable-tbody > tr > td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    margin-right: 1rem;
+  }
+}

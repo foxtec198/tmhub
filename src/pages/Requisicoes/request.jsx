@@ -9,12 +9,13 @@ import { StepperPanel } from 'primereact/stepperpanel';
 import { useState, useRef, useEffect, use } from "react";
 import { useToast } from "../../contexts/ToastContext";
 import connect from "../../utils/request";
+import { useLoading } from "../../contexts/LoadingContext";
 
 export function Request() {
     const [user, selectedUser] = useState(null)
     const [replace, selectedReplace] = useState(null)
     const [local, selectedLocal] = useState(null)
-    const [fault, selectedFault] = useState(null)
+    const [absent, selectedAbsent] = useState(null)
     const [warning, selectedWarning] = useState(null)
 
     const [supsOtions, setSupsOptions] = useState(null)
@@ -29,26 +30,50 @@ export function Request() {
     ]
 
     const stepperRef = useRef(null)
+    const setLoading = useLoading();
     const { showToast } = useToast();
 
-    async function createRequest(){
-        if(user, replace, local, fault, warning){
+    async function createRequest() {
+        setLoading(true);
+        try {
+            if (user, replace, local, absent, warning) {
+                const data = {
+                    supervisor_id: user.id,
+                    reserva_id: replace.id,
+                    centro_id: local.id,
+                    colaborador_id: absent.id,
+                    advertencia: warning
 
-        }else{ showToast("error", "Dados faltando", "Preencha todos os dados!") }
+                }
+                await connect.post("/repo/request", data)
+                showToast("success", "Sucesso na requisição", "Sua requisição foi criada com sucesso, aguarde novidades por email!")
+            } else { showToast("error", "Dados faltando", "Preencha todos os dados!") };
+        }
+        catch (err) { console.warn(err); showToast("error", "Erro ao enviar requisição", err.response.data) }
+        finally { setLoading(false) }
 
     }
 
     useEffect(() => {
         async function getSups() {
             const res = await connect.get("/supervisores");
-            setSupsOptions(res.data)
+            const sups = []
+            res.data.map(item => sups.push({ name: item.nome, id: item.id }))
+            setSupsOptions(sups)
         }
 
         async function getFuncs() {
             const res = await connect.get("/funcionarios");
             const funcs = [];
-            res.data.map(item => funcs.push({ "name": item.nome, "code": item.id }));
+            res.data.map(item => funcs.push({ name: item.nome, id: item.id }));
             setAllFuncsOptions(funcs)
+        }
+
+        async function getReplaces() {
+            const res = await connect.get("/reservas");
+            const absents = [];
+            res.data.map(item => absents.push({ name: item.nome, id: item.id }));
+            setReplaces(absents)
         }
 
         async function getCenters() {
@@ -70,9 +95,7 @@ export function Request() {
                         src="/brands/no_slogan_bran.svg"
                         alt="Logo"
                         className="px-5 fadein animation-duration-2000"
-                        style={{
-                            width: 350
-                        }}
+                        style={{ width: 350 }}
                     />
 
                     <span
@@ -86,14 +109,14 @@ export function Request() {
                     <Stepper ref={stepperRef}>
                         <StepperPanel header="Login">
                             <div className="flex flex-column text-medium text-center">
-                                <span className="font-italic mb-4">Selecione seu nome na lista, caso não encontre, entre em contato com o suporte!</span>
+                                <span className="font-xl mb-4">Selecione seu nome na lista, caso não encontre, entre em contato com o suporte!</span>
                                 <Dropdown
                                     className="w-full mb-6"
                                     value={user}
                                     onChange={(e) => selectedUser(e.value)}
                                     options={supsOtions}
-                                    placeholder="Selecione seu nome na lista?"
-                                    optionLabel="nome"
+                                    placeholder="Selecione seu nome na lista"
+                                    optionLabel="name"
                                     filter
                                 />
                                 <Button
@@ -115,8 +138,8 @@ export function Request() {
                                     appendTo="self"
                                     panelStyle={{ width: '100%' }}
                                     className="w-full mb-3"
-                                    value={fault}
-                                    onChange={(e) => selectedFault(e.value)}
+                                    value={absent}
+                                    onChange={(e) => selectedAbsent(e.value)}
                                     options={allFuncsOptions}
                                     placeholder="Quem faltou?"
                                     optionLabel="name"
@@ -159,7 +182,7 @@ export function Request() {
                                     icon="pi pi-send"
                                     iconPos="right"
                                     className="w-full mt-3"
-                                    onClick={() => createRequest()}
+                                    onClick={() => { createRequest() }}
                                 />
                             </div>
                         </StepperPanel>

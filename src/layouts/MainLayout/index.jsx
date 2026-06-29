@@ -41,7 +41,7 @@ export function MainLayout() {
           command: () => {navigate("/requisicoes")}
         },
         {
-          label: 'Historico',
+          label: 'Histórico',
           icon: 'pi pi-history',
           command: () => {}
         },
