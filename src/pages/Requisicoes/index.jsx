@@ -78,7 +78,7 @@ export function Requisicoes() {
     ];
 
     useEffect(() => {
-        async function get_requests() {
+        async function get_requests(){
             const res = await connect.get("/repo/request")
             setRequests(res.data)
         };
@@ -89,6 +89,7 @@ export function Requisicoes() {
         socketio.on("connect", () => console.info("WebSocket Conectado"));
         socketio.on("disconnect", () => console.info("WebSocket Disconectado"));
         socketio.on("new_request", () => {console.info("EMIT RECEBIDO"); setRefresh(prev => !prev)});
+        socketio.on("teste", () => {console.info("EMIT RECEBIDO"); setRefresh(prev => !prev)});
     }, []);
 
     return (
