@@ -16,7 +16,8 @@ export function Table({
     tableClassName,
     dateValue,
     handleSetDate,
-    setRefresh
+    setRefresh,
+    style
 
 }) {
     const [globalFilter, setGlobalFilter] = useState("");
@@ -61,6 +62,7 @@ export function Table({
             paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
             currentPageReportTemplate="Mostrando {first} até {last} de {totalRecords} resultados"
             stripedRows
+            style={style}
             className={tableClassName}
         >
             {columns.map((col) => (

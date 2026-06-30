@@ -2,6 +2,7 @@
 import { MainLayout } from "./layouts/MainLayout"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { createRoot } from 'react-dom/client';
+import { addLocale } from "primereact/api";
 
 // Providers
 import { PrimeReactProvider } from 'primereact/api';
@@ -21,6 +22,33 @@ import { Request } from "./pages/Requisicoes/request.jsx"
 import { Frotas } from "./pages/Frotas"
 import { Auth } from "./pages/Auth"
 import { Init } from "./pages/Init"
+
+addLocale('pt-BR', {
+        firstDayOfWeek: 0,
+        dayNames: [
+            'domingo', 'segunda', 'terça', 'quarta',
+            'quinta', 'sexta', 'sábado'
+        ],
+        dayNamesShort: [
+            'dom', 'seg', 'ter', 'qua',
+            'qui', 'sex', 'sáb'
+        ],
+        dayNamesMin: [
+            'D', 'S', 'T', 'Q', 'Q', 'S', 'S'
+        ],
+        monthNames: [
+            'janeiro', 'fevereiro', 'março', 'abril',
+            'maio', 'junho', 'julho', 'agosto',
+            'setembro', 'outubro', 'novembro', 'dezembro'
+        ],
+        monthNamesShort: [
+            'jan', 'fev', 'mar', 'abr',
+            'mai', 'jun', 'jul', 'ago',
+            'set', 'out', 'nov', 'dez'
+        ],
+        today: 'Hoje',
+        clear: 'Limpar'
+    });
 
 export function AppRoutes() {
   const token = function () { return !!sessionStorage.getItem("token") };
