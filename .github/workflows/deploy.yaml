@@ -27,6 +27,7 @@ jobs: # Jobs will run
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/guibs/tmhub
+            sudo git stash
             sudo git pull origin main
             sudo npm install
             sudo npm run build
