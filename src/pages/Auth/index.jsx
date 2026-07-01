@@ -37,10 +37,7 @@ export function Auth() {
 
     // useEffect para rodar o cronômetro do bloqueio
     useEffect(() => {
-        if (!bloqueadoAte) {
-            setTempoRestante(0);
-            return;
-        }
+        if (!bloqueadoAte) { return setTempoRestante(0); }
 
         const atualizarCronometro = () => {
             const agora = Date.now();
@@ -77,6 +74,7 @@ export function Auth() {
             localStorage.removeItem("tentativas");
             localStorage.setItem("display_name", res.data.display_name);
             localStorage.setItem("role", res.data.role);
+            sessionStorage.setItem("token", res.data.access_token);
             navigate("/init")
         } catch (error) {
             const msg = error.response.data

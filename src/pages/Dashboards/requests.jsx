@@ -1,12 +1,10 @@
 import { DashCard } from "../../components/Card"
 import { Chart } from "primereact/chart"
-import { DataTable } from "primereact/datatable"
 import { MeterGroup } from "primereact/metergroup"
 import { Calendar } from "primereact/calendar"
 import { useEffect, useState } from "react"
-import connect from "../../utils/request"
-import { Column } from "primereact/column"
 import { Table } from "../../components/tables/Table"
+import connect from "../../utils/request"
 
 export function RequestReport() {
     const rootStyle = getComputedStyle(document.documentElement);
