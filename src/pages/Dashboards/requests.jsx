@@ -7,6 +7,7 @@ import { Table } from "../../components/tables/Table"
 import { Divider } from "primereact/divider"
 import { TabView } from "primereact/tabview"
 import { TabPanel } from "primereact/tabview"
+import { Knob } from 'primereact/knob';
 
 import connect from "../../utils/request"
 
@@ -15,13 +16,15 @@ export function RequestReport() {
     const primary = rootStyle.getPropertyValue('--primary-color').trim();
 
     const [refresh, setRefresh] = useState(null);
-    const [filter, setFilter] = useState([new Date("2026-04-01 00:00:00.000"), new Date("2026-04-31 00:00:00.000")]);
+    const [filter, setFilter] = useState();
     const [realizadas, setRealizadas] = useState(0);
     const [aprovadas, setAprovadas] = useState(0);
     const [recusadas, setRecusadas] = useState(0);
     const [abertas, setAbertas] = useState(0);
     const [cobertas, setCobertas] = useState(0);
     const [naoCobertas, setNaoCobertas] = useState(0);
+    const [localMore, setlocalMore] = useState(0);
+    const [localMoreCount, setlocalMoreCount] = useState(0);
 
     const [labelForRepos, setlabelForRepos] = useState(null)
     const [dataForRepos, setdataForRepos] = useState(null)
@@ -48,12 +51,14 @@ export function RequestReport() {
             const hist = res.data.historico
             const total = hist.length
             const dias = [...new Set(hist.map(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" })))].sort((a, b) => a - b)
-            const locais = [...new Set(hist.map(item => item.local))].sort((a, b) => a - b)
+            const locais = [...new Set(hist.map(item => item.local))]
 
             setRealizadas(total)
             setAprovadas(hist.filter(item => item.status == "approve").length)
             setRecusadas(hist.filter(item => item.status == "reproved").length)
             setAbertas(res.data.abertas)
+            setlocalMore(locais[0])
+            setlocalMore(locais[0])
 
             setlabelForRepos(dias)
             setdataForRepos2(dias.map(d => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) === d).map(i => i.ausente))].length))
@@ -68,16 +73,20 @@ export function RequestReport() {
 
             setCobertas(res.data.historico.filter(item => item.reserva != "SEM COBERTURA").length)
             setNaoCobertas(res.data.historico.filter(item => item.reserva == "SEM COBERTURA").length)
-            setlabelLocal(locais)
-            setDataLocal(
-                locais
-                    .map(local => ({ name: local, count: hist.filter(item => item.local === local).length }))
-                    .sort((a, b) => b.count - a.count)
-                    .slice(0, 10)
-                    .map(item => item.count)
-            );
-            setReposData(hist)
 
+            const locais_abrev = locais.map(item => item.split(" - ")[1])
+
+            const locaisValues = locais_abrev
+                .map(local => ({ name: local, count: hist.filter(item => item.local.split(" - ")[1] === local).length }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 10)
+                .map(item => item.count)
+
+            setlabelLocal(locais_abrev)
+            setDataLocal(locaisValues);
+            setlocalMoreCount([0])
+
+            setReposData(hist)
             setValues([
                 {
                     label: 'Total',
@@ -229,7 +238,7 @@ export function RequestReport() {
                         value={abertas}
                     />
                     <DashCard
-                        icon="pi pi-folder-open "
+                        icon="pi pi-calendar "
                         title="Cobertas"
                         className="border-round-lg"
                         style={{
@@ -240,8 +249,8 @@ export function RequestReport() {
                         value={cobertas}
                     />
                     <DashCard
-                        icon="pi pi-folder-open "
-                        title="Não Cobertas"
+                        icon="pi pi-paperclip"
+                        title="Descobertas"
                         className="border-round-lg"
                         style={{
                             backgroundColor: 'var(--red-800)',
@@ -250,6 +259,15 @@ export function RequestReport() {
                         }}
                         value={naoCobertas}
                     />
+                    <div
+                        className="flex justify-content-center gap-2 align-items-center border-round-lg shadow-6 p-3"
+                        style={{ backgroundColor: 'var(--white-600)', height: "5rem", color: '#333' }}>
+                        <Knob value={localMoreCount} size={60} />
+                        <div className="flex flex-column justify-content-between">
+                            <span className="inter font-bold spaceg text-1xl">Contrato com mais faltas</span>
+                            <span className="text-truncate inter">{localMore}</span>
+                        </div>
+                    </div>
                 </div>
 
                 <Calendar
@@ -307,7 +325,7 @@ export function RequestReport() {
                 </div>
 
                 {/* STATUS CARD */}
-                <div className="flex flex-column p-4 w-19rem border-round-lg shadow-6">
+                <div className="flex flex-column p-4 w-18rem border-round-lg shadow-6">
                     <span className="font-bold mb-4">Status  de Reposições:</span>
                     <MeterGroup
                         className="h-full"
@@ -351,7 +369,7 @@ export function RequestReport() {
                                 }}
                             />
                         </TabPanel>
-                        <TabPanel header="Colaborador">
+                        {/* <TabPanel header="Colaborador">
                             <Chart
                                 className="h-full"
                                 data={dtLocal}
@@ -383,7 +401,7 @@ export function RequestReport() {
                                     }
                                 }}
                             />
-                        </TabPanel>
+                        </TabPanel> */}
                     </TabView>
                 </div>
             </div>
