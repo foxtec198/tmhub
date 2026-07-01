@@ -28,4 +28,6 @@ jobs: # Jobs will run
           script: |
             cd /home/guibs/tmhub
             sudo git pull origin main
+            sudo npm install
             sudo npm run build
+            sudo systemctl restart nginx
