@@ -4,6 +4,10 @@ import { MeterGroup } from "primereact/metergroup"
 import { Calendar } from "primereact/calendar"
 import { useEffect, useState } from "react"
 import { Table } from "../../components/tables/Table"
+import { Divider } from "primereact/divider"
+import { TabView } from "primereact/tabview"
+import { TabPanel } from "primereact/tabview"
+
 import connect from "../../utils/request"
 
 export function RequestReport() {
@@ -11,15 +15,19 @@ export function RequestReport() {
     const primary = rootStyle.getPropertyValue('--primary-color').trim();
 
     const [refresh, setRefresh] = useState(null);
-    const [filter, setFilter] = useState(null);
+    const [filter, setFilter] = useState([new Date("2026-04-01 00:00:00.000"), new Date("2026-04-31 00:00:00.000")]);
     const [realizadas, setRealizadas] = useState(0);
     const [aprovadas, setAprovadas] = useState(0);
     const [recusadas, setRecusadas] = useState(0);
     const [abertas, setAbertas] = useState(0);
+    const [cobertas, setCobertas] = useState(0);
+    const [naoCobertas, setNaoCobertas] = useState(0);
 
     const [labelForRepos, setlabelForRepos] = useState(null)
     const [dataForRepos, setdataForRepos] = useState(null)
     const [dataForRepos2, setdataForRepos2] = useState(null)
+    const [labelLocal, setlabelLocal] = useState(null)
+    const [dataLocal, setDataLocal] = useState(null)
 
     const [labelForMult, setlabelForMult] = useState(null)
     const [dataForMult, setdataForMult] = useState(null)
@@ -34,40 +42,63 @@ export function RequestReport() {
                 ? {
                     init: new Date(filter[0]).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric' }),
                     end: new Date(filter[1]).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric' })
-                }:{};
+                } : {};
 
             const res = await connect.post("/dash/reposicoes", filterData)
-            const total = res.data.meter.total
+            const hist = res.data.historico
+            const total = hist.length
+            const dias = [...new Set(hist.map(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" })))].sort((a, b) => a - b)
+            const locais = [...new Set(hist.map(item => item.local))].sort((a, b) => a - b)
 
-            setRealizadas(res.data.counts.realizadas)
-            setAprovadas(res.data.counts.aprovadas)
-            setRecusadas(res.data.counts.reprovadas)
-            setAbertas(res.data.counts.abertas)
+            setRealizadas(total)
+            setAprovadas(hist.filter(item => item.status == "approve").length)
+            setRecusadas(hist.filter(item => item.status == "reproved").length)
+            setAbertas(res.data.abertas)
 
-            setlabelForRepos(res.data.repos.map(item => item.dia))
-            setdataForRepos(res.data.repos.map(item => item.reservas))
-            setdataForRepos2(res.data.repos.map(item => item.ausentes))
+            setlabelForRepos(dias)
+            setdataForRepos2(dias.map(d => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) === d).map(i => i.ausente))].length))
+            setdataForRepos(dias.map(day => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) == day).map(i => i.reserva))].length))
 
-            setlabelForMult(res.data.multas.map(item => item.dia))
-            setdataForMult(res.data.multas.map(item => item.total_multas))
-            setReposData(res.data.historico)
+            setlabelForMult(dias)
+            setdataForMult(dias.map(d =>
+                hist
+                    .filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) === d)
+                    .reduce((soma, item) => soma + (Number(item.multa) || 0), 0)
+            ))
+
+            setCobertas(res.data.historico.filter(item => item.reserva != "SEM COBERTURA").length)
+            setNaoCobertas(res.data.historico.filter(item => item.reserva == "SEM COBERTURA").length)
+            setlabelLocal(locais)
+            setDataLocal(
+                locais
+                    .map(local => ({ name: local, count: hist.filter(item => item.local === local).length }))
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 10)
+                    .map(item => item.count)
+            );
+            setReposData(hist)
 
             setValues([
                 {
                     label: 'Total',
-                    color: '#f59e0b',
-                    value: total
+                    color: '#1709d9',
+                    value: Math.round(total / total * 100)
                 },
                 {
-                    label: 'Concluido',
+                    label: 'Postos Cobertos',
                     color: '#22c55e',
-                    value: Math.round(res.data.meter.cobertas / total * 100)
+                    value: Math.round(cobertas / total * 100)
                 },
                 {
-                    label: 'Pendente',
+                    label: 'Descobertos ',
                     color: '#ef4444',
-                    value: Math.round(res.data.meter.sem_cobertura / total * 100)
-                }
+                    value: Math.round(naoCobertas / total * 100)
+                },
+                {
+                    label: 'Pendentes',
+                    color: '#a7da10',
+                    value: Math.round(abertas / total * 100)
+                },
             ]);
 
         }; get_data();
@@ -77,15 +108,16 @@ export function RequestReport() {
         labels: labelForRepos,
         datasets: [{
             type: 'line',
+            tension: 0.4,
             label: 'Reposições',
-            borderColor: '#14fe17',
             borderWidth: 2,
+            borderColor: rootStyle.getPropertyValue("--blue-700").trim(),
             fill: false,
             data: dataForRepos
         }, {
             type: 'bar',
-            label: 'Ausentes',
-            backgroundColor: primary,
+            label: 'Ausências',
+            backgroundColor: rootStyle.getPropertyValue("--green-500").trim(),
             data: dataForRepos2,
             borderColor: 'white',
             borderWidth: 2
@@ -95,24 +127,24 @@ export function RequestReport() {
     const dataMults = {
         labels: labelForMult,
         datasets: [{
-            type: "bar",
-            label: "Multa",
-            backgroundColor: primary,
+            type: "line",
+            tension: 0.4,
+            fill: true,
+            backgroundColor: 'rgba(53, 141, 26, 0.6)',
+            label: "Multa por dia.",
             data: dataForMult
         }]
     }
 
-    const options = {
-        responsive: true,
-        title: {
-            display: true,
-            text: 'Analise de Reposições'
-        },
-        tooltips: {
-            mode: 'index',
-            intersect: true
-        }
-    };
+    const dtLocal = {
+        labels: labelLocal,
+        datasets: [{
+            type: "bar",
+            backgroundColor: rootStyle.getPropertyValue("--green-200").trim(),
+            label: "Dados",
+            data: dataLocal
+        }]
+    }
 
     const columns = [
         {
@@ -120,7 +152,7 @@ export function RequestReport() {
             field: "local"
         },
         {
-            header: "Dpto.",
+            header: "DPTO.",
             field: "dpto"
         },
         {
@@ -129,11 +161,12 @@ export function RequestReport() {
         },
         {
             header: "Coberturas",
+            style: { maxWidth: "20rem" },
             body: (row) => {
                 return <span className="flex gap-2">
-                    <span className="inter">{row.ausente}</span>
+                    <span className="inter text-truncate">{row.ausente.split(" ")[0]} {row.ausente.split(" ").at(-1)}</span>
                     <i className="pi pi-arrow-right"></i>
-                    <span className="font-bold">{row.reserva}</span>
+                    <span className="font-bold text-truncate">{row.reserva.split(" ")[0]} {row.reserva.split(" ").at(-1)}</span>
                 </span>
             }
         },
@@ -149,15 +182,15 @@ export function RequestReport() {
 
     return (
         <main className="flex flex-column p-2 gap-2">
-            <div className="flex justify-content-between align-items-top w-full">
+            <div className="flex justify-content-between align-items-center w-full">
                 <div className="flex gap-2 p-2 w-full">
                     <DashCard
                         icon="pi pi-verified"
                         title="Realizadas"
                         className="border-round-lg"
                         style={{
-                            backgroundColor: 'var(--purple-800)',
-                            height: "6rem",
+                            backgroundColor: 'var(--green-900)',
+                            height: "5rem",
                             color: "#fff",
                         }}
                         value={realizadas}
@@ -165,10 +198,10 @@ export function RequestReport() {
                     <DashCard
                         icon="pi pi-check"
                         title="Aprovadas"
-                        className="border-round-lg"
+                        className="border-round-lg text-truncate"
                         style={{
-                            backgroundColor: 'var(--primary-color)',
-                            height: "6rem",
+                            backgroundColor: 'var(--green-600)',
+                            height: "5rem",
                             color: "#fff",
                         }}
                         value={aprovadas}
@@ -176,58 +209,85 @@ export function RequestReport() {
                     <DashCard
                         icon="pi pi-trash"
                         title="Reprovadas"
-                        className="border-round-lg"
+                        className="border-round-lg text-truncate"
                         style={{
-                            backgroundColor: 'var(--red-900)',
-                            height: "6rem",
+                            backgroundColor: 'var(--red-500)',
+                            height: "5rem",
                             color: "#fff",
                         }}
                         value={recusadas}
                     />
                     <DashCard
-                        icon="pi pi-trash"
-                        title="Requisições Abertas"
-                        className="border-round-lg"
+                        icon="pi pi-folder-open "
+                        title="Req. Abertas"
+                        className="border-round-lg text-truncate"
                         style={{
-                            backgroundColor: 'var(--gray-700)',
-                            height: "6rem",
+                            backgroundColor: 'var(--green-500)',
+                            height: "5rem",
                             color: "#fff",
                         }}
                         value={abertas}
                     />
-                </div>
-
-                <div className="flex flex-column p-2 gap-2">
-                    <span className="font-bold">Filtrar: </span>
-                    <Calendar
-                        locale="pt-BR"
-                        value={filter}
-                        dateFormat="dd/mm/yy"
-                        onChange={(e) => { setFilter(e.value); setRefresh(prev => !prev) }}
-                        selectionMode="range"
-                        readOnlyInput
-                        showButtonBar
+                    <DashCard
+                        icon="pi pi-folder-open "
+                        title="Cobertas"
+                        className="border-round-lg"
+                        style={{
+                            backgroundColor: 'var(--blue-800)',
+                            height: "5rem",
+                            color: "#fff",
+                        }}
+                        value={cobertas}
+                    />
+                    <DashCard
+                        icon="pi pi-folder-open "
+                        title="Não Cobertas"
+                        className="border-round-lg"
+                        style={{
+                            backgroundColor: 'var(--red-800)',
+                            height: "5rem",
+                            color: "#fff",
+                        }}
+                        value={naoCobertas}
                     />
                 </div>
+
+                <Calendar
+                    locale="pt-BR"
+                    value={filter}
+                    placeholder="Selecione um período."
+                    dateFormat="dd/mm/yy"
+                    onChange={(e) => { setFilter(e.value); setRefresh(prev => !prev) }}
+                    selectionMode="range"
+                    readOnlyInput
+                    showButtonBar
+                />
             </div>
 
             <div className="flex w-full min-h-full gap-4">
                 <div className="flex flex-column flex-grow-1 gap-4">
                     {/* CHARTS FRAME */}
                     <div className="flex flex-grow-1 gap-4 max-h-15rem">
-                        <div className="border-round-lg p-4 flex flex-column justify-content-center align-items-center shadow-6 flex-grow-1">
-                            <span className="w-full font-bold">Analise de Reposições:</span>
+                        <div className="border-round-lg p-3 gap-2 flex flex-column justify-content-center align-items-center shadow-6 flex-grow-1">
                             <Chart
                                 data={dataRepos}
-                                options={options}
-                                className="w-full h-full p-2"
+                                options={{
+                                    aspectRatio: 2.5,
+                                    responsive: true,
+                                    maintainAspectRatio: false
+                                }}
+                                className="flex align-items-center justify-content-center w-30rem h-full"
                             />
                         </div>
                         <div className="border-round-lg p-4 flex flex-column justify-content-center align-items-center shadow-6 flex-grow-1">
-                            <span className="w-full font-bold">Multas:</span>
                             <Chart
                                 data={dataMults}
-                                className="w-full h-full p-2"
+                                className="w-full h-full"
+                                options={{
+                                    aspectRatio: 2.5,
+                                    responsive: true,
+                                    maintainAspectRatio: false
+                                }}
                             />
                         </div>
                     </div>
@@ -247,14 +307,84 @@ export function RequestReport() {
                 </div>
 
                 {/* STATUS CARD */}
-                <div className="flex flex-column p-4 w-20rem border-round-lg shadow-6">
-                    <span className="font-bold mb-4">Status:</span>
+                <div className="flex flex-column p-4 w-19rem border-round-lg shadow-6">
+                    <span className="font-bold mb-4">Status  de Reposições:</span>
                     <MeterGroup
                         className="h-full"
                         values={values}
                         orientation="vertical"
                         labelOrientation="vertical"
                     />
+                    <Divider className="my-4" />
+                    <span className="font-bold mb-4">Faltas por :</span>
+                    <TabView>
+                        <TabPanel header="Contrato">
+                            <Chart
+                                className="h-full"
+                                data={dtLocal}
+                                options={{
+                                    aspectRatio: 1,
+                                    autoPadding: true,
+                                    indexAxis: 'y',
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: (ctx) => `Faltas: ${ctx.parsed.y}`
+                                            }
+                                        }
+                                    },
+                                    scales: {
+                                        x: {
+                                            display: false
+                                        },
+                                        y: {
+                                            display: true,
+                                            grid: {
+                                                display: false,
+                                                drawBorder: false
+                                            }
+                                        }
+                                    }
+                                }}
+                            />
+                        </TabPanel>
+                        <TabPanel header="Colaborador">
+                            <Chart
+                                className="h-full"
+                                data={dtLocal}
+                                options={{
+                                    aspectRatio: 1,
+                                    autoPadding: true,
+                                    indexAxis: 'y',
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: (ctx) => `Faltas: ${ctx.parsed.y}`
+                                            }
+                                        }
+                                    },
+                                    scales: {
+                                        x: {
+                                            display: false
+                                        },
+                                        y: {
+                                            display: true,
+                                            grid: {
+                                                display: false,
+                                                drawBorder: false
+                                            }
+                                        }
+                                    }
+                                }}
+                            />
+                        </TabPanel>
+                    </TabView>
                 </div>
             </div>
         </main>
