@@ -47,6 +47,7 @@ export function Request() {
                 motivo: reason,
                 advertencia: warning
             }
+            console.log(reason, warning)
             await connect.post("/repo/request", data)
             showToast("success", "Sucesso na requisição", "Sua requisição foi criada com sucesso, aguarde novidades por email!")
         }
@@ -79,6 +80,7 @@ export function Request() {
 
         async function getCenters() {
             const res = await connect.get("/centro")
+            console.log(res)
             const centers = []
             res.data.map(item => centers.push({ name: item.local, id: item.id }))
             setCenterOptions(centers)
@@ -137,7 +139,7 @@ export function Request() {
                             <div className="flex flex-column p-4 text-medium" style={{
                                 maxWidth: "40rem",
                                 flexGrow: 1,
-                                width: "100dvw"
+                                width: "90dvw"
                             }}>
                                 <Dropdown
                                     appendTo="self"

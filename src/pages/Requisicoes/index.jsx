@@ -45,14 +45,9 @@ export function Requisicoes() {
         {
             header: "Advertência",
             body: (row) => {
-                const waiting = row.waiting_certificate
-                const warning = row.warning
-
                 return <>
                     <Tag
-                        severity={waiting ? "warning" : warning ? "info" : "danger"}
-                        icon={`pi pi-${waiting ? "hourglass" : warning ? "pencil" : "tag"}`}
-                        value={waiting ? "Atestado." : warning ? "Aplicado" : "Não Aplicado"}
+                        value={row.motivo}
                         rounded
                     />
                 </>
@@ -79,6 +74,7 @@ export function Requisicoes() {
         },
     ];
 
+    
     useEffect(() => {
         async function get_requests() {
             const res = await connect.get("/repo/request")
