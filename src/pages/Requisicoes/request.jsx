@@ -43,7 +43,7 @@ export function Request() {
                 supervisor_id: user.id,
                 reserva_id: replace.id,
                 centro_id: local.id,
-                colaborador_id: absent.id,
+                ausente_id: absent.id,
                 motivo: reason,
                 advertencia: warning
             }
