@@ -23,10 +23,11 @@ export function MainLayout() {
           command: () => {navigate("/reports/reposicoes")}
         },
         {
-          label: 'Produtos',
-          icon: 'pi pi-box',
-          command: () => {navigate("/reports/reposicoes")}
-        },{
+          label: 'Logística',
+          icon: 'pi pi-truck',
+          command: () => {navigate("/reports/logistica")}
+        },
+        {
           label: "Novo",
           icon: "pi pi-plus",
           className: role != allow_roles? "hidden" : null
@@ -64,17 +65,16 @@ export function MainLayout() {
     {
       label: "Estoque",
       icon: 'pi pi-box',
-      disabled: true,
       items: [
         {
-          label: 'Itens',
+          label: 'Produtos',
           icon: 'pi pi-list',
-          command: () => {}
+          command: () => {navigate("/estoque/produtos")}
         },
         {
           label: 'Movimentações',
           icon: 'pi pi-list-check',
-          command: () => {}
+          command: () => {navigate("/estoque/movimentacoes")}
         },
       ]
     },

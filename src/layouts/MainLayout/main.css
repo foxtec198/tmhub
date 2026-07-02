@@ -1,14 +1,16 @@
 .p-menuitem-icon,
 .p-panelmenu-icon,
+.p-panelmenu-header-icon,
 .p-icon,
-.p-menuitem-text {
+.p-menuitem-text,
+.p-panelmenu-header-label {
   color: white;
 }
 
 .p-panelmenu,
 .p-panelmenu-panel,
 .p-panelmenu-header-content,
-.p-panelmenu-header-action,
+.p-panelmenu-header-link,
 .p-panelmenu-content,
 .p-menuitem-content,
 .p-menuitem-link {
@@ -16,8 +18,67 @@
   border: none !important;
 }
 
+/* Relevo nos itens PRINCIPAIS do menu */
+.p-panelmenu-header-link {
+  border-radius: 8px;
+  margin: 2px 8px;
+  width: calc(100% - 16px);
+  transition: background var(--transition-fast, 0.15s ease),
+              box-shadow var(--transition-fast, 0.15s ease),
+              transform var(--transition-fast, 0.15s ease);
+}
+
+.p-panelmenu-header-link:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateX(2px);
+}
+
+.p-panelmenu-header-link:active {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  transform: translateX(2px) scale(0.99);
+}
+
+/* Item principal expandido permanece destacado */
+.p-panelmenu-header-link[aria-expanded="true"],
+.p-panelmenu-header.p-highlight .p-panelmenu-header-link,
+.p-panelmenu-header.p-panelmenu-header-active .p-panelmenu-header-link {
+  background: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
 .p-menuitem-link{
   padding-left: 60px;
+  border-radius: 8px;
+  margin: 2px 8px;
+  width: calc(100% - 16px);
+  transition: background var(--transition-fast, 0.15s ease),
+              box-shadow var(--transition-fast, 0.15s ease),
+              transform var(--transition-fast, 0.15s ease);
+}
+
+/* Relevo ao passar o mouse sobre um subitem do menu */
+.p-panelmenu-content .p-menuitem-link:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateX(2px);
+}
+
+/* Feedback ao clicar, "afundando" o botão de volta */
+.p-panelmenu-content .p-menuitem-link:active {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  transform: translateX(2px) scale(0.99);
+}
+
+/* Item atualmente ativo/selecionado permanece destacado */
+.p-panelmenu-content .p-menuitem-link.p-panelmenu-header-link[aria-expanded="true"],
+.p-panelmenu-content .router-link-active .p-menuitem-link {
+  background: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .nav {

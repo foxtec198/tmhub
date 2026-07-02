@@ -23,6 +23,8 @@ import { Frotas } from "./pages/Frotas"
 import { Auth } from "./pages/Auth"
 import { Init } from "./pages/Init"
 import { History } from "./pages/Requisicoes/historico";
+import { Products } from "./pages/Estoque/products";
+import { Movements } from "./pages/Estoque/movements";
 
 import { useToast } from "./contexts/ToastContext";
 import connect from "./utils/request";
@@ -92,6 +94,8 @@ export function AppRoutes() {
           <Route path="/historico" element={<History />} />
           <Route path="/init" element={<Init />} />
           <Route path="/reports/reposicoes" element={<RequestReport />} />
+          <Route path="/estoque/produtos" element={<Products />} />
+          <Route path="/estoque/movimentacoes" element={<Movements />} />
         </Route>
 
         <Route path="*" element={<Navigate to={token() ? "/init" : "/"} />} />
