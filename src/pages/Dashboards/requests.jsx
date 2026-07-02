@@ -13,31 +13,46 @@ import connect from "../../utils/request"
 
 export function RequestReport() {
     const rootStyle = getComputedStyle(document.documentElement);
-    const primary = rootStyle.getPropertyValue('--primary-color').trim();
 
+    // Dar refresh na pagina com os novos dados
     const [refresh, setRefresh] = useState(null);
+
+    // Filtrar com nova data
     const [filter, setFilter] = useState([new Date("2026-06-01 00:00:00"), new Date("2026-06-30 00:00:00")]);
+
+    // Statics
     const [realizadas, setRealizadas] = useState(0);
     const [aprovadas, setAprovadas] = useState(0);
     const [recusadas, setRecusadas] = useState(0);
-    const [abertas, setAbertas] = useState(0);
-    const [cobertas, setCobertas] = useState(0);
-    const [naoCobertas, setNaoCobertas] = useState(0);
+    const [requisicoes, setRequisicoes] = useState(0);
+    const [postosCobertos, setPostosCobertos] = useState(0);
+    const [postosDescobertos, setPostoDescobertos] = useState(0);
     const [localMore, setlocalMore] = useState(0);
-    const [localMoreCount, setlocalMoreCount] = useState(0);
+    const [localComMaisFaltas, setLocalComMaisFaltas] = useState(0);
 
-    const [labelForRepos, setlabelForRepos] = useState(null)
-    const [dataForRepos, setdataForRepos] = useState(null)
-    const [dataForRepos2, setdataForRepos2] = useState(null)
+
+    // Dados para CHARTS
+    // Chart de Reposicoes
+    const [labelReposicoes, setLabelReposicoes] = useState(null)
+    const [dadosReposicoes, setDadosReposicoes] = useState(null)
     const [labelLocal, setlabelLocal] = useState(null)
-    const [dataLocal, setDataLocal] = useState(null)
+    const [dadosAusentes, setDadosAusentes] = useState(null)
 
+    // Dados do Vertical Bar - Locais
+    const [dadosLocais, setDadosLocais] = useState(null)
+
+    // Dados do Vertical Bar - Motivos
+    const [dadosMotivos, setDadosMotivos] = useState(null)
+
+    // Chart de MULTAS
     const [labelForMult, setlabelForMult] = useState(null)
     const [dataForMult, setdataForMult] = useState(null)
 
-    const [reposData, setReposData] = useState([])
+    // Dados da Tabela
+    const [dadosTabela, setDadosTabela] = useState([])
 
-    const [values, setValues] = useState([]);
+    // Dados do Meter Group
+    const [meterGroupValues, setMeterGroupValues] = useState([]);
 
     useEffect(() => {
         async function get_data() {
@@ -47,11 +62,66 @@ export function RequestReport() {
                     end: new Date(filter[1]).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric' })
                 } : {};
 
-            const res = await connect.post("/dash/reposicoes", filterData)
-            const hist = res.data.historico
+            // const res = await connect.post("/dash/reposicoes", filterData)
+            const res = {
+                "data": {
+                    "abertas": 0
+                }
+            }
+            const hist = [
+                {
+                    "ausente": "LINCOLN GUSTAVO MENDES",
+                    "created_at": "Fri, 22 Jun 2026 13:27:42 GMT",
+                    "dpto": "87",
+                    "local": "ED.LONDRINA - ENCARREGADOS",
+                    "motivo": "LAVAÇÃO DE TOLDO",
+                    "multa": 180,
+                    "obs": "None",
+                    "reserva": "SEM INFORMAÇÃO",
+                    "status": "reproved",
+                    "supervisor": "PAULO TORRES"
+                }, {
+                    "ausente": "PAULO AQUINO DE ALMEIDA JUNIOR",
+                    "created_at": "Fri, 15 Jun 2026 13:27:41 GMT",
+                    "dpto": "269",
+                    "local": "LONDRINA - VOLANTES ",
+                    "motivo": "REMANEJAMENTO",
+                    "multa": 250,
+                    "obs": "None",
+                    "reserva": "SEM INFORMAÇÃO",
+                    "status": "approve",
+                    "supervisor": "PAULO TORRES"
+                }, {
+                    "ausente": "LUZIA DE OLIVEIRA",
+                    "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
+                    "dpto": "269",
+                    "local": "LONDRINA - VOLANTES ",
+                    "motivo": "INSS",
+                    "multa": 320,
+                    "obs": "None",
+                    "reserva": "LUZIA CAZARIN",
+                    "status": "approve",
+                    "supervisor": "PAULO TORRES"
+                }, {
+                    "ausente": "FULANINHO DA SILVA",
+                    "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
+                    "dpto": "269",
+                    "local": "SCHERER ",
+                    "motivo": "ATESTADO",
+                    "multa": 210,
+                    "obs": "None",
+                    "reserva": null,
+                    "status": "approve",
+                    "supervisor": "PAULO TORRES"
+                }
+            ]
+
             const total = hist.length
             const dias = [...new Set(hist.map(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" })))].sort((a, b) => a - b)
             const locais = [...new Set(hist.map(item => item.local))]
+            const motivos = [...new Set(hist.map(item => item.motivo))]
+            const list_aprovadas = hist.filter(item => item.status == "approve")
+            const list_reprovadas = hist.filter(item => item.status == "reproved")
             const locais_abrev = locais.map(item => item.split(" - ")[1])
             const locaisValues = locais_abrev
                 .map(local => ({ name: local, count: hist.filter(item => item.local.split(" - ")[1] === local).length }))
@@ -59,21 +129,25 @@ export function RequestReport() {
                 .slice(0, 10)
                 .map(item => item.count)
 
+            console.log(
+            )
+
             setRealizadas(total)
-            setAprovadas(hist.filter(item => item.status == "approve").length)
-            setRecusadas(hist.filter(item => item.status == "reproved").length)
-            setAbertas(res.data.abertas)
+            setAprovadas(list_aprovadas.length)
+            setRecusadas(list_reprovadas.length)
+            setRequisicoes(res.data.abertas)
             setlocalMore(locais[0])
-            setlabelForRepos(dias)
-            setdataForRepos2(dias.map(d => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) === d).map(i => i.ausente))].length))
-            setdataForRepos(dias.map(day => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) == day).map(i => i.reserva))].length))
+            setLabelReposicoes(dias)
+            setDadosAusentes(dias.map(d => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) === d).map(i => i.ausente))].length))
+            setDadosReposicoes(dias.map(day => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) == day).map(i => i.reserva))].length))
             setlabelForMult(dias)
-            setCobertas(res.data.historico.filter(item => item.reserva != "SEM COBERTURA").length)
-            setNaoCobertas(res.data.historico.filter(item => item.reserva == "SEM COBERTURA").length)
+            setPostosCobertos(list_aprovadas.filter(item => item.reserva != null).length)
+            setPostoDescobertos(hist.filter(item => item.reserva == null).length)
             setlabelLocal(locais_abrev)
-            setDataLocal(locaisValues);
-            setlocalMoreCount([0])
-            setReposData(hist)
+            setDadosLocais(locaisValues);
+            
+            setLocalComMaisFaltas([0])
+            setDadosTabela(hist)
 
             setdataForMult(dias.map(d =>
                 hist
@@ -81,7 +155,7 @@ export function RequestReport() {
                     .reduce((soma, item) => soma + (Number(item.multa) || 0), 0)
             ))
 
-            setValues([
+            setMeterGroupValues([
                 {
                     label: 'Total',
                     color: '#1709d9',
@@ -90,17 +164,17 @@ export function RequestReport() {
                 {
                     label: 'Postos Cobertos',
                     color: '#22c55e',
-                    value: Math.round(cobertas / total * 100)
+                    value: Math.round(postosCobertos / total * 100)
                 },
                 {
                     label: 'Descobertos ',
                     color: '#ef4444',
-                    value: Math.round(naoCobertas / total * 100)
+                    value: Math.round(postosDescobertos / total * 100)
                 },
                 {
                     label: 'Pendentes',
                     color: '#a7da10',
-                    value: Math.round(abertas / total * 100)
+                    value: Math.round(requisicoes / total * 100)
                 },
             ]);
 
@@ -108,7 +182,7 @@ export function RequestReport() {
     }, [refresh])
 
     const dataRepos = {
-        labels: labelForRepos,
+        labels: labelReposicoes,
         datasets: [{
             type: 'line',
             tension: 0.4,
@@ -116,12 +190,12 @@ export function RequestReport() {
             borderWidth: 2,
             borderColor: rootStyle.getPropertyValue("--blue-700").trim(),
             fill: false,
-            data: dataForRepos
+            data: dadosReposicoes
         }, {
             type: 'bar',
             label: 'Ausências',
             backgroundColor: rootStyle.getPropertyValue("--green-500").trim(),
-            data: dataForRepos2,
+            data: dadosAusentes,
             borderColor: 'white',
             borderWidth: 2
         },]
@@ -145,7 +219,7 @@ export function RequestReport() {
             type: "bar",
             backgroundColor: rootStyle.getPropertyValue("--green-200").trim(),
             label: "Dados",
-            data: dataLocal
+            data: dadosLocais
         }]
     }
 
@@ -229,7 +303,7 @@ export function RequestReport() {
                             height: "5rem",
                             color: "#fff",
                         }}
-                        value={abertas}
+                        value={requisicoes}
                     />
                     <DashCard
                         icon="pi pi-calendar "
@@ -240,7 +314,7 @@ export function RequestReport() {
                             height: "5rem",
                             color: "#fff",
                         }}
-                        value={cobertas}
+                        value={postosCobertos}
                     />
                     <DashCard
                         icon="pi pi-paperclip"
@@ -251,12 +325,12 @@ export function RequestReport() {
                             height: "5rem",
                             color: "#fff",
                         }}
-                        value={naoCobertas}
+                        value={postosDescobertos}
                     />
                     <div
                         className="flex justify-content-center gap-2 align-items-center border-round-lg shadow-6 p-3"
                         style={{ backgroundColor: 'var(--white-600)', height: "5rem", color: '#333' }}>
-                        <Knob value={localMoreCount} size={60} />
+                        <Knob value={localComMaisFaltas} size={60} />
                         <div className="flex flex-column justify-content-between">
                             <span className="inter font-bold spaceg text-1xl">Contrato com mais faltas</span>
                             <span className="text-truncate inter">{localMore}</span>
@@ -309,7 +383,7 @@ export function RequestReport() {
                         <Table
                             tableClassName="w-full"
                             columns={columns}
-                            data={reposData}
+                            data={dadosTabela}
                             rows={3}
                             style={{
                                 fontSize: "10px"
@@ -323,7 +397,7 @@ export function RequestReport() {
                     <span className="font-bold mb-4">Status  de Reposições:</span>
                     <MeterGroup
                         className="h-full"
-                        values={values}
+                        values={meterGroupValues}
                         orientation="vertical"
                         labelOrientation="vertical"
                     />

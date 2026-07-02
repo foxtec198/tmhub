@@ -76,7 +76,6 @@ export function Requisicoes() {
                     />
                 </ButtonGroup>
             },
-            // style: { width: "80px" }
         },
     ];
 
