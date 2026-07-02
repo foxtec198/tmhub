@@ -39,18 +39,16 @@ export function Request() {
     async function createRequest() {
         setLoading(true);
         try {
-            if (user, replace, local, absent) {
-                const data = {
-                    supervisor_id: user.id,
-                    reserva_id: replace.id,
-                    centro_id: local.id,
-                    colaborador_id: absent.id,
-                    motivo: reason,
-                    advertencia: warning
-                }
-                await connect.post("/repo/request", data)
-                showToast("success", "Sucesso na requisição", "Sua requisição foi criada com sucesso, aguarde novidades por email!")
-            } else { showToast("error", "Dados faltando", "Preencha todos os dados!") };
+            const data = {
+                supervisor_id: user.id,
+                reserva_id: replace.id,
+                centro_id: local.id,
+                colaborador_id: absent.id,
+                motivo: reason,
+                advertencia: warning
+            }
+            await connect.post("/repo/request", data)
+            showToast("success", "Sucesso na requisição", "Sua requisição foi criada com sucesso, aguarde novidades por email!")
         }
         catch (err) { console.warn(err); showToast("error", "Erro ao enviar requisição", err.response.data) }
         finally { setLoading(false) }
