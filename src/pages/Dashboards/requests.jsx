@@ -27,8 +27,8 @@ export function RequestReport() {
     const [requisicoes, setRequisicoes] = useState(0);
     const [postosCobertos, setPostosCobertos] = useState(0);
     const [postosDescobertos, setPostoDescobertos] = useState(0);
-    const [localMore, setlocalMore] = useState(0);
     const [localComMaisFaltas, setLocalComMaisFaltas] = useState(0);
+    const [valorDoLocalComMaisFaltas, setValorDoLocalComMaisFaltas] = useState(0);
 
 
     // Dados para CHARTS
@@ -69,29 +69,30 @@ export function RequestReport() {
                 }
             }
             const hist = [
+                // {
+                //     "ausente": "LINCOLN GUSTAVO MENDES",
+                //     "created_at": "Fri, 22 Jun 2026 13:27:42 GMT",
+                //     "dpto": "87",
+                //     "local": "ED.LONDRINA - ENCARREGADOS",
+                //     "motivo": "LAVAÇÃO DE TOLDO",
+                //     "multa": 180,
+                //     "obs": "None",
+                //     "reserva": "SEM INFORMAÇÃO",
+                //     "status": "reproved",
+                //     "supervisor": "PAULO TORRES"
+                // }, {
+                //     "ausente": "PAULO AQUINO DE ALMEIDA JUNIOR",
+                //     "created_at": "Fri, 15 Jun 2026 13:27:41 GMT",
+                //     "dpto": "269",
+                //     "local": "LONDRINA - VOLANTES ",
+                //     "motivo": "REMANEJAMENTO",
+                //     "multa": 250,
+                //     "obs": "None",
+                //     "reserva": "SEM INFORMAÇÃO",
+                //     "status": "approve",
+                //     "supervisor": "PAULO TORRES"
+                // }, 
                 {
-                    "ausente": "LINCOLN GUSTAVO MENDES",
-                    "created_at": "Fri, 22 Jun 2026 13:27:42 GMT",
-                    "dpto": "87",
-                    "local": "ED.LONDRINA - ENCARREGADOS",
-                    "motivo": "LAVAÇÃO DE TOLDO",
-                    "multa": 180,
-                    "obs": "None",
-                    "reserva": "SEM INFORMAÇÃO",
-                    "status": "reproved",
-                    "supervisor": "PAULO TORRES"
-                }, {
-                    "ausente": "PAULO AQUINO DE ALMEIDA JUNIOR",
-                    "created_at": "Fri, 15 Jun 2026 13:27:41 GMT",
-                    "dpto": "269",
-                    "local": "LONDRINA - VOLANTES ",
-                    "motivo": "REMANEJAMENTO",
-                    "multa": 250,
-                    "obs": "None",
-                    "reserva": "SEM INFORMAÇÃO",
-                    "status": "approve",
-                    "supervisor": "PAULO TORRES"
-                }, {
                     "ausente": "LUZIA DE OLIVEIRA",
                     "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
                     "dpto": "269",
@@ -106,11 +107,22 @@ export function RequestReport() {
                     "ausente": "FULANINHO DA SILVA",
                     "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
                     "dpto": "269",
-                    "local": "SCHERER ",
+                    "local": "SCHERER - CONS A LONDRINA",
                     "motivo": "ATESTADO",
-                    "multa": 210,
+                    "multa": 0,
                     "obs": "None",
                     "reserva": null,
+                    "status": "approve",
+                    "supervisor": "PAULO TORRES"
+                }, {
+                    "ausente": "FULANINHO DA ROÇA",
+                    "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
+                    "dpto": "87",
+                    "local": "SCHERER - CONS A LONDRINA",
+                    "motivo": "AFASTAMENTO",
+                    "multa": 250,
+                    "obs": "None",
+                    "reserva": "FULANINHA DA COBERTURA",
                     "status": "approve",
                     "supervisor": "PAULO TORRES"
                 }
@@ -118,35 +130,38 @@ export function RequestReport() {
 
             const total = hist.length
             const dias = [...new Set(hist.map(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" })))].sort((a, b) => a - b)
-            const locais = [...new Set(hist.map(item => item.local))]
             const motivos = [...new Set(hist.map(item => item.motivo))]
             const list_aprovadas = hist.filter(item => item.status == "approve")
             const list_reprovadas = hist.filter(item => item.status == "reproved")
-            const locais_abrev = locais.map(item => item.split(" - ")[1])
-            const locaisValues = locais_abrev
-                .map(local => ({ name: local, count: hist.filter(item => item.local.split(" - ")[1] === local).length }))
-                .sort((a, b) => b.count - a.count)
-                .slice(0, 10)
-                .map(item => item.count)
+            const locais = Object.entries(hist.reduce((acc, { local }) => (acc[local] = (acc[local] || 0) + 1, acc), {})).map(([local, quantidade]) => ({ local, quantidade }));
 
-            console.log(
-            )
+            const locaisValues = locais.map(item => item.quantidade).sort((a, b) => a-b)
+            const locaisLabels = locais.map(item => item.local).sort((a, b) => a-b)
+
+            const localWithMoreFaults = locais.length
+                ? locais.reduce((a, b) => a.quantidade > b.quantidade ? a : b)
+                : null;
+
+            hist.filter(item => item.reserva ? item.reserva : item.reserva = "SEM COBERTURA")
 
             setRealizadas(total)
             setAprovadas(list_aprovadas.length)
             setRecusadas(list_reprovadas.length)
             setRequisicoes(res.data.abertas)
-            setlocalMore(locais[0])
+            
+            setLocalComMaisFaltas(localWithMoreFaults.local)
+            setValorDoLocalComMaisFaltas(Math.round(localWithMoreFaults.quantidade / total * 100))
+
+            setlabelLocal(locaisLabels)
+            setDadosLocais(locaisValues);
+
             setLabelReposicoes(dias)
             setDadosAusentes(dias.map(d => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) === d).map(i => i.ausente))].length))
             setDadosReposicoes(dias.map(day => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) == day).map(i => i.reserva))].length))
             setlabelForMult(dias)
-            setPostosCobertos(list_aprovadas.filter(item => item.reserva != null).length)
-            setPostoDescobertos(hist.filter(item => item.reserva == null).length)
-            setlabelLocal(locais_abrev)
-            setDadosLocais(locaisValues);
-            
-            setLocalComMaisFaltas([0])
+            setPostosCobertos(list_aprovadas.filter(item => item.reserva != "SEM COBERTURA").length)
+            setPostoDescobertos(hist.filter(item => item.reserva == "SEM COBERTURA").length)
+
             setDadosTabela(hist)
 
             setdataForMult(dias.map(d =>
@@ -242,7 +257,7 @@ export function RequestReport() {
             body: (row) => {
                 return <span className="flex gap-2">
                     <span className="inter text-truncate">{row.ausente.split(" ")[0]} {row.ausente.split(" ").at(-1)}</span>
-                    <i className="pi pi-arrow-right"></i>
+                    <i className="pi pi-arrow-right" style={{ color: `var(--${row.reserva == "SEM COBERTURA" ? "red-500" : "green-500"})` }}></i>
                     <span className="font-bold text-truncate">{row.reserva.split(" ")[0]} {row.reserva.split(" ").at(-1)}</span>
                 </span>
             }
@@ -257,6 +272,8 @@ export function RequestReport() {
         }
     ]
 
+    const meterGroupColor = valorDoLocalComMaisFaltas >= 45 ? "var(--red-600)" : "var(--green-600)"
+    
     return (
         <main className="flex flex-column p-2 gap-2">
             <div className="flex justify-content-between align-items-center w-full">
@@ -330,10 +347,14 @@ export function RequestReport() {
                     <div
                         className="flex justify-content-center gap-2 align-items-center border-round-lg shadow-6 p-3"
                         style={{ backgroundColor: 'var(--white-600)', height: "5rem", color: '#333' }}>
-                        <Knob value={localComMaisFaltas} size={60} />
+                        <Knob 
+                            value={valorDoLocalComMaisFaltas} 
+                            valueColor={meterGroupColor} 
+                            size={70} 
+                        />
                         <div className="flex flex-column justify-content-between">
                             <span className="inter font-bold spaceg text-1xl">Contrato com mais faltas</span>
-                            <span className="text-truncate inter">{localMore}</span>
+                            <span className="text-truncate inter">{localComMaisFaltas}</span>
                         </div>
                     </div>
                 </div>
@@ -437,39 +458,12 @@ export function RequestReport() {
                                 }}
                             />
                         </TabPanel>
-                        {/* <TabPanel header="Colaborador">
+                        <TabPanel header="Motivos">
                             <Chart
                                 className="h-full"
                                 data={dtLocal}
-                                options={{
-                                    aspectRatio: 1,
-                                    autoPadding: true,
-                                    indexAxis: 'y',
-                                    plugins: {
-                                        legend: {
-                                            display: false
-                                        },
-                                        tooltip: {
-                                            callbacks: {
-                                                label: (ctx) => `Faltas: ${ctx.parsed.y}`
-                                            }
-                                        }
-                                    },
-                                    scales: {
-                                        x: {
-                                            display: false
-                                        },
-                                        y: {
-                                            display: true,
-                                            grid: {
-                                                display: false,
-                                                drawBorder: false
-                                            }
-                                        }
-                                    }
-                                }}
                             />
-                        </TabPanel> */}
+                        </TabPanel>
                     </TabView>
                 </div>
             </div>

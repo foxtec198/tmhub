@@ -20,15 +20,15 @@ export function Table({
     style
 
 }) {
-    const [globalFilter, setGlobalFilter] = useState("");
+    const [globalFilterDash, setGlobalFilterDash] = useState("");
     
     const header = (
         <div className="flex min-w-full justify-content-between align-items-center">
             <FloatLabel>
 
                 <InputText
-                    value={globalFilter}
-                    onChange={(e) => setGlobalFilter(e.target.value)}
+                    value={globalFilterDash}
+                    onChange={(e) => setGlobalFilterDash(e.target.value)}
                 />
                 <label htmlFor="">Buscar...</label>
             </FloatLabel>
@@ -52,7 +52,7 @@ export function Table({
         <DataTable
             value={data}
             loading={loading}
-            globalFilter={globalFilter}
+            globalFilter={globalFilterDash}
             header={header}
             emptyMessage="Nenhum resultado encontrado."
             paginator={mode === "paginate"}

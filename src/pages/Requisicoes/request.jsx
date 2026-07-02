@@ -17,16 +17,19 @@ export function Request() {
     const [local, selectedLocal] = useState(null)
     const [absent, selectedAbsent] = useState(null)
     const [warning, selectedWarning] = useState(null)
+    const [reason, selectedReason] = useState(null)
 
     const [supsOtions, setSupsOptions] = useState(null)
     const [allFuncsOptions, setAllFuncsOptions] = useState(null)
     const [replaces, setReplaces] = useState(null)
     const [centersOptions, setCenterOptions] = useState(null)
 
-    const warningOptions = [
-        { "name": "Aplicada", "value": true },
-        { "name": "Não Aplicada", "value": false },
-        { "name": "Aguardando Atestado", "value": "waiting" },
+    const reasonOptions = [
+        "AFASTAMENTO", 
+        "ATESTADO", 
+        "DECLARAÇÃO",
+        "POSTO VAGO",
+        "INJUSTIFICADA",
     ]
 
     const stepperRef = useRef(null)
@@ -42,6 +45,7 @@ export function Request() {
                     reserva_id: replace.id,
                     centro_id: local.id,
                     colaborador_id: absent.id,
+                    motivo: reason,
                     advertencia: warning
                 }
                 await connect.post("/repo/request", data)
@@ -132,7 +136,11 @@ export function Request() {
                         </StepperPanel>
 
                         <StepperPanel header="Reserva">
-                            <div className="card max-30-rem">
+                            <div className="flex flex-column p-4 text-medium" style={{
+                                maxWidth: "40rem",
+                                flexGrow: 1,
+                                width: "100dvw"
+                            }}>
                                 <Dropdown
                                     appendTo="self"
                                     panelStyle={{ width: '100%' }}
@@ -166,16 +174,29 @@ export function Request() {
                                     optionLabel="name"
                                     filter
                                 />
+
                                 <Dropdown
                                     appendTo="self"
-                                    panelStyle={{ width: '100%' }}
+                                    panelStyle={{ maxWidth: '100%' }}
                                     className="w-full mb-3"
+                                    value={reason}
+                                    onChange={(e) => selectedReason(e.value)}
+                                    options={reasonOptions}
+                                    placeholder="Selecione o Motivo"
+                                    optionLabel="name"
+                                />
+
+                                <Dropdown
+                                    appendTo="self"
+                                    panelStyle={{ width: "100%" }}
+                                    className={`w-full mb-3 ${reason != "INJUSTIFICADA" ? "hidden":null }`}
                                     value={warning}
                                     onChange={(e) => selectedWarning(e.value)}
-                                    options={warningOptions}
+                                    options={["Aplicado", "Não Aplicado"]}
                                     placeholder="Advertencia"
                                     optionLabel="name"
                                 />
+
                                 <Button
                                     label="Enviar Requisição"
                                     icon="pi pi-send"
