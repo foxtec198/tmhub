@@ -1,15 +1,17 @@
-// Widgets
+// Widgets ----------------------------------------------
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
 import { Stepper } from 'primereact/stepper';
 import { StepperPanel } from 'primereact/stepperpanel';
+import { Checkbox } from "primereact/checkbox";
+import { Calendar } from "primereact/calendar";
 
-// Utils
-import { useState, useRef, useEffect, use } from "react";
+// Utils ------------------------------------------------
+import { useState, useRef, useEffect } from "react";
 import { useToast } from "../../contexts/ToastContext";
-import connect from "../../utils/request";
 import { useLoading } from "../../contexts/LoadingContext";
+import connect from "../../utils/request";
 
 export function Request() {
     const [user, selectedUser] = useState(null)
@@ -18,15 +20,17 @@ export function Request() {
     const [absent, selectedAbsent] = useState(null)
     const [warning, selectedWarning] = useState(null)
     const [reason, selectedReason] = useState(null)
+    const [checked, setChecked] = useState(false)
 
     const [supsOtions, setSupsOptions] = useState(null)
     const [allFuncsOptions, setAllFuncsOptions] = useState(null)
     const [replaces, setReplaces] = useState(null)
     const [centersOptions, setCenterOptions] = useState(null)
+    const [filterData, setFilterData] = useState(new Date())
 
     const reasonOptions = [
-        "AFASTAMENTO", 
-        "ATESTADO", 
+        "AFASTAMENTO",
+        "ATESTADO",
         "DECLARAÇÃO",
         "POSTO VAGO",
         "INJUSTIFICADA",
@@ -39,17 +43,20 @@ export function Request() {
     async function createRequest() {
         setLoading(true);
         try {
-            const data = {
-                supervisor_id: user.id,
-                reserva_id: replace.id,
-                centro_id: local.id,
-                ausente_id: absent.id,
-                motivo: reason,
-                advertencia: warning
+            if(user && absent && local){
+                const data = {
+                    supervisor_id: user.id,
+                    centro_id: local.id,
+                    ausente_id: absent.id,
+                    reserva_id: checked ? 0: replace.id,
+                    motivo: reason,
+                    advertencia: warning,
+                    data: filterData
+                }
+                await connect.post("/repo/request", data)
+                showToast("success", "Sucesso na requisição", "Sua requisição foi criada com sucesso, aguarde novidades por email!")
             }
-            console.log(reason, warning)
-            await connect.post("/repo/request", data)
-            showToast("success", "Sucesso na requisição", "Sua requisição foi criada com sucesso, aguarde novidades por email!")
+            else{showToast("warn", "Atenção!", "Preencha todos os dados")}
         }
         catch (err) { console.warn(err); showToast("error", "Erro ao enviar requisição", err.response.data) }
         finally { setLoading(false) }
@@ -166,7 +173,7 @@ export function Request() {
                                 <Dropdown
                                     appendTo="self"
                                     panelStyle={{ width: '100%' }}
-                                    className="w-full mb-3"
+                                    className={`w-full mb-3 ${checked? "hidden":null}`}
                                     value={replace}
                                     onChange={(e) => selectedReplace(e.value)}
                                     options={allFuncsOptions}
@@ -189,13 +196,31 @@ export function Request() {
                                 <Dropdown
                                     appendTo="self"
                                     panelStyle={{ width: "100%" }}
-                                    className={`w-full mb-3 ${reason != "INJUSTIFICADA" ? "hidden":null }`}
+                                    className={`w-full mb-3 ${reason != "INJUSTIFICADA" ? "hidden" : null}`}
                                     value={warning}
                                     onChange={(e) => selectedWarning(e.value)}
                                     options={["Aplicado", "Não Aplicado"]}
                                     placeholder="Advertencia"
                                     optionLabel="name"
                                 />
+                                
+                                <div className="flex justify-content-between align-items-center mb-4">
+                                    <label htmlFor="data">Selecione o periodo</label>
+                                    <Calendar
+                                        id="data"
+                                        className="w-20rem"
+                                        value={filterData}
+                                        dateFormat="dd/mm/yy"
+                                        onChange={(e)=>setFilterData(e.value)}
+
+                                    />
+                                </div>
+
+                                <div className="flex justify-content-end align-items-center text-end">
+                                    <Checkbox inputId="req" name="pizza" value="Cheese" onChange={(e) => setChecked(e.checked)} checked={checked} />
+                                    <label htmlFor="req" className="ml-2">Posto sem Cobertura?</label>
+                                </div>
+
 
                                 <Button
                                     label="Enviar Requisição"
