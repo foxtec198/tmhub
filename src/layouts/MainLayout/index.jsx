@@ -3,10 +3,15 @@ import { useEffect, useState } from "react";
 import { PanelMenu } from "primereact/panelmenu";
 import './main.css'
 import { Avatar } from "primereact/avatar";
+import { capitalize, deny_roles, allow_roles } from "../../utils/ui";
 
 export function MainLayout() {
+  
   const [displayName, setDisplayName] = useState("");
+  const [role, setRole] = useState("");
   const navigate = useNavigate();
+  const deny = deny_roles.includes(role)
+
   const items = [
     {
       label: 'Dashboards',
@@ -21,12 +26,17 @@ export function MainLayout() {
           label: 'Produtos',
           icon: 'pi pi-box',
           command: () => {navigate("/reports/reposicoes")}
-        },
+        },{
+          label: "Novo",
+          icon: "pi pi-plus",
+          className: role != allow_roles? "hidden" : null
+        }
       ]
     },
     {
       label: "RPA's",
       icon: 'pi pi-verified',
+      className: deny ? "hidden" : null,
       items: [
         {
           label: 'HK',
@@ -82,18 +92,18 @@ export function MainLayout() {
   ];
 
   useEffect(() => {
-    const dn = localStorage.getItem("display_name");
-    const role = localStorage.getItem("role")
+    const dn = localStorage.getItem("display_name") || null;
+    const rl = localStorage.getItem("role") || null
 
-    if (dn && role) {
+    if (dn && rl) {
       setDisplayName(dn);
+      setRole(capitalize(rl));
       return;
     };
 
     return navigate("/");
   }, [navigate]);
 
-  const role = "admin"
   return (
     <div className="flex flex-column" style={{ minHeight: "100dvh", padding: "0px" }}>
       {/* DOCKER */}
