@@ -16,7 +16,7 @@ export function RequestReport() {
     const primary = rootStyle.getPropertyValue('--primary-color').trim();
 
     const [refresh, setRefresh] = useState(null);
-    const [filter, setFilter] = useState();
+    const [filter, setFilter] = useState([new Date("2026-06-01 00:00:00"), new Date("2026-06-30 00:00:00")]);
     const [realizadas, setRealizadas] = useState(0);
     const [aprovadas, setAprovadas] = useState(0);
     const [recusadas, setRecusadas] = useState(0);
@@ -52,41 +52,35 @@ export function RequestReport() {
             const total = hist.length
             const dias = [...new Set(hist.map(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" })))].sort((a, b) => a - b)
             const locais = [...new Set(hist.map(item => item.local))]
-
-            setRealizadas(total)
-            setAprovadas(hist.filter(item => item.status == "approve").length)
-            setRecusadas(hist.filter(item => item.status == "reproved").length)
-            setAbertas(res.data.abertas)
-            setlocalMore(locais[0])
-            setlocalMore(locais[0])
-
-            setlabelForRepos(dias)
-            setdataForRepos2(dias.map(d => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) === d).map(i => i.ausente))].length))
-            setdataForRepos(dias.map(day => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) == day).map(i => i.reserva))].length))
-
-            setlabelForMult(dias)
-            setdataForMult(dias.map(d =>
-                hist
-                    .filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) === d)
-                    .reduce((soma, item) => soma + (Number(item.multa) || 0), 0)
-            ))
-
-            setCobertas(res.data.historico.filter(item => item.reserva != "SEM COBERTURA").length)
-            setNaoCobertas(res.data.historico.filter(item => item.reserva == "SEM COBERTURA").length)
-
             const locais_abrev = locais.map(item => item.split(" - ")[1])
-
             const locaisValues = locais_abrev
                 .map(local => ({ name: local, count: hist.filter(item => item.local.split(" - ")[1] === local).length }))
                 .sort((a, b) => b.count - a.count)
                 .slice(0, 10)
                 .map(item => item.count)
 
+            setRealizadas(total)
+            setAprovadas(hist.filter(item => item.status == "approve").length)
+            setRecusadas(hist.filter(item => item.status == "reproved").length)
+            setAbertas(res.data.abertas)
+            setlocalMore(locais[0])
+            setlabelForRepos(dias)
+            setdataForRepos2(dias.map(d => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) === d).map(i => i.ausente))].length))
+            setdataForRepos(dias.map(day => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) == day).map(i => i.reserva))].length))
+            setlabelForMult(dias)
+            setCobertas(res.data.historico.filter(item => item.reserva != "SEM COBERTURA").length)
+            setNaoCobertas(res.data.historico.filter(item => item.reserva == "SEM COBERTURA").length)
             setlabelLocal(locais_abrev)
             setDataLocal(locaisValues);
             setlocalMoreCount([0])
-
             setReposData(hist)
+
+            setdataForMult(dias.map(d =>
+                hist
+                    .filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) === d)
+                    .reduce((soma, item) => soma + (Number(item.multa) || 0), 0)
+            ))
+
             setValues([
                 {
                     label: 'Total',

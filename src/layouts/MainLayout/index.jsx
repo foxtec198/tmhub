@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { PanelMenu } from "primereact/panelmenu";
 import './main.css'
 import { Avatar } from "primereact/avatar";
@@ -7,15 +7,19 @@ import { Avatar } from "primereact/avatar";
 export function MainLayout() {
   const [displayName, setDisplayName] = useState("");
   const navigate = useNavigate();
-
   const items = [
     {
       label: 'Dashboards',
       icon: 'pi pi-file',
       items: [
         {
-          label: 'Requisições',
+          label: 'Reposições',
           icon: 'pi pi-sync',
+          command: () => {navigate("/reports/reposicoes")}
+        },
+        {
+          label: 'Produtos',
+          icon: 'pi pi-box',
           command: () => {navigate("/reports/reposicoes")}
         },
       ]
@@ -43,7 +47,7 @@ export function MainLayout() {
         {
           label: 'Histórico',
           icon: 'pi pi-history',
-          command: () => {}
+          command: () => {navigate("/historico")}
         },
       ]
     },
@@ -118,9 +122,7 @@ export function MainLayout() {
         </div>
 
         {/* PANEL FRAME */}
-        <div className="w-full h-full">
-          <Outlet />
-        </div>
+        <div className="w-full h-full"><Outlet /></div>
       </main>
     </div>
   );

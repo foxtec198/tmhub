@@ -77,6 +77,7 @@ export function Auth() {
             sessionStorage.setItem("token", res.data.access_token);
             navigate("/init")
         } catch (error) {
+            console.log(error)
             const msg = error.response.data
             const isPwdError = msg.toLowerCase().includes("senha")
 
