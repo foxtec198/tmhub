@@ -62,71 +62,71 @@ export function RequestReport() {
                     end: new Date(filter[1]).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric' })
                 } : {};
 
-            // const res = await connect.post("/dash/reposicoes", filterData)
-            const res = {
-                "data": {
-                    "abertas": 0
-                }
-            }
-            const hist = [
-                // {
-                //     "ausente": "LINCOLN GUSTAVO MENDES",
-                //     "created_at": "Fri, 22 Jun 2026 13:27:42 GMT",
-                //     "dpto": "87",
-                //     "local": "ED.LONDRINA - ENCARREGADOS",
-                //     "motivo": "LAVAÇÃO DE TOLDO",
-                //     "multa": 180,
-                //     "obs": "None",
-                //     "reserva": "SEM INFORMAÇÃO",
-                //     "status": "reproved",
-                //     "supervisor": "PAULO TORRES"
-                // }, {
-                //     "ausente": "PAULO AQUINO DE ALMEIDA JUNIOR",
-                //     "created_at": "Fri, 15 Jun 2026 13:27:41 GMT",
-                //     "dpto": "269",
-                //     "local": "LONDRINA - VOLANTES ",
-                //     "motivo": "REMANEJAMENTO",
-                //     "multa": 250,
-                //     "obs": "None",
-                //     "reserva": "SEM INFORMAÇÃO",
-                //     "status": "approve",
-                //     "supervisor": "PAULO TORRES"
-                // }, 
-                {
-                    "ausente": "LUZIA DE OLIVEIRA",
-                    "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
-                    "dpto": "269",
-                    "local": "LONDRINA - VOLANTES ",
-                    "motivo": "INSS",
-                    "multa": 320,
-                    "obs": "None",
-                    "reserva": "LUZIA CAZARIN",
-                    "status": "approve",
-                    "supervisor": "PAULO TORRES"
-                }, {
-                    "ausente": "FULANINHO DA SILVA",
-                    "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
-                    "dpto": "269",
-                    "local": "SCHERER - CONS A LONDRINA",
-                    "motivo": "ATESTADO",
-                    "multa": 0,
-                    "obs": "None",
-                    "reserva": null,
-                    "status": "approve",
-                    "supervisor": "PAULO TORRES"
-                }, {
-                    "ausente": "FULANINHO DA ROÇA",
-                    "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
-                    "dpto": "87",
-                    "local": "SCHERER - CONS A LONDRINA",
-                    "motivo": "AFASTAMENTO",
-                    "multa": 250,
-                    "obs": "None",
-                    "reserva": "FULANINHA DA COBERTURA",
-                    "status": "approve",
-                    "supervisor": "PAULO TORRES"
-                }
-            ]
+            const res = await connect.post("/dash/reposicoes", filterData)
+            // const res = {
+            //     "data": {
+            //         "abertas": 0
+            //     }
+            // }
+            // const hist = [
+            //     {
+            //         "ausente": "LINCOLN GUSTAVO MENDES",
+            //         "created_at": "Fri, 22 Jun 2026 13:27:42 GMT",
+            //         "dpto": "87",
+            //         "local": "ED.LONDRINA - ENCARREGADOS",
+            //         "motivo": "LAVAÇÃO DE TOLDO",
+            //         "multa": 180,
+            //         "obs": "None",
+            //         "reserva": "SEM INFORMAÇÃO",
+            //         "status": "reproved",
+            //         "supervisor": "PAULO TORRES"
+            //     }, {
+            //         "ausente": "PAULO AQUINO DE ALMEIDA JUNIOR",
+            //         "created_at": "Fri, 15 Jun 2026 13:27:41 GMT",
+            //         "dpto": "269",
+            //         "local": "LONDRINA - VOLANTES ",
+            //         "motivo": "REMANEJAMENTO",
+            //         "multa": 250,
+            //         "obs": "None",
+            //         "reserva": "SEM INFORMAÇÃO",
+            //         "status": "approve",
+            //         "supervisor": "PAULO TORRES"
+            //     }, 
+            //     {
+            //         "ausente": "LUZIA DE OLIVEIRA",
+            //         "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
+            //         "dpto": "269",
+            //         "local": "LONDRINA - VOLANTES ",
+            //         "motivo": "INSS",
+            //         "multa": 320,
+            //         "obs": "None",
+            //         "reserva": "LUZIA CAZARIN",
+            //         "status": "approve",
+            //         "supervisor": "PAULO TORRES"
+            //     }, {
+            //         "ausente": "FULANINHO DA SILVA",
+            //         "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
+            //         "dpto": "269",
+            //         "local": "SCHERER - CONS A LONDRINA",
+            //         "motivo": "ATESTADO",
+            //         "multa": 0,
+            //         "obs": "None",
+            //         "reserva": null,
+            //         "status": "approve",
+            //         "supervisor": "PAULO TORRES"
+            //     }, {
+            //         "ausente": "FULANINHO DA ROÇA",
+            //         "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
+            //         "dpto": "87",
+            //         "local": "SCHERER - CONS A LONDRINA",
+            //         "motivo": "AFASTAMENTO",
+            //         "multa": 250,
+            //         "obs": "None",
+            //         "reserva": "FULANINHA DA COBERTURA",
+            //         "status": "approve",
+            //         "supervisor": "PAULO TORRES"
+            //     }
+            // ]
 
             const total = hist.length
             const dias = [...new Set(hist.map(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" })))].sort((a, b) => a - b)

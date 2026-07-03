@@ -57,6 +57,9 @@ body, html, :root {
   font-style: normal;
 }
 
+.btn-float{
+    z-index: 9000;
+}
 
 .p-toast {
   width: 90vw !important;

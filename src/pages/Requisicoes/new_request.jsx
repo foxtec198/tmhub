@@ -55,7 +55,7 @@ export function Request() {
                     reserva_id: checked ? 0: replace.id,
                     motivo: reason,
                     advertencia: warning,
-                    data: filterData,
+                    data: new Date(filterData),
                     obs: obs
                 }
                 await connect.post("/repo/request", data)

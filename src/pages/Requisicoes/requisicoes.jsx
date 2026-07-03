@@ -19,7 +19,12 @@ export function Requests() {
     const [refresh, setRefresh] = useState(null);
     const [reserva, setReserva] = useState("");
 
+    const [abertas, setAbertas] = useState(0)
+    const [emAtraso, setEmAtraso] = useState(0)
+    const [expiradas, setExpiradas] = useState(0)
+
     const navigate = useNavigate();
+
     const reasonColors = {
         "AFASTAMENTO": "var(--red-900)",
         "ATESTADO": "var(--red-200)",
@@ -28,13 +33,12 @@ export function Requests() {
         "INJUSTIFICADA": "var(--red-900)",
     }
 
-
     const table_itens = [
         {
             field: "data",
             header: "Data",
             class: "text-truncate",
-            body: (row) => new Date(row.data).toLocaleDateString("pt-br", { day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit" })
+            body: (row) => new Date(row.data).toLocaleDateString("pt-br")
         },
         {
             field: "ausencia",
@@ -42,15 +46,20 @@ export function Requests() {
             class: "text-truncate",
             body: (row) => {
                 return (
-                    <Inplace>
-                        <InplaceDisplay>{row.ausencia}</InplaceDisplay>
+                    <div className="flex">
+                        <Inplace closable>
+                            <InplaceDisplay>{row.ausencia}</InplaceDisplay>
 
-                        <InplaceContent>
-                            <InputText
-                                className="w-full"
-                            />
-                        </InplaceContent>
-                    </Inplace>
+                            <InplaceContent>
+                                <InputText
+                                    className="w-min"
+                                />
+                                <Button
+                                    icon="pi pi-check"
+                                />
+                            </InplaceContent>
+                        </Inplace>
+                    </div>
                 )
             }
         },
@@ -86,7 +95,7 @@ export function Requests() {
         {
             header: "Ações",
             body: (row) => {
-                return <ButtonGroup>
+                return <ButtonGroup className="flex">
                     <Button
                         icon="pi pi-times"
                         severity="danger"
@@ -107,22 +116,39 @@ export function Requests() {
     useEffect(() => {
         async function get_requests() {
             const res = await connect.get("/repo/request")
+            console.log(
+            )
+            setAbertas(res.data.length)
+
+            res.data.filter(item => {
+                const date = new Date(item.data);
+                const today = new Date()
+                if (date > today) {
+                    const hour = date.toLocaleTimeString("pt-br", { hour: "numeric" })
+                    const hour2 = today.toLocaleTimeString("pt-br", { hour: "numeric" })
+
+                    console.log(
+                        hour, hour2, item
+                    )
+                }
+            })
+
+            setEmAtraso(res.data.filter(item => new Date(item.data).getDate() > new Date().getDate()).length)
+
             setRequests(res.data)
-        };
-        get_requests();
+        }; get_requests();
     }, [refresh]);
 
-    useEffect(() => {
-        socketio.on("new_request", () => setRefresh(prev => !prev));
-    }, []);
+    useEffect(() => { socketio.on("new_request", () => setRefresh(prev => !prev)); }, []);
 
     return (
-        <main className="flex flex-column gap-3">
-            <h2>Requisições</h2>
-            <Button
+        <main className="flex flex-column gap-1">
+            <h2 className="spaceg">Requisições</h2>
+
+            <Button 
                 icon="pi pi-plus"
                 size="large"
-                className="p-4"
+                className="p-4 btn-float"
                 rounded
                 onClick={() => navigate("/reposicoes/requisicao")}
                 style={{
@@ -134,41 +160,44 @@ export function Requests() {
             <div className="flex gap-2 align-items-center">
                 <DashCard
                     title="Abertas"
-                    className="border-round-lg p-1 spaceg"
+                    className="border-round-lg p-1 spaceg flex-grow-1"
                     style={{
                         background: 'var(--green-700)',
                         color: "#fff"
                     }}
-                    value={0}
+                    value={abertas}
                 />
                 <DashCard
                     title="Em Atraso"
-                    className="border-round-lg p-1 spaceg"
+                    className="border-round-lg p-1 spaceg flex-grow-1"
                     style={{
                         background: 'var(--yellow-700)',
                         color: "#fff"
                     }}
-                    value={0}
+                    value={emAtraso}
                 />
                 <DashCard
                     title="Expiradas"
-                    className="border-round-lg p-1 spaceg"
+                    className="border-round-lg p-1 spaceg flex-grow-1"
                     style={{
                         background: 'var(--red-700)',
                         color: "#fff"
                     }}
-                    value={0}
+                    value={expiradas}
                 />
             </div>
             <div className="flex flex-column overflow-auto h-full">
                 <Table
                     data={requests}
                     tableClassName="w-full h-full"
+                    rows={5}
                     style={{
                         width: "100%",
-                        height: "100dvh"
+                        height: "100dvh",
+                        fontSize: "12px  "
                     }}
                     columns={table_itens}
+                    setRefresh={setRefresh}
                 />
             </div>
         </main>
