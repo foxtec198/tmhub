@@ -3,11 +3,14 @@ import { MainLayout } from "./layouts/MainLayout"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { createRoot } from 'react-dom/client';
 import { addLocale } from "primereact/api";
+import { useToast } from "./contexts/ToastContext";
+import connect from "./utils/request";
 
 // Providers
 import { PrimeReactProvider } from 'primereact/api';
 import { LoadingProvider } from './contexts/LoadingContext';
 import { ToastProvider } from "./contexts/ToastContext";
+
 
 // Styles
 import 'primeicons/primeicons.css';
@@ -16,18 +19,15 @@ import 'primeflex/primeflex.css';
 import "./index.css"
 
 // Routes
-import { Requisicoes } from "./pages/Requisicoes"
 import { RequestReport } from "./pages/Dashboards/requests"
-import { Request } from "./pages/Requisicoes/request.jsx"
+import { Requests } from "./pages/Requisicoes/requisicoes"
+import { Request } from "./pages/Requisicoes/new_request.jsx"
 import { Frotas } from "./pages/Frotas"
 import { Auth } from "./pages/Auth"
 import { Init } from "./pages/Init"
 import { History } from "./pages/Requisicoes/historico";
 import { Products } from "./pages/Estoque/products";
 import { Movements } from "./pages/Estoque/movements";
-
-import { useToast } from "./contexts/ToastContext";
-import connect from "./utils/request";
 
 addLocale('pt-BR', {
   firstDayOfWeek: 0,
@@ -90,7 +90,7 @@ export function AppRoutes() {
 
         <Route element={<MainLayout />}>
           <Route path="/frotas" element={<Frotas />} />
-          <Route path="/requisicoes" element={<Requisicoes />} />
+          <Route path="/requisicoes" element={<Requests />} />
           <Route path="/historico" element={<History />} />
           <Route path="/init" element={<Init />} />
           <Route path="/reports/reposicoes" element={<RequestReport />} />

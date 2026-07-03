@@ -4,6 +4,8 @@ import { Button } from "primereact/button";
 import { ButtonGroup } from "primereact/buttongroup"
 import { Tag } from "primereact/tag";
 import { DashCard } from "../../components/Card";
+import { Inplace, InplaceDisplay, InplaceContent, } from 'primereact/inplace';
+import { InputText } from "primereact/inputtext";
 
 // Utils
 import { useEffect, useState } from "react"
@@ -11,25 +13,50 @@ import connect from "../../utils/request";
 import { socketio } from "../../utils/socketio";
 import { useNavigate } from "react-router-dom";
 
-export function Requisicoes() {
+
+export function Requests() {
     const [requests, setRequests] = useState(null);
     const [refresh, setRefresh] = useState(null);
+    const [reserva, setReserva] = useState("");
+
     const navigate = useNavigate();
+    const reasonColors = {
+        "AFASTAMENTO": "var(--red-900)",
+        "ATESTADO": "var(--red-200)",
+        "DECLARAÇÃO": "var(--pink-400)",
+        "POSTO VAGO": "var(--gray-500)",
+        "INJUSTIFICADA": "var(--red-900)",
+    }
+
 
     const table_itens = [
         {
             field: "data",
             header: "Data",
+            class: "text-truncate",
             body: (row) => new Date(row.data).toLocaleDateString("pt-br", { day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit" })
         },
         {
             field: "ausencia",
-            header: "Ausência",
+            header: "Ausente",
             class: "text-truncate",
+            body: (row) => {
+                return (
+                    <Inplace>
+                        <InplaceDisplay>{row.ausencia}</InplaceDisplay>
+
+                        <InplaceContent>
+                            <InputText
+                                className="w-full"
+                            />
+                        </InplaceContent>
+                    </Inplace>
+                )
+            }
         },
         {
             field: "reserva",
-            header: "Reserva Sol.",
+            header: "Reserva",
             class: "text-truncate",
         },
         {
@@ -43,11 +70,14 @@ export function Requisicoes() {
             class: "text-truncate",
         },
         {
-            header: "Advertência",
+            header: "Motivos",
             body: (row) => {
                 return <>
                     <Tag
                         value={row.motivo}
+                        style={{
+                            background: reasonColors[row.motivo]
+                        }}
                         rounded
                     />
                 </>
@@ -74,7 +104,6 @@ export function Requisicoes() {
         },
     ];
 
-    
     useEffect(() => {
         async function get_requests() {
             const res = await connect.get("/repo/request")
@@ -84,7 +113,7 @@ export function Requisicoes() {
     }, [refresh]);
 
     useEffect(() => {
-        socketio.on("new_request", () => { console.info("EMIT RECEBIDO"); setRefresh(prev => !prev) });
+        socketio.on("new_request", () => setRefresh(prev => !prev));
     }, []);
 
     return (
@@ -95,7 +124,7 @@ export function Requisicoes() {
                 size="large"
                 className="p-4"
                 rounded
-                onClick={()=>{navigate("/reposicoes/requisicao")}}
+                onClick={() => navigate("/reposicoes/requisicao")}
                 style={{
                     position: "absolute",
                     right: "20px",
@@ -131,10 +160,14 @@ export function Requisicoes() {
                     value={0}
                 />
             </div>
-            <div className="flex flex-column">
+            <div className="flex flex-column overflow-auto h-full">
                 <Table
                     data={requests}
-                    tableClassName="w-full"
+                    tableClassName="w-full h-full"
+                    style={{
+                        width: "100%",
+                        height: "100dvh"
+                    }}
                     columns={table_itens}
                 />
             </div>

@@ -152,6 +152,7 @@ export function Request() {
                                     appendTo="self"
                                     panelStyle={{ width: '100%' }}
                                     className="w-full mb-3"
+                                    virtualScrollerOptions={{ itemSize: 38 }}
                                     value={absent}
                                     onChange={(e) => selectedAbsent(e.value)}
                                     options={allFuncsOptions}
@@ -175,6 +176,7 @@ export function Request() {
                                     panelStyle={{ width: '100%' }}
                                     className={`w-full mb-3 ${checked? "hidden":null}`}
                                     value={replace}
+                                    virtualScrollerOptions={{ itemSize: 38 }}
                                     onChange={(e) => selectedReplace(e.value)}
                                     options={allFuncsOptions}
                                     placeholder="Quem vai repor?"
