@@ -12,6 +12,7 @@ import { useState, useRef, useEffect } from "react";
 import { useToast } from "../../contexts/ToastContext";
 import { useLoading } from "../../contexts/LoadingContext";
 import connect from "../../utils/request";
+import { InputText } from "primereact/inputtext";
 
 export function Request() {
     const [user, selectedUser] = useState(null)
@@ -20,6 +21,7 @@ export function Request() {
     const [absent, selectedAbsent] = useState(null)
     const [warning, selectedWarning] = useState(null)
     const [reason, selectedReason] = useState(null)
+    const [obs, setObs] = useState("")
     const [checked, setChecked] = useState(false)
 
     const [supsOtions, setSupsOptions] = useState(null)
@@ -33,7 +35,9 @@ export function Request() {
         "ATESTADO",
         "DECLARAÇÃO",
         "POSTO VAGO",
+        "REMANEJAMENTO",
         "INJUSTIFICADA",
+        "OUTROS",
     ]
 
     const stepperRef = useRef(null)
@@ -51,7 +55,8 @@ export function Request() {
                     reserva_id: checked ? 0: replace.id,
                     motivo: reason,
                     advertencia: warning,
-                    data: filterData
+                    data: filterData,
+                    obs: obs
                 }
                 await connect.post("/repo/request", data)
                 showToast("success", "Sucesso na requisição", "Sua requisição foi criada com sucesso, aguarde novidades por email!")
@@ -204,6 +209,13 @@ export function Request() {
                                     options={["Aplicado", "Não Aplicado"]}
                                     placeholder="Advertencia"
                                     optionLabel="name"
+                                />
+
+                                <InputText
+                                    className={`w-full mb-3 ${reason != "OUTROS" ? "hidden" : null}`}
+                                    value={obs}
+                                    onChange={(e) => setObs(e.target.value)}
+                                    placeholder="Observação"
                                 />
                                 
                                 <div className="flex justify-content-between align-items-center mb-4">
