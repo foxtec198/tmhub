@@ -116,25 +116,7 @@ export function Requests() {
     useEffect(() => {
         async function get_requests() {
             const res = await connect.get("/repo/request")
-            console.log(
-            )
             setAbertas(res.data.length)
-
-            res.data.filter(item => {
-                const date = new Date(item.data);
-                const today = new Date()
-                if (date > today) {
-                    const hour = date.toLocaleTimeString("pt-br", { hour: "numeric" })
-                    const hour2 = today.toLocaleTimeString("pt-br", { hour: "numeric" })
-
-                    console.log(
-                        hour, hour2, item
-                    )
-                }
-            })
-
-            setEmAtraso(res.data.filter(item => new Date(item.data).getDate() > new Date().getDate()).length)
-
             setRequests(res.data)
         }; get_requests();
     }, [refresh]);

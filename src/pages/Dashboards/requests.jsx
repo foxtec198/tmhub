@@ -2,7 +2,7 @@ import { DashCard } from "../../components/Card"
 import { Chart } from "primereact/chart"
 import { MeterGroup } from "primereact/metergroup"
 import { Calendar } from "primereact/calendar"
-import { useEffect, useState } from "react"
+import { use, useEffect, useState } from "react"
 import { Table } from "../../components/tables/Table"
 import { Divider } from "primereact/divider"
 import { TabView } from "primereact/tabview"
@@ -10,6 +10,75 @@ import { TabPanel } from "primereact/tabview"
 import { Knob } from 'primereact/knob';
 
 import connect from "../../utils/request"
+import { to_real } from "../../utils/ui"
+const totalOfReplaces = 19
+
+const MOCK = {
+    res: {
+        "data": {
+            "abertas": 0
+        }
+    },
+    hist: [
+        {
+            "ausente": "LINCOLN GUSTAVO MENDES",
+            "created_at": "Fri, 22 Jun 2026 13:27:42 GMT",
+            "dpto": "87",
+            "local": "ED.LONDRINA - ENCARREGADOS",
+            "motivo": "LAVAÇÃO DE TOLDO",
+            "multa": 180,
+            "obs": "None",
+            "reserva": "SEM INFORMAÇÃO",
+            "status": "reproved",
+            "supervisor": "PAULO TORRES"
+        }, {
+            "ausente": "PAULO AQUINO DE ALMEIDA JUNIOR",
+            "created_at": "Fri, 15 Jun 2026 13:27:41 GMT",
+            "dpto": "269",
+            "local": "LONDRINA - VOLANTES ",
+            "motivo": "REMANEJAMENTO",
+            "multa": 250,
+            "obs": "None",
+            "reserva": "SEM INFORMAÇÃO",
+            "status": "approve",
+            "supervisor": "PAULO TORRES"
+        },
+        {
+            "ausente": "LUZIA DE OLIVEIRA",
+            "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
+            "dpto": "269",
+            "local": "LONDRINA - VOLANTES ",
+            "motivo": "INSS",
+            "multa": 320,
+            "obs": "None",
+            "reserva": "LUZIA CAZARIN",
+            "status": "approve",
+            "supervisor": "PAULO TORRES"
+        }, {
+            "ausente": "FULANINHO DA SILVA",
+            "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
+            "dpto": "269",
+            "local": "SCHERER - CONS A LONDRINA",
+            "motivo": "ATESTADO",
+            "multa": 0,
+            "obs": "None",
+            "reserva": null,
+            "status": "approve",
+            "supervisor": "PAULO TORRES"
+        }, {
+            "ausente": "FULANINHO DA ROÇA",
+            "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
+            "dpto": "87",
+            "local": "SCHERER - CONS A LONDRINA",
+            "motivo": "AFASTAMENTO",
+            "multa": 250,
+            "obs": "None",
+            "reserva": "FULANINHA DA COBERTURA",
+            "status": "approve",
+            "supervisor": "PAULO TORRES"
+        }
+    ]
+}
 
 export function RequestReport() {
     const rootStyle = getComputedStyle(document.documentElement);
@@ -18,18 +87,18 @@ export function RequestReport() {
     const [refresh, setRefresh] = useState(null);
 
     // Filtrar com nova data
-    const [filter, setFilter] = useState([new Date("2026-06-01 00:00:00"), new Date("2026-06-30 00:00:00")]);
+    const opt = [new Date("2026-07-01 00:00:00"), new Date("2026-07-30 00:00:00")]
+    const [filter, setFilter] = useState(opt);
 
     // Statics
     const [realizadas, setRealizadas] = useState(0);
-    const [aprovadas, setAprovadas] = useState(0);
-    const [recusadas, setRecusadas] = useState(0);
     const [requisicoes, setRequisicoes] = useState(0);
     const [postosCobertos, setPostosCobertos] = useState(0);
     const [postosDescobertos, setPostoDescobertos] = useState(0);
     const [localComMaisFaltas, setLocalComMaisFaltas] = useState(0);
     const [valorDoLocalComMaisFaltas, setValorDoLocalComMaisFaltas] = useState(0);
-
+    const [totalDeMultas, setTotalDeMultas] = useState(0);
+    const [departamentos, setDepartamento] = useState([]);
 
     // Dados para CHARTS
     // Chart de Reposicoes
@@ -42,7 +111,7 @@ export function RequestReport() {
     const [dadosLocais, setDadosLocais] = useState(null)
 
     // Dados do Vertical Bar - Motivos
-    const [dadosMotivos, setDadosMotivos] = useState(null)
+    const [dadosDpto, setDadosDpto] = useState(null)
 
     // Chart de MULTAS
     const [labelForMult, setlabelForMult] = useState(null)
@@ -63,94 +132,53 @@ export function RequestReport() {
                 } : {};
 
             const res = await connect.post("/dash/reposicoes", filterData)
-            // const res = {
-            //     "data": {
-            //         "abertas": 0
-            //     }
-            // }
-            // const hist = [
-            //     {
-            //         "ausente": "LINCOLN GUSTAVO MENDES",
-            //         "created_at": "Fri, 22 Jun 2026 13:27:42 GMT",
-            //         "dpto": "87",
-            //         "local": "ED.LONDRINA - ENCARREGADOS",
-            //         "motivo": "LAVAÇÃO DE TOLDO",
-            //         "multa": 180,
-            //         "obs": "None",
-            //         "reserva": "SEM INFORMAÇÃO",
-            //         "status": "reproved",
-            //         "supervisor": "PAULO TORRES"
-            //     }, {
-            //         "ausente": "PAULO AQUINO DE ALMEIDA JUNIOR",
-            //         "created_at": "Fri, 15 Jun 2026 13:27:41 GMT",
-            //         "dpto": "269",
-            //         "local": "LONDRINA - VOLANTES ",
-            //         "motivo": "REMANEJAMENTO",
-            //         "multa": 250,
-            //         "obs": "None",
-            //         "reserva": "SEM INFORMAÇÃO",
-            //         "status": "approve",
-            //         "supervisor": "PAULO TORRES"
-            //     }, 
-            //     {
-            //         "ausente": "LUZIA DE OLIVEIRA",
-            //         "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
-            //         "dpto": "269",
-            //         "local": "LONDRINA - VOLANTES ",
-            //         "motivo": "INSS",
-            //         "multa": 320,
-            //         "obs": "None",
-            //         "reserva": "LUZIA CAZARIN",
-            //         "status": "approve",
-            //         "supervisor": "PAULO TORRES"
-            //     }, {
-            //         "ausente": "FULANINHO DA SILVA",
-            //         "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
-            //         "dpto": "269",
-            //         "local": "SCHERER - CONS A LONDRINA",
-            //         "motivo": "ATESTADO",
-            //         "multa": 0,
-            //         "obs": "None",
-            //         "reserva": null,
-            //         "status": "approve",
-            //         "supervisor": "PAULO TORRES"
-            //     }, {
-            //         "ausente": "FULANINHO DA ROÇA",
-            //         "created_at": "Fri, 8 Jun 2026 13:27:41 GMT",
-            //         "dpto": "87",
-            //         "local": "SCHERER - CONS A LONDRINA",
-            //         "motivo": "AFASTAMENTO",
-            //         "multa": 250,
-            //         "obs": "None",
-            //         "reserva": "FULANINHA DA COBERTURA",
-            //         "status": "approve",
-            //         "supervisor": "PAULO TORRES"
-            //     }
-            // ]
+            const hist = res.data.historico
+
+            // const res = MOCK["res"]
+            // const hist = MOCK["hist"]
 
             const total = hist.length
             const dias = [...new Set(hist.map(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" })))].sort((a, b) => a - b)
-            const motivos = [...new Set(hist.map(item => item.motivo))]
-            const list_aprovadas = hist.filter(item => item.status == "approve")
-            const list_reprovadas = hist.filter(item => item.status == "reproved")
-            const locais = Object.entries(hist.reduce((acc, { local }) => (acc[local] = (acc[local] || 0) + 1, acc), {})).map(([local, quantidade]) => ({ local, quantidade }));
+            const totalMulta = hist.reduce((acc, item) => acc + item.multa, 0)
 
-            const locaisValues = locais.map(item => item.quantidade).sort((a, b) => a-b)
-            const locaisLabels = locais.map(item => item.local).sort((a, b) => a-b)
+            const contratos = hist.reduce((acc, { local }) => {
+                acc[local] = (acc[local] || 0) + 1;
+                return acc;
+            }, {});
 
-            const localWithMoreFaults = locais.length
-                ? locais.reduce((a, b) => a.quantidade > b.quantidade ? a : b)
-                : null;
+            const betters = Object.entries(contratos)
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, 3);
 
-            hist.filter(item => item.reserva ? item.reserva : item.reserva = "SEM COBERTURA")
+            const locaisLabels = betters.map(([local]) => local.replace(/\d+/g, '').split("-")[1]);
+            const locaisValues = betters.map(([, quantidade]) => quantidade);
 
+            const dptos = hist.reduce((acc, { dpto, reserva }) => {
+                acc[dpto] ??= {
+                    cobertas: 0,
+                    descobertas: 0
+                };
+
+                if (reserva === "SEM COBERTURA") {
+                    acc[dpto].descobertas++;
+                } else {
+                    acc[dpto].cobertas++;
+                }
+
+                return acc;
+            }, {});
+
+            setDepartamento(Object.entries(dptos))
             setRealizadas(total)
-            setAprovadas(list_aprovadas.length)
-            setRecusadas(list_reprovadas.length)
             setRequisicoes(res.data.abertas)
-            
-            setLocalComMaisFaltas(localWithMoreFaults.local)
-            setValorDoLocalComMaisFaltas(Math.round(localWithMoreFaults.quantidade / total * 100))
+            setTotalDeMultas(totalMulta)
+
+            setLocalComMaisFaltas(locaisLabels[0])
+            setValorDoLocalComMaisFaltas(
+                Math.round(
+                    locaisValues[0] / total * 100
+                ) || 0
+            )
 
             setlabelLocal(locaisLabels)
             setDadosLocais(locaisValues);
@@ -159,7 +187,7 @@ export function RequestReport() {
             setDadosAusentes(dias.map(d => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) === d).map(i => i.ausente))].length))
             setDadosReposicoes(dias.map(day => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) == day).map(i => i.reserva))].length))
             setlabelForMult(dias)
-            setPostosCobertos(list_aprovadas.filter(item => item.reserva != "SEM COBERTURA").length)
+            setPostosCobertos(hist.filter(item => item.reserva != "SEM COBERTURA").length)
             setPostoDescobertos(hist.filter(item => item.reserva == "SEM COBERTURA").length)
 
             setDadosTabela(hist)
@@ -196,6 +224,13 @@ export function RequestReport() {
         }; get_data();
     }, [refresh])
 
+    const testeOptions = {
+        cutout: '60%',
+        plugins: {
+            legend: false
+        }
+    };
+
     const dataRepos = {
         labels: labelReposicoes,
         datasets: [{
@@ -228,13 +263,16 @@ export function RequestReport() {
         }]
     }
 
-    const dtLocal = {
+    const dataLocals = {
         labels: labelLocal,
         datasets: [{
             type: "bar",
-            backgroundColor: rootStyle.getPropertyValue("--green-200").trim(),
+            backgroundColor: rootStyle.getPropertyValue("--green-400").trim(),
             label: "Dados",
-            data: dadosLocais
+            data: dadosLocais,
+            barPercentage: 0.7,
+            categoryPercentage: 0.7,
+
         }]
     }
 
@@ -272,16 +310,16 @@ export function RequestReport() {
         }
     ]
 
-    const meterGroupColor = valorDoLocalComMaisFaltas >= 45 ? "var(--red-600)" : "var(--green-600)"
-    
+    const knobColor = valorDoLocalComMaisFaltas >= totalOfReplaces ? "var(--red-600)" : "var(--green-600)"
+
     return (
         <main className="flex flex-column p-2 gap-2">
             <div className="flex justify-content-between align-items-center w-full">
                 <div className="flex gap-2 p-2 w-full">
                     <DashCard
                         icon="pi pi-verified"
-                        title="Realizadas"
-                        className="border-round-lg"
+                        title="Fechadas"
+                        className="border-round-lg text-truncate flex-grow-1"
                         style={{
                             backgroundColor: 'var(--green-900)',
                             height: "5rem",
@@ -290,31 +328,9 @@ export function RequestReport() {
                         value={realizadas}
                     />
                     <DashCard
-                        icon="pi pi-check"
-                        title="Aprovadas"
-                        className="border-round-lg text-truncate"
-                        style={{
-                            backgroundColor: 'var(--green-600)',
-                            height: "5rem",
-                            color: "#fff",
-                        }}
-                        value={aprovadas}
-                    />
-                    <DashCard
-                        icon="pi pi-trash"
-                        title="Reprovadas"
-                        className="border-round-lg text-truncate"
-                        style={{
-                            backgroundColor: 'var(--red-500)',
-                            height: "5rem",
-                            color: "#fff",
-                        }}
-                        value={recusadas}
-                    />
-                    <DashCard
                         icon="pi pi-folder-open "
-                        title="Req. Abertas"
-                        className="border-round-lg text-truncate"
+                        title="Abertas"
+                        className="border-round-lg text-truncate flex-grow-1"
                         style={{
                             backgroundColor: 'var(--green-500)',
                             height: "5rem",
@@ -325,7 +341,7 @@ export function RequestReport() {
                     <DashCard
                         icon="pi pi-calendar "
                         title="Cobertas"
-                        className="border-round-lg"
+                        className="border-round-lg text-truncate flex-grow-1"
                         style={{
                             backgroundColor: 'var(--blue-800)',
                             height: "5rem",
@@ -336,25 +352,39 @@ export function RequestReport() {
                     <DashCard
                         icon="pi pi-paperclip"
                         title="Descobertas"
-                        className="border-round-lg"
+                        className="border-round-lg text-truncate flex-grow-1"
                         style={{
-                            backgroundColor: 'var(--red-800)',
+                            backgroundColor: 'var(--red-700)',
                             height: "5rem",
                             color: "#fff",
                         }}
                         value={postosDescobertos}
                     />
+                    <DashCard
+                        icon="pi pi-dollar"
+                        title="Total de Multa"
+                        className="border-round-lg text-truncate flex-grow-1"
+                        style={{
+                            backgroundColor: 'var(--red-900)',
+                            height: "5rem",
+                            color: "#fff",
+                        }}
+                        value={to_real(totalDeMultas)}
+                    />
                     <div
-                        className="flex justify-content-center gap-2 align-items-center border-round-lg shadow-6 p-3"
+                        className="flex justify-content-center flex-grow-1 gap-2 align-items-center border-round-lg shadow-6 p-3"
                         style={{ backgroundColor: 'var(--white-600)', height: "5rem", color: '#333' }}>
-                        <Knob 
-                            value={valorDoLocalComMaisFaltas} 
-                            valueColor={meterGroupColor} 
-                            size={70} 
+                        <Knob
+                            value={valorDoLocalComMaisFaltas}
+                            valueTemplate="{value}%"
+                            min={0}
+                            max={100}
+                            valueColor={knobColor}
+                            size={70}
                         />
-                        <div className="flex flex-column justify-content-between">
+                        <div className="flex flex-column flex-grow-1 justify-content-between">
                             <span className="inter font-bold spaceg text-1xl">Contrato com mais faltas</span>
-                            <span className="text-truncate inter">{localComMaisFaltas}</span>
+                            <span className="inter" style={{ maxWidth: "250px" }}>{localComMaisFaltas}</span>
                         </div>
                     </div>
                 </div>
@@ -414,7 +444,7 @@ export function RequestReport() {
                 </div>
 
                 {/* STATUS CARD */}
-                <div className="flex flex-column p-4 w-18rem border-round-lg shadow-6">
+                <div className="flex flex-column p-4 flex-grow-1 border-round-lg shadow-6" style={{ minWidth: "20rem" }}>
                     <span className="font-bold mb-4">Status  de Reposições:</span>
                     <MeterGroup
                         className="h-full"
@@ -423,12 +453,43 @@ export function RequestReport() {
                         labelOrientation="vertical"
                     />
                     <Divider className="my-4" />
-                    <span className="font-bold mb-4">Faltas por :</span>
                     <TabView>
+                        <TabPanel header="Departamento">
+                            <div className="flex flex-wrap justify-content-between align-items-center gap-2 p-2" style={{ minHeight: "10rem" }}>
+                                {departamentos.map(item => {
+                                    const testeData = {
+                                        labels: ['Cobertas', 'Descobertas'],
+                                        datasets: [
+                                            {
+                                                data: [item[1]["cobertas"], item[1]["descobertas"]],
+                                                backgroundColor: [
+                                                    rootStyle.getPropertyValue('--green-500'),
+                                                    rootStyle.getPropertyValue('--green-800'),
+                                                ],
+                                                hoverBackgroundColor: [
+                                                    rootStyle.getPropertyValue('--green-400'),
+                                                    rootStyle.getPropertyValue('--green-700'),
+                                                ]
+                                            }
+                                        ]
+                                    };
+
+                                    return (
+                                        <div key={item} className="flex flex-column flex-grow-1 justify-content-center align-items-center text-center shadow-6 border-round-lg" style={{ maxWidth: "100px" }}>
+                                            <Chart type="doughnut" data={testeData} options={testeOptions} style={{
+                                                width: '80px',
+                                            }} />
+                                            <span className="font-bold inter"> Dpto. {item[0]}</span>
+                                        </div>
+                                    )
+                                })
+                                }
+                            </div>
+                        </TabPanel>
                         <TabPanel header="Contrato">
                             <Chart
                                 className="h-full"
-                                data={dtLocal}
+                                data={dataLocals}
                                 options={{
                                     aspectRatio: 1,
                                     autoPadding: true,
@@ -439,29 +500,36 @@ export function RequestReport() {
                                         },
                                         tooltip: {
                                             callbacks: {
-                                                label: (ctx) => `Faltas: ${ctx.parsed.y}`
+                                                label: (self) => `Faltas: ${self.parsed.x}`
                                             }
                                         }
                                     },
                                     scales: {
                                         x: {
-                                            display: false
+                                            display: false,
+                                            ticks: {
+                                                font: { size: 5 }
+                                            }
                                         },
                                         y: {
                                             display: true,
                                             grid: {
                                                 display: false,
                                                 drawBorder: false
+                                            },
+                                            ticks: {
+                                                font: { size: 8 },
+                                                callback(value) {
+                                                    const label = this.getLabelForValue(value);
+
+                                                    return label.length > 20
+                                                        ? label.slice(0, 20) + '...'
+                                                        : label;
+                                                }
                                             }
                                         }
-                                    }
+                                    },
                                 }}
-                            />
-                        </TabPanel>
-                        <TabPanel header="Motivos">
-                            <Chart
-                                className="h-full"
-                                data={dtLocal}
                             />
                         </TabPanel>
                     </TabView>

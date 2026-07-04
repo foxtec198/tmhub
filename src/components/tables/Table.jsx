@@ -15,23 +15,25 @@ export function Table({
     rows = 10,
     tableClassName,
     dateValue,
-    handleSetDate,
     setRefresh,
-    style
+    style,
+    search,
+    handleSetDate,
 
 }) {
     const [globalFilterDash, setGlobalFilterDash] = useState("");
     
     const header = (
         <div className="flex min-w-full justify-content-between align-items-center">
-            <FloatLabel>
-
-                <InputText
-                    value={globalFilterDash}
-                    onChange={(e) => setGlobalFilterDash(e.target.value)}
-                />
-                <label htmlFor="">Buscar...</label>
-            </FloatLabel>
+            {search
+                ?<FloatLabel>
+                    <InputText
+                        value={globalFilterDash}
+                        onChange={(e) => setGlobalFilterDash(e.target.value)}
+                    />
+                    <label htmlFor="">Buscar...</label>
+                </FloatLabel> :null
+            }
 
             {handleSetDate
                 ? <FloatLabel>

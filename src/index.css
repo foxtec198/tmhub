@@ -50,6 +50,12 @@ body, html, :root {
     font-family: "Inter", sans-serif;
 }
 
+.nome-contrato {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .spaceg{
   font-family: "Space Grotesk", sans-serif;
   font-optical-sizing: auto;
@@ -71,4 +77,8 @@ body, html, :root {
     white-space: nowrap;
     text-overflow: ellipsis;
     max-width: 200px; /* ajusta conforme a coluna */
+}
+
+.p-paginator-icon{
+    color: var(--primary-color) !important;
 }
