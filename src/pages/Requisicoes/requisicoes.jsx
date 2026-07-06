@@ -9,9 +9,10 @@ import { InputText } from "primereact/inputtext";
 
 // Utils
 import { useEffect, useState } from "react"
-import connect from "../../utils/request";
 import { socketio } from "../../utils/socketio";
+import { useToast } from "../../contexts/ToastContext";
 import { useNavigate } from "react-router-dom";
+import connect from "../../utils/request";
 
 
 export function Requests() {
@@ -23,6 +24,8 @@ export function Requests() {
     const [emAtraso, setEmAtraso] = useState(0)
     const [expiradas, setExpiradas] = useState(0)
 
+    const { showToast } = useToast();
+
     const navigate = useNavigate();
 
     const reasonColors = {
@@ -31,6 +34,13 @@ export function Requests() {
         "DECLARAÇÃO": "var(--pink-400)",
         "POSTO VAGO": "var(--gray-500)",
         "INJUSTIFICADA": "var(--red-900)",
+    }
+
+    async function setStatus(id, status) {
+        try{
+            await connect.post("/repo", { id: id, status: status })
+            showToast("success", "Sucesso", "Requisilçõ salva com sucesso!")
+        } catch(err){ showToast("error", "Erro", err.reponse.data) }   
     }
 
     const table_itens = [
@@ -99,14 +109,14 @@ export function Requests() {
                     <Button
                         icon="pi pi-times"
                         severity="danger"
-                        onClick={(e) => { row }}
+                        onClick={() => { setStatus(row.id, "reproved")}}
                         data-pr-tooltip="Reprovar Solicitação"
                     />
                     <Button
                         data-pr-tooltip="Aprovar Solicitação"
                         icon="pi pi-check-circle"
                         severity="success"
-                        onClick={(e) => { row }}
+                        onClick={() => { setStatus(row.id, "approved")}}
                     />
                 </ButtonGroup>
             },

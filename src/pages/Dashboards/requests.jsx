@@ -101,10 +101,6 @@ export function RequestReport() {
 
     // Overlay Panel Ref
     const op_filters = useRef();
-    const [contrato, setContrato] = useState(null);
-    const [departamento, setDepartamento] = useState(null);
-    const [supervisor, setSupervisor] = useState(null);
-    const [motivo, setMotivo] = useState(null);
 
     const defaultFilters = {
         contrato: null,
@@ -256,7 +252,7 @@ export function RequestReport() {
         if (!hist.length) return;
 
         const getStatus = (item) => {
-            if (item.reserva === "SEM COBERTURA") return "descoberta";
+            if (item.status === "reproved") return "descoberta";
             return "coberta";
         };
 
@@ -548,7 +544,7 @@ export function RequestReport() {
                         title="Total de Multa"
                         className="border-round-lg text-truncate flex-grow-1"
                         style={{
-                            backgroundColor: 'var(--gray-500)',
+                            backgroundColor: 'var(--gray-700)',
                             height: "5rem",
                             color: "#fff",
                         }}
