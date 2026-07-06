@@ -1,18 +1,32 @@
-import { DashCard } from "../../components/Card"
+// Widgets
 import { Chart } from "primereact/chart"
 import { MeterGroup } from "primereact/metergroup"
 import { Calendar } from "primereact/calendar"
-import { use, useEffect, useState } from "react"
-import { Table } from "../../components/tables/Table"
 import { Divider } from "primereact/divider"
 import { TabView } from "primereact/tabview"
 import { TabPanel } from "primereact/tabview"
 import { Knob } from 'primereact/knob';
+import { Button } from "primereact/button"
+import { OverlayPanel } from "primereact/overlaypanel"
+import { FloatLabel } from "primereact/floatlabel"
 
-import connect from "../../utils/request"
+// Components
+import { DashCard } from "../../components/Card"
+import { Table } from "../../components/tables/Table"
+
+// Utils
+import { useEffect, useState, useRef, useMemo } from "react"
 import { to_real } from "../../utils/ui"
-const totalOfReplaces = 19
+import connect from "../../utils/request"
 
+// CSS
+import "./request.css"
+import { InputText } from "primereact/inputtext"
+import { Dropdown } from "primereact/dropdown"
+
+
+// MOCKS
+const totalOfReplaces = 19
 const MOCK = {
     res: {
         "data": {
@@ -80,29 +94,53 @@ const MOCK = {
     ]
 }
 
+// Logic and UI
 export function RequestReport() {
+    // Obter cores setadas no CSS (ROOT)
     const rootStyle = getComputedStyle(document.documentElement);
+
+    // Overlay Panel Ref
+    const op_filters = useRef();
+    const [contrato, setContrato] = useState(null);
+    const [departamento, setDepartamento] = useState(null);
+    const [supervisor, setSupervisor] = useState(null);
+    const [motivo, setMotivo] = useState(null);
+
+    const defaultFilters = {
+        contrato: null,
+        departamento: null,
+        supervisor: null,
+        motivo: null
+    };
+
+    // Filtros
+    const [filters, setFilters] = useState(defaultFilters);
 
     // Dar refresh na pagina com os novos dados
     const [refresh, setRefresh] = useState(null);
 
-    // Filtrar com nova data
-    const opt = [new Date("2026-07-01 00:00:00"), new Date("2026-07-30 00:00:00")]
-    const [filter, setFilter] = useState(opt);
+    // Historico de reposições
+    const [histOriginal, setHistOriginal] = useState([]);
+
+    // Filtros
+    const hoje = new Date();
+    const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+    const [filter, setFilter] = useState([primeiroDia, ultimoDia]);
 
     // Statics
     const [realizadas, setRealizadas] = useState(0);
-    const [requisicoes, setRequisicoes] = useState(0);
+    const [abertas, setAbertas] = useState(0);
     const [postosCobertos, setPostosCobertos] = useState(0);
     const [postosDescobertos, setPostoDescobertos] = useState(0);
     const [localComMaisFaltas, setLocalComMaisFaltas] = useState(0);
     const [valorDoLocalComMaisFaltas, setValorDoLocalComMaisFaltas] = useState(0);
     const [totalDeMultas, setTotalDeMultas] = useState(0);
-    const [departamentos, setDepartamento] = useState([]);
+    const [departamentos, setDepartamentos] = useState([]);
 
     // Dados para CHARTS
     // Chart de Reposicoes
-    const [labelReposicoes, setLabelReposicoes] = useState(null)
+    const [labelReposicoes, setLabels] = useState(null)
     const [dadosReposicoes, setDadosReposicoes] = useState(null)
     const [labelLocal, setlabelLocal] = useState(null)
     const [dadosAusentes, setDadosAusentes] = useState(null)
@@ -110,10 +148,7 @@ export function RequestReport() {
     // Dados do Vertical Bar - Locais
     const [dadosLocais, setDadosLocais] = useState(null)
 
-    // Dados do Vertical Bar - Motivos
-    const [dadosDpto, setDadosDpto] = useState(null)
-
-    // Chart de MULTAS
+    // Chart de multas
     const [labelForMult, setlabelForMult] = useState(null)
     const [dataForMult, setdataForMult] = useState(null)
 
@@ -123,108 +158,236 @@ export function RequestReport() {
     // Dados do Meter Group
     const [meterGroupValues, setMeterGroupValues] = useState([]);
 
+    // Use Memo para setar 
+    const hist = useMemo(() => {
+        return histOriginal.filter(item => {
+            if (filters.contrato && item.local !== filters.contrato) return false;
+            if (filters.departamento && item.dpto !== filters.departamento) return false;
+            if (filters.supervisor && item.supervisor !== filters.supervisor) return false;
+            if (filters.colaborador && item.ausente !== filters.colaborador) return false;
+            return true;
+        });
+    }, [histOriginal, filters.contrato, filters.departamento, filters.supervisor, filters.colaborador ]);
+
+    const clearFilters = () => {
+        setFilters(() => ({ ...defaultFilters }));
+    };
+
+    const contratosOptions = useMemo(() => {
+        const histFiltro = histOriginal.filter(item => {
+            if (filters.departamento && item.dpto !== filters.departamento) return false;
+            if (filters.supervisor && item.supervisor !== filters.supervisor) return false;
+            if (filters.motivo && item.motivo !== filters.motivo) return false;
+
+            return true;
+        });
+
+        return [...new Set(histFiltro.map(i => i.local))]
+            .sort()
+            .map(i => ({ label: i, value: i }));
+
+    }, [histOriginal, filters]);
+
+    const dptoOptions = useMemo(() => {
+        const histFiltro = histOriginal.filter(item => {
+            if (filters.contrato && item.local !== filters.contrato) return false;
+            if (filters.supervisor && item.supervisor !== filters.supervisor) return false;
+            if (filters.motivo && item.motivo !== filters.motivo) return false;
+
+            return true;
+        });
+
+        return [...new Set(histFiltro.map(i => i.dpto))]
+            .sort()
+            .map(i => ({ label: i, value: i }));
+
+    }, [histOriginal, filters]);
+
+    const motivoOptions = useMemo(() => {
+        const histFiltro = histOriginal.filter(item => {
+            if (filters.departamento && item.dpto !== filters.departamento) return false;
+            if (filters.contrato && item.local !== filters.contrato) return false;
+            if (filters.supervisor && item.supervisor !== filters.supervisor) return false;
+
+            return true;
+        });
+
+        return [...new Set(histFiltro.map(i => i.motivo))]
+            .sort()
+            .map(i => ({ label: i, value: i }));
+
+    }, [histOriginal, filters]);
+
+    const supervisorOptions = useMemo(() => {
+        const histFiltro = histOriginal.filter(item => {
+            if (filters.departamento && item.dpto !== filters.departamento) return false;
+            if (filters.contrato && item.local !== filters.contrato) return false;
+            if (filters.motivo && item.motivo !== filters.motivo) return false;
+
+            return true;
+        });
+
+        return [...new Set(histFiltro.map(i => i.supervisor))]
+            .sort()
+            .map(i => ({ label: i, value: i }));
+
+    }, [histOriginal, filters]);
+
+    // Use Effect para a consulta
     useEffect(() => {
-        async function get_data() {
+        async function getData() {
+
             const filterData = filter
                 ? {
-                    init: new Date(filter[0]).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric' }),
-                    end: new Date(filter[1]).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric' })
-                } : {};
-
-            const res = await connect.post("/dash/reposicoes", filterData)
-            const hist = res.data.historico
-
-            // const res = MOCK["res"]
-            // const hist = MOCK["hist"]
-
-            const total = hist.length
-            const dias = [...new Set(hist.map(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" })))].sort((a, b) => a - b)
-            const totalMulta = hist.reduce((acc, item) => acc + item.multa, 0)
-
-            const contratos = hist.reduce((acc, { local }) => {
-                acc[local] = (acc[local] || 0) + 1;
-                return acc;
-            }, {});
-
-            const betters = Object.entries(contratos)
-                .sort(([, a], [, b]) => b - a)
-                .slice(0, 3);
-
-            const locaisLabels = betters.map(([local]) => local.replace(/\d+/g, '').split("-")[1]);
-            const locaisValues = betters.map(([, quantidade]) => quantidade);
-
-            const dptos = hist.reduce((acc, { dpto, reserva }) => {
-                acc[dpto] ??= {
-                    cobertas: 0,
-                    descobertas: 0
-                };
-
-                if (reserva === "SEM COBERTURA") {
-                    acc[dpto].descobertas++;
-                } else {
-                    acc[dpto].cobertas++;
+                    init: new Date(filter[0]).toLocaleDateString("pt-BR"),
+                    end: new Date(filter[1]).toLocaleDateString("pt-BR")
                 }
+                : {};
 
-                return acc;
-            }, {});
+            const res = await connect.post("/dash/reposicoes", filterData);
 
-            setDepartamento(Object.entries(dptos))
-            setRealizadas(total)
-            setRequisicoes(res.data.abertas)
-            setTotalDeMultas(totalMulta)
+            setHistOriginal(res.data.historico);
+            setAbertas(res.data.abertas);
+        }; getData();
+    }, [refresh]);
 
-            setLocalComMaisFaltas(locaisLabels[0])
-            setValorDoLocalComMaisFaltas(
-                Math.round(
-                    locaisValues[0] / total * 100
-                ) || 0
+    // Use Effect para os filtros
+    useEffect(() => {
+        if (!hist.length) return;
+
+        const getStatus = (item) => {
+            if (item.reserva === "SEM COBERTURA") return "descoberta";
+            return "coberta";
+        };
+
+        const cobertos = hist.filter(item => getStatus(item) === "coberta").length;
+        const descobertos = hist.filter(item => getStatus(item) === "descoberta").length;
+
+        const total = hist.length;
+
+        const dias = [...new Set(
+            hist.map(item =>
+                new Date(item.created_at).toLocaleDateString("pt-BR", { day: "2-digit" })
             )
+        )].sort((a, b) => a - b);
 
-            setlabelLocal(locaisLabels)
-            setDadosLocais(locaisValues);
+        const totalMulta = hist.reduce((acc, item) => acc + item.multa, 0);
 
-            setLabelReposicoes(dias)
-            setDadosAusentes(dias.map(d => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) === d).map(i => i.ausente))].length))
-            setDadosReposicoes(dias.map(day => [...new Set(hist.filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) == day).map(i => i.reserva))].length))
-            setlabelForMult(dias)
-            setPostosCobertos(hist.filter(item => item.reserva != "SEM COBERTURA").length)
-            setPostoDescobertos(hist.filter(item => item.reserva == "SEM COBERTURA").length)
+        // Contratos
+        const contratos = hist.reduce((acc, { local }) => {
+            acc[local] = (acc[local] || 0) + 1;
+            return acc;
+        }, {});
 
-            setDadosTabela(hist)
+        const betters = Object.entries(contratos)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 3);
 
-            setdataForMult(dias.map(d =>
+        const locaisLabels = betters.map(([local]) =>
+            local.replace(/\d+/g, "").split("-")[1]
+        );
+
+        const locaisValues = betters.map(([, quantidade]) => quantidade);
+
+        // Departamentos
+        const dptos = hist.reduce((acc, { dpto, ...item }) => {
+            acc[dpto] ??= {
+                cobertas: 0,
+                descobertas: 0
+            };
+
+            acc[dpto][
+                getStatus(item) === "coberta"
+                    ? "cobertas"
+                    : "descobertas"
+            ]++;
+
+            return acc;
+        }, {});
+
+        setDepartamentos(Object.entries(dptos));
+
+
+        // Cards
+        setRealizadas(total);
+        setAbertas(abertas);
+        setTotalDeMultas(totalMulta);
+
+        setLocalComMaisFaltas(locaisLabels[0]);
+
+        setPostosCobertos(cobertos);
+        setPostoDescobertos(descobertos);
+
+        setValorDoLocalComMaisFaltas(
+            Math.round((locaisValues[0] / total) * 100) || 0
+        );
+
+
+        // Chart Locais
+        setlabelLocal(locaisLabels);
+        setDadosLocais(locaisValues);
+
+
+        // Chart Reposições
+        setLabels(dias);
+
+        setDadosAusentes(
+            dias.map(day =>
+                hist.filter(item =>
+                    new Date(item.created_at).toLocaleDateString("pt-BR", { day: "2-digit" }) === day
+                ).length
+            )
+        );
+
+        setDadosReposicoes(
+            dias.map(day =>
+                hist.filter(item =>
+                    new Date(item.created_at).toLocaleDateString("pt-BR", { day: "2-digit" }) === day &&
+                    getStatus(item) === "coberta"
+                ).length
+            )
+        );
+
+
+        // Tabela
+        setDadosTabela(hist);
+
+
+        // Chart Multas
+        setlabelForMult(dias);
+
+        setdataForMult(
+            dias.map(day =>
                 hist
-                    .filter(item => new Date(item.created_at).toLocaleDateString("pt-BR", { "day": "2-digit" }) === d)
+                    .filter(item =>
+                        new Date(item.created_at).toLocaleDateString("pt-BR", { day: "2-digit" }) === day
+                    )
                     .reduce((soma, item) => soma + (Number(item.multa) || 0), 0)
-            ))
+            )
+        );
 
-            setMeterGroupValues([
-                {
-                    label: 'Total',
-                    color: '#1709d9',
-                    value: Math.round(total / total * 100)
-                },
-                {
-                    label: 'Postos Cobertos',
-                    color: '#22c55e',
-                    value: Math.round(postosCobertos / total * 100)
-                },
-                {
-                    label: 'Descobertos ',
-                    color: '#ef4444',
-                    value: Math.round(postosDescobertos / total * 100)
-                },
-                {
-                    label: 'Pendentes',
-                    color: '#a7da10',
-                    value: Math.round(requisicoes / total * 100)
-                },
-            ]);
+        // Meter Group
+        setMeterGroupValues([
+            {
+                label: "Postos Cobertos",
+                color: "#22c55e",
+                value: Math.round(cobertos / total * 100)
+            },
+            {
+                label: "Descobertos",
+                color: "#ef4444",
+                value: Math.round(descobertos / total * 100)
+            },
+            {
+                label: "Pendentes",
+                color: "#f3eb09",
+                value: Math.round(abertas / total * 100)
+            }
+        ]);
 
-        }; get_data();
-    }, [refresh])
+    }, [hist, abertas]);
 
-    const testeOptions = {
+    const optionsDptos = {
         cutout: '60%',
         plugins: {
             legend: false
@@ -239,12 +402,21 @@ export function RequestReport() {
             label: 'Reposições',
             borderWidth: 2,
             borderColor: rootStyle.getPropertyValue("--blue-700").trim(),
-            fill: false,
-            data: dadosReposicoes
+            pointBackgroundColor: rootStyle.getPropertyValue("--blue-700").trim(),
+            data: dadosReposicoes,
+            borderWidth: 3,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointBorderWidth: 2,
         }, {
             type: 'bar',
+            borderRadius: 10,
+            borderSkipped: false,
             label: 'Ausências',
-            backgroundColor: rootStyle.getPropertyValue("--green-500").trim(),
+            maxBarThickness: 40,
+            categoryPercentage: 0.6,
+            barPercentage: 0.7,
+            backgroundColor: 'rgba(53, 141, 26, 0.6)',
             data: dadosAusentes,
             borderColor: 'white',
             borderWidth: 2
@@ -257,7 +429,7 @@ export function RequestReport() {
             type: "line",
             tension: 0.4,
             fill: true,
-            backgroundColor: 'rgba(53, 141, 26, 0.6)',
+            backgroundColor: 'rgba(241, 67, 67, 0.42)',
             label: "Multa por dia.",
             data: dataForMult
         }]
@@ -310,7 +482,18 @@ export function RequestReport() {
         }
     ]
 
-    const knobColor = valorDoLocalComMaisFaltas >= totalOfReplaces ? "var(--red-600)" : "var(--green-600)"
+    const cores = [
+        ['rgba(76, 175, 80, 0.75)', 'rgba(244, 67, 54, 0.75)'],
+        ['rgba(67, 160, 71, 0.75)', 'rgba(229, 57, 53, 0.75)'],
+        ['rgba(56, 142, 60, 0.75)', 'rgba(211, 47, 47, 0.75)'],
+        ['rgba(102, 187, 106, 0.75)', 'rgba(239, 83, 80, 0.75)'],
+        ['rgba(46, 125, 50, 0.75)', 'rgba(198, 40, 40, 0.75)'],
+        ['rgba(129, 199, 132, 0.75)', 'rgba(229, 115, 115, 0.75)'],
+        ['rgba(27, 94, 32, 0.75)', 'rgba(183, 28, 28, 0.75)'],
+        ['rgba(165, 214, 167, 0.75)', 'rgba(255, 138, 128, 0.75)'],
+        ['rgba(104, 159, 56, 0.75)', 'rgba(230, 74, 25, 0.75)'],
+        ['rgba(85, 139, 47, 0.75)', 'rgba(216, 67, 21, 0.75)']
+    ];
 
     return (
         <main className="flex flex-column p-2 gap-2">
@@ -336,14 +519,14 @@ export function RequestReport() {
                             height: "5rem",
                             color: "#fff",
                         }}
-                        value={requisicoes}
+                        value={abertas}
                     />
                     <DashCard
                         icon="pi pi-calendar "
                         title="Cobertas"
                         className="border-round-lg text-truncate flex-grow-1"
                         style={{
-                            backgroundColor: 'var(--blue-800)',
+                            backgroundColor: 'var(--green-800)',
                             height: "5rem",
                             color: "#fff",
                         }}
@@ -354,7 +537,7 @@ export function RequestReport() {
                         title="Descobertas"
                         className="border-round-lg text-truncate flex-grow-1"
                         style={{
-                            backgroundColor: 'var(--red-700)',
+                            backgroundColor: 'var(--green-400)',
                             height: "5rem",
                             color: "#fff",
                         }}
@@ -365,7 +548,7 @@ export function RequestReport() {
                         title="Total de Multa"
                         className="border-round-lg text-truncate flex-grow-1"
                         style={{
-                            backgroundColor: 'var(--red-900)',
+                            backgroundColor: 'var(--gray-500)',
                             height: "5rem",
                             color: "#fff",
                         }}
@@ -379,7 +562,7 @@ export function RequestReport() {
                             valueTemplate="{value}%"
                             min={0}
                             max={100}
-                            valueColor={knobColor}
+                            valueColor={valorDoLocalComMaisFaltas >= totalOfReplaces ? "var(--red-600)" : "var(--green-600)"}
                             size={70}
                         />
                         <div className="flex flex-column flex-grow-1 justify-content-between">
@@ -389,15 +572,109 @@ export function RequestReport() {
                     </div>
                 </div>
 
-                <Calendar
-                    locale="pt-BR"
-                    value={filter}
-                    placeholder="Selecione um período."
-                    dateFormat="dd/mm/yy"
-                    onChange={(e) => { setFilter(e.value); setRefresh(prev => !prev) }}
-                    selectionMode="range"
-                    readOnlyInput
-                    showButtonBar
+                <OverlayPanel ref={op_filters} className="p-3 flex flex-column w-25rem">
+                    <span className="inter mb-5 font-bold">Filtre os dados do Dashboard.</span>
+
+                    <Divider className="my-5"></Divider>
+
+                    <FloatLabel className="w-full mb-4">
+                        <Calendar
+                            locale="pt-BR"
+                            value={filter}
+                            placeholder="Selecione um período."
+                            dateFormat="dd/mm/yy"
+                            onChange={(e) => { setFilter(e.value); setRefresh(prev => !prev) }}
+                            selectionMode="range"
+                            readOnlyInput
+                            // showButtonBar
+                            className="w-full"
+                        />
+                        <label htmlFor="">Selecione um periodo</label>
+                    </FloatLabel>
+
+                    <FloatLabel className="w-full mb-4">
+                        <Dropdown
+                            filter
+                            appendTo="self"
+                            className="w-full"
+                            panelClassName="w-full"
+                            value={filters.contrato}
+                            options={contratosOptions}
+                            onChange={(e) =>
+                                setFilters(prev => ({
+                                    ...prev,
+                                    contrato: e.value
+                                }))
+                            }
+                        />
+                        <label htmlFor="">Contratos: </label>
+                    </FloatLabel>
+
+                    <FloatLabel className="w-full mb-4">
+                        <Dropdown
+                            className="w-full"
+                            value={filters.departamento}
+                            options={dptoOptions}
+                            onChange={(e) =>
+                                setFilters(prev => ({
+                                    ...prev,
+                                    departamento: e.value
+                                }))
+                            }
+                        />
+                        <label htmlFor="">Departamentos: </label>
+                    </FloatLabel>
+
+                    <FloatLabel className="w-full mb-4">
+                        <Dropdown
+                            options={motivoOptions}
+                            value={filters.motivo}
+                            className="w-full"
+                            onChange={(e) =>
+                                setFilters(prev => ({
+                                    ...prev,
+                                    motivo: e.value
+                                }))
+                            }
+                        />
+                        <label htmlFor="">Motivos: </label>
+                    </FloatLabel>
+
+                    <FloatLabel className="w-full mb-4">
+                        <Dropdown
+                            options={supervisorOptions}
+                            value={filters.supervisor}
+                            className="w-full"
+                            onChange={(e) =>
+                                setFilters(prev => ({
+                                    ...prev,
+                                    supervisor: e.value
+                                }))
+                            }
+                        />
+                        <label htmlFor="">Supervisores: </label>
+                    </FloatLabel>
+
+                    <Divider className="mt-4" />
+                    <Button 
+                        className="font-bold w-full border-none"
+                        icon="pi pi-filter-slash"
+                        label="Limpar Filtros"
+                        onClick={clearFilters}
+                    />
+                </OverlayPanel>
+
+                <Button
+                    icon="pi pi-filter-fill"
+                    className="border-round-lg shadow-6"
+                    onClick={(e) => op_filters.current.toggle(e)}
+                    style={{
+                        background: "ghostwhite",
+                        border: "1px solid ghostwhite",
+                        color: "#3a3535",
+                        width: '65px',
+                        height: '65px',
+                    }}
                 />
             </div>
 
@@ -406,19 +683,41 @@ export function RequestReport() {
                     {/* CHARTS FRAME */}
                     <div className="flex flex-grow-1 gap-4 max-h-15rem">
                         <div className="border-round-lg p-3 gap-2 flex flex-column justify-content-center align-items-center shadow-6 flex-grow-1">
-                            <Chart
-                                data={dataRepos}
+                            <Chart data={dataRepos}
                                 options={{
                                     aspectRatio: 2.5,
                                     responsive: true,
-                                    maintainAspectRatio: false
+                                    maintainAspectRatio: false,
+                                    y: {
+                                        beginAtZero: true,
+                                    },
+                                    plugins: {
+                                        legend: {
+                                            labels: {
+                                                usePointStyle: true,
+                                                pointStyle: 'rectRounded',
+                                                padding: 20
+                                            }
+                                        },
+                                        tooltip: {
+                                            mode: 'index',
+                                            intersect: false,
+                                            callbacks: {
+                                                title(items) {
+                                                    return `Dia ${items[0].label}`;
+                                                },
+                                                label(context) {
+                                                    return `${context.dataset.label}: ${context.raw}`;
+                                                }
+                                            }
+                                        }
+                                    }
                                 }}
                                 className="flex align-items-center justify-content-center w-30rem h-full"
                             />
                         </div>
                         <div className="border-round-lg p-4 flex flex-column justify-content-center align-items-center shadow-6 flex-grow-1">
-                            <Chart
-                                data={dataMults}
+                            <Chart data={dataMults}
                                 className="w-full h-full"
                                 options={{
                                     aspectRatio: 2.5,
@@ -444,49 +743,37 @@ export function RequestReport() {
                 </div>
 
                 {/* STATUS CARD */}
-                <div className="flex flex-column p-4 flex-grow-1 border-round-lg shadow-6" style={{ minWidth: "20rem" }}>
-                    <span className="font-bold mb-4">Status  de Reposições:</span>
-                    <MeterGroup
-                        className="h-full"
-                        values={meterGroupValues}
-                        orientation="vertical"
-                        labelOrientation="vertical"
-                    />
-                    <Divider className="my-4" />
-                    <TabView>
-                        <TabPanel header="Departamento">
-                            <div className="flex flex-wrap justify-content-between align-items-center gap-2 p-2" style={{ minHeight: "10rem" }}>
-                                {departamentos.map(item => {
-                                    const testeData = {
-                                        labels: ['Cobertas', 'Descobertas'],
-                                        datasets: [
-                                            {
-                                                data: [item[1]["cobertas"], item[1]["descobertas"]],
-                                                backgroundColor: [
-                                                    rootStyle.getPropertyValue('--green-500'),
-                                                    rootStyle.getPropertyValue('--green-800'),
-                                                ],
-                                                hoverBackgroundColor: [
-                                                    rootStyle.getPropertyValue('--green-400'),
-                                                    rootStyle.getPropertyValue('--green-700'),
-                                                ]
-                                            }
-                                        ]
-                                    };
+                <div className="flex flex-column p-4 flex-grow-1 border-round-lg shadow-6 overflow-y-auto" style={{ width: "25rem", maxHeight: "72dvh" }}>
+                    <TabView className="h-full">
+                        <TabPanel header="Departamentos">
+                            <div className="flex flex-column h-full">
+                                <div className="flex flex-wrap justify-content-between align-items-center gap-2 p-2" style={{ minHeight: "9rem" }}>
+                                    {departamentos.map((item, index) => {
+                                        const [cor1, cor2] = cores[index % cores.length];
+                                        const testeData = {
+                                            labels: ['Cobertas', 'Descobertas'],
+                                            datasets: [
+                                                {
+                                                    data: [item[1]["cobertas"], item[1]["descobertas"]],
+                                                    backgroundColor: [cor1, cor2]
+                                                }
+                                            ]
+                                        };
 
-                                    return (
-                                        <div key={item} className="flex flex-column flex-grow-1 justify-content-center align-items-center text-center shadow-6 border-round-lg" style={{ maxWidth: "100px" }}>
-                                            <Chart type="doughnut" data={testeData} options={testeOptions} style={{
-                                                width: '80px',
-                                            }} />
-                                            <span className="font-bold inter"> Dpto. {item[0]}</span>
-                                        </div>
-                                    )
-                                })
-                                }
+                                        return (
+                                            <div key={item} className="flex flex-column flex-grow-1 justify-content-center align-items-center text-center shadow-6 border-round-lg" style={{ flexBasis: "100px" }}>
+                                                <Chart className="flex-grow-1" type="doughnut" data={testeData} options={optionsDptos} style={{
+                                                    width: '100px',
+                                                }} />
+                                                <span className="font-bold inter"> Dpto. {item[0]}</span>
+                                            </div>
+                                        )
+                                    })
+                                    }
+                                </div>
                             </div>
                         </TabPanel>
-                        <TabPanel header="Contrato">
+                        <TabPanel header="Contratos">
                             <Chart
                                 className="h-full"
                                 data={dataLocals}
@@ -533,6 +820,14 @@ export function RequestReport() {
                             />
                         </TabPanel>
                     </TabView>
+                    <Divider />
+                    <span className="font-bold mb-2">Status:</span>
+                    <MeterGroup
+                        className="h-full"
+                        values={meterGroupValues}
+                        orientation="vertical"
+                        labelOrientation="vertical"
+                    />
                 </div>
             </div>
         </main>
