@@ -68,8 +68,7 @@ export function Floaters() {
             await connect.post("/reservas", {id:id})
             showToast("success", "Sucesso com o reservista", `${get_first_name(nome)}, movido com sucesso para Reservas Técnicas (Voltantes)`)
             setRefresh(prev => !prev)
-            
-        }catch(errr){ cos showToast("error", "Erro ao solicitar reservista", err.response.data)
+        }catch(err){ console.warn(err); showToast("error", "Erro ao solicitar reservista", err.response.data)
         }finally{ setLoading(false) }
     }
     
@@ -80,7 +79,7 @@ export function Floaters() {
             showToast("success", "Sucesso", `${get_first_name(nome)}, removido com sucesso.`)
             setRefresh(prev => !prev)
 
-        }catch(err){ showToast("error", "Erro ao solicitar exclusão", err.response.data)
+        }catch(err){ console.warn(err); showToast("error", "Erro ao solicitar exclusão", err.response.data)
         }finally{ setLoading(false) }
     }
     
@@ -112,6 +111,7 @@ export function Floaters() {
                                 style={{
                                     background: "ghostwhite",
                                     color: "#333",
+                                    maxHeight: '80px'
                                 }}
                             >
                                 <div className="flex flex-column gap-2">
@@ -182,7 +182,7 @@ export function Floaters() {
                                 <Button
                                     icon="pi pi-trash"
                                     severity="danger"
-                                    onClick={()=>{delReserva(reserva.floater_id, reserva.nome)}}
+                                    onClick={() => delReserva(reserva.floater_id, reserva.nome)}
                                 />
                             </div>
                         )

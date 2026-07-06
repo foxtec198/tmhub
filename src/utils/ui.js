@@ -10,9 +10,8 @@ export function capitalize(text){
     return first_letter + text.toLowerCase().slice(1, text.length)
 }
 
-export function get_first_name(name, cap=True){
-    const first = nome.toString().split(" ")[0]
-    console.log(first)
+export function get_first_name(name, cap=true){
+    const first = name.toString().split(" ")[0]
     return cap
         ? capitalize(first)
         : first
