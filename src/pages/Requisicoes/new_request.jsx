@@ -94,7 +94,7 @@ export function Request() {
             const res = await connect.get("/centro")
             console.log(res)
             const centers = []
-            res.data.map(item => centers.push({ name: item.local, id: item.id }))
+            res.data.map(item => centers.push({ name: `${item.id} - ${item.local} - ${item.departamento}`, id: item.id }))
             setCenterOptions(centers)
         }
 

@@ -10,5 +10,13 @@ export function capitalize(text){
     return first_letter + text.toLowerCase().slice(1, text.length)
 }
 
+export function get_first_name(name, cap=True){
+    const first = nome.toString().split(" ")[0]
+    console.log(first)
+    return cap
+        ? capitalize(first)
+        : first
+}
+
 export const deny_roles = ["User"]
 export const allow_roles = ["Admin"]
