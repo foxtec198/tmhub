@@ -1,149 +1,57 @@
-// CSS
 import './products.css';
 
-// Widgets
 import { InputText } from 'primereact/inputtext';
+import { InputNumber } from 'primereact/inputnumber';
+import { Dropdown } from 'primereact/dropdown';
 import { FloatLabel } from 'primereact/floatlabel';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
+import { Dialog } from 'primereact/dialog';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { Table } from '../../components/tables/Table';
+import { DashCard } from '../../components/Card';
 
-// Utils
 import { useEffect, useMemo, useState } from 'react';
 import connect from '../../utils/request';
 import { useLoading } from '../../contexts/LoadingContext';
 import { useToast } from '../../contexts/ToastContext';
 
 const PRODUCTS_ENDPOINT = '/estoque/produtos';
+const CATEGORIES_ENDPOINT = '/estoque/categorias';
 
-// Dados temporários de teste (mockados) para visualização da lista de produtos.
-const USE_MOCK_DATA = true;
-
-const MOCK_PRODUCTS = [
-    {
-        id: 1,
-        name: 'Camisa Polo Verde',
-        code: 'SKU-1023',
-        category: 'Uniformes',
-        location: '76000 - P.M DE APUCARANA',
-        stock: 42,
-        price: 'R$ 59,90',
-        status: 'ativo',
-    },
-    {
-        id: 2,
-        name: 'Calça Operacional Cinza',
-        code: 'SKU-1044',
-        category: 'Uniformes',
-        location: '87041 - ED. LONDRINA',
-        stock: 3,
-        price: 'R$ 89,90',
-        status: 'baixo-estoque',
-    },
-    {
-        id: 3,
-        name: 'Colete Refletivo',
-        code: 'SKU-1102',
-        category: 'EPI',
-        location: '76000 - P.M DE APUCARANA',
-        stock: 0,
-        price: 'R$ 34,50',
-        status: 'esgotado',
-    },
-];
-//-------------------------------------------------------------------------------------
-
-const STATUS_TAG_MAP = {
-    ativo: { label: 'Ativo', severity: 'success' },
-    'baixo-estoque': { label: 'Baixo Estoque', severity: 'warning' },
+const statusMap = {
+    normal: { label: 'Normal', severity: 'success' },
+    baixo: { label: 'Baixo Estoque', severity: 'warning' },
     esgotado: { label: 'Esgotado', severity: 'danger' },
-    inativo: { label: 'Inativo', severity: null },
 };
 
-function StatusTag({ status }) {
-    const config = STATUS_TAG_MAP[status] ?? STATUS_TAG_MAP.inativo;
-    return <Tag value={config.label} severity={config.severity} rounded />;
+function statusOf(product) {
+    if (!product.quantidade) return 'esgotado';
+    if (product.quantidade <= product.quantidade_minima) return 'baixo';
+    return 'normal';
 }
 
-function ProductItem({ product, onEdit, onDelete }) {
-    const initials = (product.name ?? '')
-        .split(' ')
-        .slice(0, 2)
-        .map((word) => word[0])
-        .join('')
-        .toUpperCase();
-
-    const unitPrice = parseFloat(
-        String(product.price ?? '0')
-            .replace(/[^\d,.-]/g, '')
-            .replace(',', '.')
-    ) || 0;
-
-    const total = unitPrice * (product.stock ?? 0);
-
-    const totalFormatted = total.toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'BRL',
-    });
-
-    return (
-        <li className="product-item">
-            <div className="product-thumb">{initials}</div>
-
-            <div className="product-info">
-                <span className="product-name">{product.name}</span>
-                <div className="product-meta">
-                    <span>{product.code}</span>
-                    <span>{product.category}</span>
-                    <span>{product.location}</span>
-                </div>
-            </div>
-
-            <div className="product-col">
-                <span className="label">Estoque</span>
-                <span className="value">{product.stock}</span>
-            </div>
-
-            <div className="product-col">
-                <span className="label">Preço</span>
-                <span className="value">{product.price}</span>
-            </div>
-
-            <div className="product-col">
-                <span className="label">Total</span>
-                <span className="value">{totalFormatted}</span>
-            </div>
-
-            <div className="product-col">
-                <span className="label">Status</span>
-                <StatusTag status={product.status} />
-            </div>
-
-            <div className="product-actions">
-                <Button
-                    icon="pi pi-pencil"
-                    className="action-btn edit"
-                    rounded
-                    text
-                    onClick={() => onEdit(product)}
-                    tooltip="Editar produto"
-                />
-                <Button
-                    icon="pi pi-trash"
-                    className="action-btn delete"
-                    rounded
-                    text
-                    onClick={() => onDelete(product)}
-                    tooltip="Excluir produto"
-                />
-            </div>
-        </li>
-    );
-}
+const emptyForm = {
+    id: null,
+    nome: '',
+    categoria_id: null,
+    unidade: '',
+    quantidade: 0,
+    quantidade_minima: 0,
+    local_estoque: '',
+};
 
 export function Products() {
     const [products, setProducts] = useState([]);
-    const [search, setSearch] = useState('');
+    const [categories, setCategories] = useState([]);
     const [refresh, setRefresh] = useState(false);
+
+    const [dialogVisible, setDialogVisible] = useState(false);
+    const [form, setForm] = useState(emptyForm);
+    const isEditing = !!form.id;
+
+    const [catDialogVisible, setCatDialogVisible] = useState(false);
+    const [newCategory, setNewCategory] = useState({ nome: '', descricao: '' });
 
     const setLoading = useLoading();
     const { showToast } = useToast();
@@ -155,11 +63,8 @@ export function Products() {
                 const res = await connect.get(PRODUCTS_ENDPOINT);
                 setProducts(res.data ?? []);
             } catch (err) {
-                if (USE_MOCK_DATA) {
-                    // Fallback só pra teste visual, enquanto a API não existe.
-                    setProducts(MOCK_PRODUCTS);
-                }
-                // showToast('error', 'Erro!', 'Não foi possível carregar os produtos.');
+                console.warn(err);
+                showToast('error', 'Erro!', 'Não foi possível carregar os produtos.');
             } finally {
                 setLoading(false);
             }
@@ -167,86 +72,263 @@ export function Products() {
         getProducts();
     }, [refresh]);
 
-    const filteredProducts = useMemo(() => {
-        const query = search.trim().toLowerCase();
-        if (!query) return products;
+    useEffect(() => {
+        async function getCategories() {
+            try {
+                const res = await connect.get(CATEGORIES_ENDPOINT);
+                setCategories(res.data ?? []);
+            } catch (err) {
+                console.warn(err);
+            }
+        }
+        getCategories();
+    }, [refresh]);
 
-        return products.filter((product) =>
-            [product.name, product.code, product.category, product.location]
-                .join(' ')
-                .toLowerCase()
-                .includes(query)
-        );
-    }, [products, search]);
+    const categoryName = (id) => categories.find((c) => c.id === id)?.nome ?? '-';
 
-    // TODO: abrir modal/rota de cadastro de produto
-    const handleAddProduct = () => {
-        console.log('Adicionar novo produto');
+    const totals = useMemo(() => ({
+        total: products.length,
+        baixo: products.filter((p) => statusOf(p) === 'baixo').length,
+        esgotado: products.filter((p) => statusOf(p) === 'esgotado').length,
+    }), [products]);
+
+    const openCreate = () => {
+        setForm(emptyForm);
+        setDialogVisible(true);
     };
 
-    // TODO: abrir modal/rota de edição com os dados do produto
-    const handleEditProduct = (product) => {
-        console.log('Editar produto', product);
+    const openEdit = (product) => {
+        setForm({ ...product });
+        setDialogVisible(true);
+    };
+
+    const handleSave = async () => {
+        if (!form.nome || !form.categoria_id || !form.unidade) {
+            showToast('warn', 'Atenção!', 'Preencha nome, categoria e unidade.');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            if (isEditing) {
+                await connect.patch(PRODUCTS_ENDPOINT, form);
+                showToast('success', 'Sucesso!', 'Produto atualizado com sucesso.');
+            } else {
+                const { id, ...payload } = form;
+                await connect.post(PRODUCTS_ENDPOINT, payload);
+                showToast('success', 'Sucesso!', 'Produto criado com sucesso.');
+            }
+            setDialogVisible(false);
+            setRefresh((prev) => !prev);
+        } catch (err) {
+            console.warn(err);
+            showToast('error', 'Erro!', err.response?.data ?? 'Não foi possível salvar o produto.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleDeleteProduct = async (product) => {
         setLoading(true);
         try {
-            await connect.delete(`${PRODUCTS_ENDPOINT}/${product.id}`);
+            await connect.delete(PRODUCTS_ENDPOINT, { params: { id: product.id } });
             showToast('success', 'Sucesso!', 'Produto excluído com sucesso.');
             setRefresh((prev) => !prev);
         } catch (err) {
+            console.warn(err);
             showToast('error', 'Erro!', 'Não foi possível excluir o produto.');
         } finally {
             setLoading(false);
         }
     };
 
+    const confirmDelete = (product) => {
+        confirmDialog({
+            message: `Deseja realmente excluir "${product.nome}"?`,
+            header: 'Confirmar exclusão',
+            icon: 'pi pi-exclamation-triangle',
+            acceptClassName: 'p-button-danger',
+            acceptLabel: 'Excluir',
+            rejectLabel: 'Cancelar',
+            accept: () => handleDeleteProduct(product),
+        });
+    };
+
+    const handleAddCategory = async () => {
+        if (!newCategory.nome) {
+            showToast('warn', 'Atenção!', 'Informe o nome da categoria.');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await connect.post(CATEGORIES_ENDPOINT, newCategory);
+            showToast('success', 'Sucesso!', 'Categoria criada com sucesso.');
+            setNewCategory({ nome: '', descricao: '' });
+            setRefresh((prev) => !prev);
+        } catch (err) {
+            console.warn(err);
+            showToast('error', 'Erro!', 'Não foi possível criar a categoria.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeleteCategory = async (category) => {
+        setLoading(true);
+        try {
+            await connect.delete(CATEGORIES_ENDPOINT, { params: { id: category.id } });
+            showToast('success', 'Sucesso!', 'Categoria removida com sucesso.');
+            setRefresh((prev) => !prev);
+        } catch (err) {
+            console.warn(err);
+            showToast('error', 'Erro!', 'Não foi possível remover a categoria.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const table_itens = useMemo(() => ([
+        { field: 'nome', header: 'Produto', class: 'text-truncate' },
+        {
+            header: 'Categoria',
+            body: (row) => categoryName(row.categoria_id),
+        },
+        { field: 'local_estoque', header: 'Local', class: 'text-truncate' },
+        { field: 'quantidade', header: 'Estoque' },
+        {
+            header: 'Status',
+            body: (row) => {
+                const status = statusMap[statusOf(row)];
+                return <Tag value={status.label} severity={status.severity} rounded />;
+            },
+        },
+        {
+            header: 'Ações',
+            body: (row) => (
+                <div className="flex gap-2">
+                    <Button icon="pi pi-pencil" rounded text onClick={() => openEdit(row)} tooltip="Editar" />
+                    <Button icon="pi pi-trash" rounded text severity="danger" onClick={() => confirmDelete(row)} tooltip="Excluir" />
+                </div>
+            ),
+        },
+    ]), [categories]);
+
     return (
         <main className="flex flex-column gap-3 products-page">
+            <ConfirmDialog />
+
             <header className="products-header">
                 <h2 className="products-title">Produtos</h2>
-                <Button
-                    icon="pi pi-plus"
-                    size="large"
-                    className="p-4"
-                    rounded
-                    onClick={handleAddProduct}
-                    style={{
-                        position: 'absolute',
-                        right: '20px',
-                        bottom: '20px',
-                    }}
-                />
+                <Button icon="pi pi-tags" label="Categorias" outlined onClick={() => setCatDialogVisible(true)} />
             </header>
 
-            <div className="products-toolbar">
-                <FloatLabel>
-                    <InputText
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                    <label htmlFor="">Buscar...</label>
-                </FloatLabel>
+            <div className="flex gap-2 align-items-center">
+                <DashCard
+                    title="Total"
+                    className="border-round-lg p-1 spaceg"
+                    style={{ background: 'var(--primary-color)', color: '#fff' }}
+                    value={totals.total}
+                />
+                <DashCard
+                    title="Estoque Baixo"
+                    className="border-round-lg p-1 spaceg"
+                    style={{ background: 'var(--warning)', color: '#fff' }}
+                    value={totals.baixo}
+                />
+                <DashCard
+                    title="Esgotados"
+                    className="border-round-lg p-1 spaceg"
+                    style={{ background: 'var(--danger)', color: '#fff' }}
+                    value={totals.esgotado}
+                />
             </div>
 
-            {filteredProducts.length > 0 ? (
-                <ul className="products-list">
-                    {filteredProducts.map((product) => (
-                        <ProductItem
-                            key={product.id}
-                            product={product}
-                            onEdit={handleEditProduct}
-                            onDelete={handleDeleteProduct}
+            <div className="flex flex-column overflow-auto h-full">
+                <Table
+                    data={products}
+                    tableClassName="w-full h-full"
+                    style={{ width: '100%', height: '100dvh' }}
+                    columns={table_itens}
+                />
+            </div>
+
+            <Button
+                icon="pi pi-plus"
+                size="large"
+                className="p-4"
+                rounded
+                onClick={openCreate}
+                style={{ position: 'absolute', right: '20px', bottom: '20px' }}
+            />
+
+            <Dialog header={isEditing ? 'Editar Produto' : 'Novo Produto'} visible={dialogVisible} style={{ width: '30rem' }} onHide={() => setDialogVisible(false)}>
+                <div className="flex flex-column gap-4 pt-3">
+                    <FloatLabel>
+                        <InputText id="nome" className="w-full" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
+                        <label htmlFor="nome">Nome do produto</label>
+                    </FloatLabel>
+
+                    <FloatLabel>
+                        <Dropdown
+                            id="categoria"
+                            className="w-full"
+                            value={form.categoria_id}
+                            onChange={(e) => setForm({ ...form, categoria_id: e.value })}
+                            options={categories}
+                            optionLabel="nome"
+                            optionValue="id"
                         />
-                    ))}
-                </ul>
-            ) : (
-                <div className="products-empty">
-                    <strong>Nenhum produto encontrado</strong>
-                    Tente ajustar sua busca ou cadastre um novo produto.
+                        <label htmlFor="categoria">Categoria</label>
+                    </FloatLabel>
+
+                    <FloatLabel>
+                        <InputText id="unidade" className="w-full" value={form.unidade} onChange={(e) => setForm({ ...form, unidade: e.target.value })} />
+                        <label htmlFor="unidade">Unidade (ex: UN, CX, KG)</label>
+                    </FloatLabel>
+
+                    <div className="flex gap-3">
+                        <div className="w-full">
+                            <FloatLabel>
+                                <InputNumber id="quantidade" className="w-full" value={form.quantidade} onValueChange={(e) => setForm({ ...form, quantidade: e.value ?? 0 })} min={0} />
+                                <label htmlFor="quantidade">Quantidade</label>
+                            </FloatLabel>
+                        </div>
+
+                        <div className="w-full">
+                            <FloatLabel>
+                                <InputNumber id="minima" className="w-full" value={form.quantidade_minima} onValueChange={(e) => setForm({ ...form, quantidade_minima: e.value ?? 0 })} min={0} />
+                                <label htmlFor="minima">Estoque mínimo</label>
+                            </FloatLabel>
+                        </div>
+                    </div>
+
+                    <FloatLabel>
+                        <InputText id="local" className="w-full" value={form.local_estoque} onChange={(e) => setForm({ ...form, local_estoque: e.target.value })} />
+                        <label htmlFor="local">Local do estoque</label>
+                    </FloatLabel>
+
+                    <Button label={isEditing ? 'Salvar alterações' : 'Cadastrar produto'} icon="pi pi-check" onClick={handleSave} />
                 </div>
-            )}
+            </Dialog>
+
+            <Dialog header="Categorias" visible={catDialogVisible} style={{ width: '28rem' }} onHide={() => setCatDialogVisible(false)}>
+                <div className="flex flex-column gap-3">
+                    <div className="flex gap-2">
+                        <InputText className="w-full" placeholder="Nome da categoria" value={newCategory.nome} onChange={(e) => setNewCategory({ ...newCategory, nome: e.target.value })} />
+                        <Button icon="pi pi-plus" onClick={handleAddCategory} />
+                    </div>
+
+                    <ul className="category-list">
+                        {categories.map((category) => (
+                            <li key={category.id} className="category-item">
+                                <span>{category.nome}</span>
+                                <Button icon="pi pi-trash" text rounded severity="danger" onClick={() => handleDeleteCategory(category)} />
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </Dialog>
         </main>
     );
 }
