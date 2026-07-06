@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from 'react';
 import connect from '../../utils/request';
 import { useLoading } from '../../contexts/LoadingContext';
 import { useToast } from '../../contexts/ToastContext';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 
 const MOVEMENTS_ENDPOINT = '/estoque/movimentos';
 const PRODUCTS_ENDPOINT = '/estoque/produtos';
@@ -40,6 +41,35 @@ export function Movements() {
 
     const setLoading = useLoading();
     const { showToast } = useToast();
+
+    const role = localStorage.getItem('role');
+    const isAdmin = role === 'ADMIN';
+
+    const handleDeleteMovement = async (movement) => {
+        setLoading(true);
+        try {
+            await connect.delete(`${MOVEMENTS_ENDPOINT}/${movement.id}`);
+            showToast('success', 'Sucesso!', 'Movimentação excluída com sucesso.');
+            setRefresh((prev) => !prev);
+        } catch (err) {
+            console.warn(err);
+            showToast('error', 'Erro!', 'Não foi possível excluir a movimentação.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const confirmDeleteMovement = (movement) => {
+        confirmDialog({
+            message: `Deseja realmente excluir esta movimentação?`,
+            header: 'Confirmar exclusão',
+            icon: 'pi pi-exclamation-triangle',
+            acceptClassName: 'p-button-danger',
+            acceptLabel: 'Excluir',
+            rejectLabel: 'Cancelar',
+            accept: () => handleDeleteMovement(movement),
+        });
+    };
 
     useEffect(() => {
         async function getMovements() {
@@ -79,10 +109,12 @@ export function Movements() {
             body: (row) => new Date(row.data_hora).toLocaleString('pt-br', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
         },
         {
-            field: 'item_id',
+            field: 'produto',
             header: 'Produto',
             class: 'text-truncate',
-            body: (row) => productName(row.item_id),
+            // produto é gravado no momento da movimentação; movimentos antigos (antes dessa
+            // coluna existir) ou de produtos já excluídos caem no lookup pela lista atual
+            body: (row) => row.produto ?? productName(row.item_id),
         },
         {
             header: 'Tipo',
@@ -91,7 +123,13 @@ export function Movements() {
         { field: 'quantidade', header: 'Quantidade' },
         { field: 'observacao', header: 'Observação', class: 'text-truncate' },
         { field: 'origem', header: 'Origem' },
-    ]), [products]);
+        ...(isAdmin ? [{
+            header: 'Ações',
+            body: (row) => (
+                <Button icon="pi pi-trash" rounded text severity="danger" onClick={() => confirmDeleteMovement(row)} tooltip="Excluir" />
+            ),
+        }] : []),
+    ]), [products, isAdmin]);
 
     const openCreate = () => {
         setForm(emptyForm);
@@ -120,10 +158,7 @@ export function Movements() {
 
     return (
         <main className="flex flex-column gap-3 movements-page">
-            <header className="movements-header">
-                <h2 className="movements-title">Movimentações</h2>
-            </header>
-
+            <ConfirmDialog />
             <div className="flex flex-column overflow-auto h-full">
                 <Table data={movements} tableClassName="w-full h-full" style={{ width: '100%', height: '100dvh' }} columns={table_itens} />
             </div>
@@ -138,7 +173,8 @@ export function Movements() {
             />
 
             <Dialog header="Nova Movimentação" visible={dialogVisible} style={{ width: '28rem' }} onHide={() => setDialogVisible(false)}>
-                <div className="flex flex-column gap-4 pt-3">
+                <form className="flex flex-column gap-4 pt-3" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
+                    <SelectButton value={form.tipo} onChange={(e) => e.value && setForm({ ...form, tipo: e.value })} options={tipoOptions} className="tipo-select-button w-full" />
                     <FloatLabel>
                         <Dropdown
                             id="produto"
@@ -153,8 +189,6 @@ export function Movements() {
                         <label htmlFor="produto">Produto</label>
                     </FloatLabel>
 
-                    <SelectButton value={form.tipo} onChange={(e) => e.value && setForm({ ...form, tipo: e.value })} options={tipoOptions} className="w-full flex" />
-
                     <FloatLabel>
                         <InputNumber id="quantidade" className="w-full" value={form.quantidade} onValueChange={(e) => setForm({ ...form, quantidade: e.value ?? 0 })} min={1} />
                         <label htmlFor="quantidade">Quantidade</label>
@@ -165,8 +199,8 @@ export function Movements() {
                         <label htmlFor="observacao">Observação (opcional)</label>
                     </FloatLabel>
 
-                    <Button label="Registrar movimentação" icon="pi pi-check" onClick={handleSave} />
-                </div>
+                    <Button type="submit" label="Registrar movimentação" icon="pi pi-check" />
+                </form>
             </Dialog>
         </main>
     );

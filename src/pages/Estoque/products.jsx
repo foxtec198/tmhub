@@ -41,6 +41,10 @@ const emptyForm = {
     local_estoque: '',
 };
 
+const unityOptions = [
+    { label: 'UN', value: 'UN' },
+];
+
 export function Products() {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -218,31 +222,29 @@ export function Products() {
         <main className="flex flex-column gap-3 products-page">
             <ConfirmDialog />
 
-            <header className="products-header">
-                <h2 className="products-title">Produtos</h2>
-                <Button icon="pi pi-tags" label="Categorias" outlined onClick={() => setCatDialogVisible(true)} />
-            </header>
-
             <div className="flex gap-2 align-items-center">
                 <DashCard
                     title="Total"
-                    className="border-round-lg p-1 spaceg"
+                    className="border-round-lg p-1 spaceg flex-grow-1"
                     style={{ background: 'var(--primary-color)', color: '#fff' }}
                     value={totals.total}
                 />
                 <DashCard
                     title="Estoque Baixo"
-                    className="border-round-lg p-1 spaceg"
+                    className="border-round-lg p-1 spaceg flex-grow-1"
                     style={{ background: 'var(--warning)', color: '#fff' }}
                     value={totals.baixo}
                 />
                 <DashCard
                     title="Esgotados"
-                    className="border-round-lg p-1 spaceg"
+                    className="border-round-lg p-1 spaceg flex-grow-1"
                     style={{ background: 'var(--danger)', color: '#fff' }}
                     value={totals.esgotado}
                 />
             </div>
+                <div className="flex justify-content-end">
+                    <Button icon="pi pi-tags" label="Categorias" outlined onClick={() => setCatDialogVisible(true)} />
+                </div>
 
             <div className="flex flex-column overflow-auto h-full">
                 <Table
@@ -263,7 +265,7 @@ export function Products() {
             />
 
             <Dialog header={isEditing ? 'Editar Produto' : 'Novo Produto'} visible={dialogVisible} style={{ width: '30rem' }} onHide={() => setDialogVisible(false)}>
-                <div className="flex flex-column gap-4 pt-3">
+                <form className="flex flex-column gap-4 pt-3" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
                     <FloatLabel>
                         <InputText id="nome" className="w-full" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
                         <label htmlFor="nome">Nome do produto</label>
@@ -283,8 +285,16 @@ export function Products() {
                     </FloatLabel>
 
                     <FloatLabel>
-                        <InputText id="unidade" className="w-full" value={form.unidade} onChange={(e) => setForm({ ...form, unidade: e.target.value })} />
-                        <label htmlFor="unidade">Unidade (ex: UN, CX, KG)</label>
+                        <Dropdown
+                            id="unidade"
+                            className="w-full"
+                            value={form.unidade}
+                            onChange={(e) => setForm({ ...form, unidade: e.value })}
+                            options={unityOptions}
+                            optionLabel="label"
+                            optionValue="value"
+                        />
+                        <label htmlFor="unidade">Unidade</label>
                     </FloatLabel>
 
                     <div className="flex gap-3">
@@ -308,16 +318,16 @@ export function Products() {
                         <label htmlFor="local">Local do estoque</label>
                     </FloatLabel>
 
-                    <Button label={isEditing ? 'Salvar alterações' : 'Cadastrar produto'} icon="pi pi-check" onClick={handleSave} />
-                </div>
+                    <Button type="submit" label={isEditing ? 'Salvar alterações' : 'Cadastrar produto'} icon="pi pi-check" />
+                </form>
             </Dialog>
 
             <Dialog header="Categorias" visible={catDialogVisible} style={{ width: '28rem' }} onHide={() => setCatDialogVisible(false)}>
                 <div className="flex flex-column gap-3">
-                    <div className="flex gap-2">
+                    <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); handleAddCategory(); }}>
                         <InputText className="w-full" placeholder="Nome da categoria" value={newCategory.nome} onChange={(e) => setNewCategory({ ...newCategory, nome: e.target.value })} />
-                        <Button icon="pi pi-plus" onClick={handleAddCategory} />
-                    </div>
+                        <Button type="submit" icon="pi pi-plus" />
+                    </form>
 
                     <ul className="category-list">
                         {categories.map((category) => (
