@@ -1,0 +1,54 @@
+.reservation-picker {
+    display: flex;
+    gap: 20px;
+}
+
+.picker-left,
+.picker-right {
+
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+.picker-list {
+
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+
+    overflow: auto;
+
+    max-height: 450px;
+}
+
+.picker-item {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 12px 15px;
+
+    cursor: pointer;
+
+    border-bottom: 1px solid #ececec;
+
+    transition: .2s;
+}
+
+.picker-item:hover {
+
+    background: #f8f9fa;
+
+}
+
+.picker-name {
+
+    font-weight: 600;
+
+}

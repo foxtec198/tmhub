@@ -1,9 +1,9 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { PanelMenu } from "primereact/panelmenu";
-import './main.css'
 import { Avatar } from "primereact/avatar";
 import { capitalize, deny_roles, allow_roles } from "../../utils/ui";
+import './main.css'
 
 export function MainLayout() {
   
@@ -35,12 +35,12 @@ export function MainLayout() {
       ]
     },
     {
-      label: "RPA's",
+      label: "RPA Center",
       icon: 'pi pi-verified',
       className: deny ? "hidden" : null,
       items: [
         {
-          label: 'HK',
+          label: 'HK Bot',
           icon: 'pi pi-clock',
           command: () => {}
         },
@@ -53,12 +53,17 @@ export function MainLayout() {
         {
           label: 'Requisições',
           icon: 'pi pi-question',
-          command: () => {navigate("/requisicoes")}
+          command: () => {navigate("/reposicoes/requisicoes")}
         },
         {
           label: 'Histórico',
           icon: 'pi pi-history',
-          command: () => {navigate("/historico")}
+          command: () => {navigate("/reposicoes/historico")}
+        },
+        {
+          label: 'Reservas Tecnicas',
+          icon: 'pi pi-users',
+          command: () => {navigate("/reposicoes/reservas")}
         },
       ]
     },
@@ -127,7 +132,7 @@ export function MainLayout() {
       {/* MAIN CONTENT */}
       <main className="w-full frame flex gap-2">
         {/* MENU BAR */}
-        <div className="flex p-2 bg-primary overflow-x-hidden shadow-4 w-18rem flex-column">
+        <div className="flex p-2 bg-primary overflow-x-hidden shadow-4 flex-column">
           <PanelMenu model={items} className="w-full md:w-20rem mt-5" />
         </div>
 

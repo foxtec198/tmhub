@@ -21,7 +21,7 @@
 /* Relevo nos itens PRINCIPAIS do menu */
 .p-panelmenu-header-link {
   border-radius: 8px;
-  margin: 2px 8px;
+  margin: 2px 5px;
   width: calc(100% - 16px);
   transition: background var(--transition-fast, 0.15s ease),
               box-shadow var(--transition-fast, 0.15s ease),
@@ -33,7 +33,7 @@
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transform: translateX(2px);
+  transform: translateX(1px);
 }
 
 .p-panelmenu-header-link:active {

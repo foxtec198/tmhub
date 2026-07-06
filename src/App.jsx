@@ -20,14 +20,15 @@ import "./index.css"
 
 // Routes
 import { RequestReport } from "./pages/Dashboards/requests"
-import { Requests } from "./pages/Requisicoes/requisicoes"
+import { Requests } from "./pages/Requisicoes/requests"
 import { Request } from "./pages/Requisicoes/new_request.jsx"
 import { Frotas } from "./pages/Frotas"
 import { Auth } from "./pages/Auth"
 import { Init } from "./pages/Init"
-import { History } from "./pages/Requisicoes/historico";
+import { History } from "./pages/Requisicoes/history";
 import { Products } from "./pages/Estoque/products";
 import { Movements } from "./pages/Estoque/movements";
+import { Floaters } from "./pages/Requisicoes/floaters";
 
 addLocale('pt-BR', {
   firstDayOfWeek: 0,
@@ -57,7 +58,7 @@ addLocale('pt-BR', {
 });
 
 export function AppRoutes() {
-  const {showToast}  = useToast();
+  const { showToast } = useToast();
   const token = function () { return !!sessionStorage.getItem("token") };
 
   connect.interceptors.response.use(
@@ -89,13 +90,22 @@ export function AppRoutes() {
         <Route path="/reposicoes/requisicao" element={<Request />} />
 
         <Route element={<MainLayout />}>
-          <Route path="/frotas" element={<Frotas />} />
-          <Route path="/requisicoes" element={<Requests />} />
-          <Route path="/historico" element={<History />} />
+          {/* Init Page */}
           <Route path="/init" element={<Init />} />
+
+
+          {/* Reposicoes */}
+          <Route path="/reposicoes/requisicoes" element={<Requests />} />
+          <Route path="/reposicoes/reservas" element={<Floaters />} />
+          <Route path="/reposicoes/historico" element={<History />} />
+
+          {/* Estoque */}
           <Route path="/reports/reposicoes" element={<RequestReport />} />
           <Route path="/estoque/produtos" element={<Products />} />
           <Route path="/estoque/movimentacoes" element={<Movements />} />
+
+          {/* Frotas */}
+          <Route path="/frotas" element={<Frotas />} />
         </Route>
 
         <Route path="*" element={<Navigate to={token() ? "/init" : "/"} />} />
