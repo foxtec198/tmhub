@@ -247,19 +247,6 @@ export function Request() {
                         </StepperPanel>
                     </Stepper>
                 </div>
-
-                {/* FOOTER */}
-                <div className="flex">
-                    <span
-                        className="inter text-center">
-                        Ao enviar a requisição, aguarde até que o responsável
-                        aprove ou reprove sua solicitação. <Tag
-                            severity="danger"
-                            value="Resposta Média: 24Hrs"
-                            rounded
-                        />
-                    </span>
-                </div>
             </div>
         </>
     );
