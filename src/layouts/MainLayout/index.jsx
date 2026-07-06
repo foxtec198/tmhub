@@ -68,12 +68,12 @@ export function MainLayout() {
       items: [
         {
           label: 'Produtos',
-          icon: 'pi pi-list',
+          icon: 'pi pi-barcode',
           command: () => {navigate("/estoque/produtos")}
         },
         {
           label: 'Movimentações',
-          icon: 'pi pi-list-check',
+          icon: 'pi pi-arrow-right-arrow-left',
           command: () => {navigate("/estoque/movimentacoes")}
         },
       ]
