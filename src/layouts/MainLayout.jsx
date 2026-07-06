@@ -2,7 +2,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { PanelMenu } from "primereact/panelmenu";
 import { Avatar } from "primereact/avatar";
-import { capitalize, deny_roles, allow_roles } from "../../utils/ui";
+import { capitalize, deny_roles, allow_roles } from "../utils/ui";
 import './main.css'
 
 export function MainLayout() {
@@ -63,7 +63,8 @@ export function MainLayout() {
         {
           label: 'Reservas Tecnicas',
           icon: 'pi pi-users',
-          command: () => {navigate("/reposicoes/reservas")}
+          command: () => {navigate("/reposicoes/reservas")},
+          className: role != allow_roles? "hidden" : null
         },
       ]
     },
