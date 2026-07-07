@@ -75,6 +75,7 @@ export function Auth() {
             localStorage.setItem("display_name", res.data.display_name);
             localStorage.setItem("role", res.data.role);
             sessionStorage.setItem("token", res.data.access_token);
+            localStorage.setItem("current_id", res.data.id);
             navigate("/init")
         } catch (error) {
             console.log(error)

@@ -3,7 +3,8 @@ import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { Avatar } from 'primereact/avatar';
 import { AvatarGroup } from 'primereact/avatargroup';
-import { getProjects, getUsers } from './services/project';
+import { createProject, getProjects, getUsers, renameProject, updateProject } from './services/project';
+import { deleteCard, updateCard } from './services/card';
 import ProjectsSidebar from '../../components/ProjectsSidebar';
 import KanbanBoard from '../../components/KanbanBoard';
 import CardDetailDialog from '../../components/CardDetailDialog';
@@ -13,23 +14,19 @@ import './ProjetosPage.css';
 
 export default function ProjetosPage() {
   const [projetos, setProjetos] = useState([]);
-  const [currentUserId, setCurrentUserId] = useState(2); // troque por usuário logado real
-  const [MOCK_USERS, SET_MOCK_USERS] = useState([])
-
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [usuarios, setUsuarios] = useState([]);
   const [projetoAtivoId, setProjetoAtivoId] = useState(null);
-
   const [cardSelecionado, setCardSelecionado] = useState(null);
   const [projetoParaMembrosId, setProjetoParaMembrosId] = useState(null);
   const [novoProjetoAberto, setNovoProjetoAberto] = useState(false);
 
-  // Deriva sempre do array atual, assim o dialog reflete a mudança na hora (checkbox marcado/desmarcado).
   const projetoParaMembros = projetoParaMembrosId
     ? projetos.find((p) => p.id === projetoParaMembrosId) || null
     : null;
 
-  // Só entram na timeline os projetos em que o usuário atual é dono ou membro.
   const meusProjetos = useMemo(
-    () => projetos.filter((p) => p.members.includes(currentUserId)),
+    () => projetos.filter((p) => (p.memberIds || []).includes(currentUserId)),
     [projetos, currentUserId]
   );
 
@@ -38,68 +35,86 @@ export default function ProjetosPage() {
     return meusProjetos[0] || null;
   }, [meusProjetos, projetoAtivoId]);
 
-  function atualizarProjeto(projetoAtualizado) {
+  async function atualizarProjeto(projetoAtualizado) {
     setProjetos((prev) => prev.map((p) => (p.id === projetoAtualizado.id ? projetoAtualizado : p)));
+    const data = await updateProject(projetoAtualizado.id, projetoAtualizado);
+    setProjetos((prev) => prev.map((p) => (p.id === data.id ? data : p)));
   }
 
-  function renomearProjeto(id, novoNome) {
+  async function renomearProjeto(id, novoNome) {
     setProjetos((prev) => prev.map((p) => (p.id === id ? { ...p, nome: novoNome } : p)));
+    const data = await renameProject(id, novoNome);
+    setProjetos((prev) => prev.map((p) => (p.id === data.id ? data : p)));
   }
 
-  function alternarMembro(projetoId, usuarioId) {
-    setProjetos((prev) =>
-      prev.map((p) => {
-        if (p.id !== projetoId) return p;
-        const jaEhMembro = p.memberIds.includes(usuarioId);
-        return {
-          ...p,
-          memberIds: jaEhMembro
-            ? p.memberIds.filter((id) => id !== usuarioId)
-            : [...p.memberIds, usuarioId],
-        };
-      })
-    );
+  async function alternarMembro(projetoId, usuarioId) {
+    const projeto = projetos.find((p) => p.id === projetoId);
+    if (!projeto) return;
+
+    const jaEhMembro = projeto.memberIds.includes(usuarioId);
+    const projetoAtualizado = {
+      ...projeto,
+      memberIds: jaEhMembro
+        ? projeto.memberIds.filter((id) => id !== usuarioId)
+        : [...projeto.memberIds, usuarioId],
+    };
+
+    setProjetos((prev) => prev.map((p) => (p.id === projetoId ? projetoAtualizado : p)));
+    const data = await updateProject(projetoId, projetoAtualizado);
+    setProjetos((prev) => prev.map((p) => (p.id === data.id ? data : p)));
   }
 
-  function criarProjeto(novoProjeto) {
-    setProjetos((prev) => [...prev, novoProjeto]);
-    setProjetoAtivoId(novoProjeto.id);
+  async function criarProjeto(novoProjeto) {
+    const data = await createProject(novoProjeto);
+    setProjetos((prev) => [...prev, data]);
+    setProjetoAtivoId(data.id);
   }
 
-  function salvarCard(cardAtualizado) {
+  async function salvarCard(cardAtualizado) {
     if (!projetoAtivo) return;
-    atualizarProjeto({
+
+    const projetoAtualizado = {
       ...projetoAtivo,
       cards: { ...projetoAtivo.cards, [cardAtualizado.id]: cardAtualizado },
-    });
+    };
+    setProjetos((prev) => prev.map((p) => (p.id === projetoAtualizado.id ? projetoAtualizado : p)));
+    const data = await updateCard(cardAtualizado.id, cardAtualizado);
+    setProjetos((prev) => prev.map((p) => (p.id === data.id ? data : p)));
     setCardSelecionado(null);
   }
 
-  function excluirCard(cardId) {
+  async function excluirCard(cardId) {
     if (!projetoAtivo) return;
+
     const cards = { ...projetoAtivo.cards };
     delete cards[cardId];
     const columns = projetoAtivo.columns.map((c) => ({
       ...c,
       cardIds: c.cardIds.filter((id) => id !== cardId),
     }));
-    atualizarProjeto({ ...projetoAtivo, cards, columns });
+    const projetoAtualizado = { ...projetoAtivo, cards, columns };
+
+    setProjetos((prev) => prev.map((p) => (p.id === projetoAtualizado.id ? projetoAtualizado : p)));
+    const data = await deleteCard(cardId);
+    setProjetos((prev) => prev.map((p) => (p.id === data.id ? data : p)));
     setCardSelecionado(null);
   }
 
   const membrosDoProjetoAtivo = projetoAtivo
-    ? projetoAtivo.memberIds.map((id) => MOCK_USERS.find((u) => u.id === id)).filter(Boolean)
+    ? projetoAtivo.memberIds.map((id) => usuarios.find((u) => u.id === id)).filter(Boolean)
     : [];
 
   async function loadProjects() {
-    const user = await getUsers();
-    SET_MOCK_USERS(user)
-
+    const users = await getUsers();
+    setUsuarios(users);
+    
     const data = await getProjects();
     setProjetos(data);
   }
-
+  
   useEffect(() => {
+    const id = localStorage.getItem("current_id")
+    setCurrentUserId(parseInt(id))
     loadProjects();
   }, []);
 
@@ -108,7 +123,7 @@ export default function ProjetosPage() {
       <ProjectsSidebar
         projetos={meusProjetos}
         projetoAtivoId={projetoAtivo?.id}
-        todosUsuarios={MOCK_USERS}
+        todosUsuarios={usuarios}
         onSelect={setProjetoAtivoId}
         onRename={renomearProjeto}
         onOpenMembers={(id) => setProjetoParaMembrosId(id)}
@@ -144,16 +159,14 @@ export default function ProjetosPage() {
               />
             )}
 
-            {/* Demonstração de multi-usuário: troque por sessão real do login.
-                Isso só existe pra você validar que a timeline muda por pessoa. */}
             <Dropdown
               value={currentUserId}
-              options={MOCK_USERS}
+              options={usuarios}
               optionLabel="nome"
               optionValue="id"
               onChange={(e) => { setCurrentUserId(e.value); setProjetoAtivoId(null); }}
               className="w-14rem"
-              title="Ver como (demonstração)"
+              title="Ver como"
             />
           </div>
         </div>
@@ -161,7 +174,7 @@ export default function ProjetosPage() {
         {projetoAtivo ? (
           <KanbanBoard
             projeto={projetoAtivo}
-            todosUsuarios={MOCK_USERS}
+            todosUsuarios={usuarios}
             onUpdateProjeto={atualizarProjeto}
             onOpenCard={setCardSelecionado}
           />
@@ -169,7 +182,7 @@ export default function ProjetosPage() {
           <div className="flex flex-column align-items-center justify-content-center flex-1 gap-3 p-5">
             <i className="pi pi-inbox text-4xl text-color-secondary" />
             <p className="text-color-secondary m-0">
-              Você ainda não tem projetos. Crie o primeiro ao lado.
+              Voce ainda nao tem projetos. Crie o primeiro ao lado.
             </p>
             <Button label="Novo projeto" icon="pi pi-plus" onClick={() => setNovoProjetoAberto(true)} />
           </div>
@@ -188,14 +201,14 @@ export default function ProjetosPage() {
       <MembersDialog
         visible={!!projetoParaMembros}
         projeto={projetoParaMembros}
-        todosUsuarios={MOCK_USERS}
+        todosUsuarios={usuarios}
         onHide={() => setProjetoParaMembrosId(null)}
         onToggleMember={alternarMembro}
       />
 
       <NewProjectDialog
         visible={novoProjetoAberto}
-        todosUsuarios={MOCK_USERS}
+        todosUsuarios={usuarios}
         currentUserId={currentUserId}
         onHide={() => setNovoProjetoAberto(false)}
         onCreate={criarProjeto}

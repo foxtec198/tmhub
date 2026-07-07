@@ -1,12 +1,13 @@
-import connect from "../utils/request";
+import connect from "../../../utils/request";
 
 export async function updateCard(id, body) {
-    await connect.patch(`/projects/cards/${id}`, body);
+    const { data } = await connect.patch(`/projetos/cards/${id}`, body);
+    return data;
 }
 
 export async function createCard(projectId, body) {
     const { data } = await connect.post(
-        `/projects/${projectId}/cards`,
+        `/projetos/${projectId}/cards`,
         body
     );
 
@@ -14,5 +15,6 @@ export async function createCard(projectId, body) {
 }
 
 export async function deleteCard(id) {
-    await connect.delete(`/projects/cards/${id}`);
+    const { data } = await connect.delete(`/projetos/cards/${id}`);
+    return data;
 }
