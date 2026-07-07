@@ -30,6 +30,7 @@ import { Products } from "./pages/Estoque/products";
 import { Movements } from "./pages/Estoque/movements";
 import { MobileMovement } from "./pages/Estoque/mobile_movement.jsx"
 import { Floaters } from "./pages/Requisicoes/floaters";
+import ProjetosPage from "./pages/Projetos/ProjetosPage";
 
 addLocale('pt-BR', {
   firstDayOfWeek: 0,
@@ -95,6 +96,7 @@ export function AppRoutes() {
           {/* Init Page */}
           <Route path="/init" element={<Init />} />
 
+          <Route path="/projetos" element={<ProjetosPage />} />
 
           {/* Reposicoes */}
           <Route path="/reposicoes/requisicoes" element={<Requests />} />

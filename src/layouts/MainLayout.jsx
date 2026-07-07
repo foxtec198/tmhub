@@ -85,6 +85,11 @@ export function MainLayout() {
       ]
     },
     {
+      label: 'Meus Projetos',
+      icon: 'pi pi-spinner-dotted',
+      command: () => { navigate("/projetos") }
+    },
+    {
       label: 'Frotas',
       disabled: "True",
       icon: 'pi pi-car',

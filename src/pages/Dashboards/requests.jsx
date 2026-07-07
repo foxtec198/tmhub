@@ -447,7 +447,8 @@ export function RequestReport() {
     const columns = [
         {
             header: "Centro de Custo",
-            field: "local"
+            field: "local",
+            class: "text-truncate"
         },
         {
             header: "DPTO.",
@@ -541,7 +542,7 @@ export function RequestReport() {
                     />
                     <DashCard
                         icon="pi pi-dollar"
-                        title="Total de Multa"
+                        title="Custo de Reservas"
                         className="border-round-lg text-truncate flex-grow-1"
                         style={{
                             backgroundColor: 'var(--gray-700)',
@@ -562,7 +563,7 @@ export function RequestReport() {
                             size={70}
                         />
                         <div className="flex flex-column flex-grow-1 justify-content-between">
-                            <span className="inter font-bold spaceg text-1xl">Contrato com mais faltas</span>
+                            <span className="spaceg text-lg font-bold spaceg text-1xl">Contrato com mais faltas</span>
                             <span className="inter" style={{ maxWidth: "250px" }}>{localComMaisFaltas}</span>
                         </div>
                     </div>

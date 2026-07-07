@@ -1,0 +1,288 @@
+/* ProjetosPage.css */
+/* Estilos complementares ao PrimeFlex/PrimeReact. Ajuste as cores pra bater com o tema do Hubbix. */
+
+:root {
+  --projetos-bg: #f4f5f7;
+  --projetos-coluna-bg: #ebecf0;
+  --projetos-card-bg: #ffffff;
+  --projetos-borda: #d8dae0;
+  --projetos-texto-suave: #5e6472;
+  --projetos-accent: #7c5cff;
+}
+
+.projetos-page {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  background: var(--projetos-bg);
+}
+
+/* ---------- Sidebar ---------- */
+.projetos-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--projetos-borda);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.projetos-sidebar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1rem 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #2c2f36;
+}
+
+.projetos-sidebar__lista {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.projeto-item {
+  border-radius: 10px;
+  padding: 0.6rem 0.7rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.projeto-item:hover {
+  background: #f6f5ff;
+}
+
+.projeto-item--ativo {
+  background: #f0ecff;
+  border-color: var(--projeto-cor, var(--projetos-accent));
+}
+
+.projeto-item__linha {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.projeto-item__marcador {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--projeto-cor, var(--projetos-accent));
+  flex-shrink: 0;
+}
+
+.projeto-item__nome {
+  flex: 1;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #2c2f36;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.projeto-item__input {
+  flex: 1;
+  padding: 0.2rem 0.4rem !important;
+  font-size: 0.85rem !important;
+}
+
+.projeto-item__editar {
+  opacity: 0;
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+}
+
+.projeto-item:hover .projeto-item__editar {
+  opacity: 1;
+}
+
+.projeto-item__rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.4rem;
+  padding-left: 1rem;
+}
+
+/* ---------- Board ---------- */
+.projetos-board-wrapper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.projetos-board-wrapper__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--projetos-borda);
+  background: #fff;
+}
+
+.kanban-board {
+  flex: 1;
+  display: flex;
+  gap: 0.9rem;
+  padding: 1.1rem;
+  overflow-x: auto;
+  align-items: flex-start;
+}
+
+.kanban-column {
+  background: var(--projetos-coluna-bg);
+  border-radius: 12px;
+  width: 280px;
+  flex-shrink: 0;
+  padding: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+}
+
+.kanban-column__header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.4rem 0.6rem;
+}
+
+.kanban-column__titulo {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #2c2f36;
+  cursor: text;
+  flex: 1;
+}
+
+.kanban-column__titulo-input {
+  flex: 1;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  padding: 0.2rem 0.4rem !important;
+}
+
+.kanban-column__contador {
+  font-size: 0.75rem;
+  color: var(--projetos-texto-suave);
+  background: #dcdfe6;
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+}
+
+.kanban-column__excluir {
+  width: 1.6rem !important;
+  height: 1.6rem !important;
+}
+
+.kanban-column__lista {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 8px;
+}
+
+.kanban-column__slot {
+  border-radius: 8px;
+  transition: background 0.1s ease;
+}
+
+.kanban-column__slot--over {
+  background: rgba(124, 92, 255, 0.15);
+}
+
+.kanban-column__espaco-final {
+  min-height: 24px;
+  flex: 1;
+}
+
+.kanban-card {
+  background: var(--projetos-card-bg);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  margin: 0.25rem 0;
+  box-shadow: 0 1px 2px rgba(9, 30, 66, 0.15);
+  cursor: grab;
+  border: 1px solid transparent;
+}
+
+.kanban-card:hover {
+  border-color: var(--projetos-accent);
+}
+
+.kanban-card--dragging {
+  opacity: 0.4;
+}
+
+.kanban-card__tag {
+  margin-bottom: 0.35rem;
+  font-size: 0.65rem !important;
+}
+
+.kanban-card__titulo {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #2c2f36;
+  font-weight: 500;
+}
+
+.kanban-card__descricao {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: var(--projetos-texto-suave);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.kanban-card__rodape {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.kanban-column__novo-card {
+  padding: 0.3rem 0.2rem 0.1rem;
+}
+
+.kanban-column__novo-card-acoes {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.kanban-column__botao-add {
+  justify-content: flex-start !important;
+  font-size: 0.82rem !important;
+  color: var(--projetos-texto-suave) !important;
+}
+
+.kanban-board__nova-coluna {
+  width: 260px;
+  flex-shrink: 0;
+}
+
+.kanban-board__nova-coluna-form {
+  background: var(--projetos-coluna-bg);
+  border-radius: 12px;
+  padding: 0.6rem;
+}
+
+.kanban-board__nova-coluna-acoes {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
