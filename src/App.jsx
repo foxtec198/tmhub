@@ -28,6 +28,7 @@ import { Init } from "./pages/Init"
 import { History } from "./pages/Requisicoes/history";
 import { Products } from "./pages/Estoque/products";
 import { Movements } from "./pages/Estoque/movements";
+import { MobileMovement } from "./pages/Estoque/mobile_movement.jsx"
 import { Floaters } from "./pages/Requisicoes/floaters";
 
 addLocale('pt-BR', {
@@ -88,6 +89,7 @@ export function AppRoutes() {
         <Route path="/" element={<Auth />} />
         <Route path="/login" element={<Auth />} />
         <Route path="/reposicoes/requisicao" element={<Request />} />
+        <Route path="/estoque/movimentacao" element={<MobileMovement />} />
 
         <Route element={<MainLayout />}>
           {/* Init Page */}
