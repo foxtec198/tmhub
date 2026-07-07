@@ -94,10 +94,9 @@ export default function ProjetosPage() {
   async function loadProjects() {
     const user = await getUsers();
     SET_MOCK_USERS(user)
-    
+
     const data = await getProjects();
     setProjetos(data);
-
   }
 
   useEffect(() => {
