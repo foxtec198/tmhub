@@ -276,7 +276,9 @@ export function RequestReport() {
             .slice(0, 3);
 
         const locaisLabels = betters.map(([local]) =>
-            local.replace(/\d+/g, "").split("-")[1]
+            local.replaceAll(/\d+/g, "")
+            .replaceAll("-", "")
+            .trim()
         );
 
         const locaisValues = betters.map(([, quantidade]) => quantidade);
