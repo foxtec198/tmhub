@@ -29,7 +29,7 @@ export function MainLayout() {
         {
           label: "Novo",
           icon: "pi pi-plus",
-          className: role != allow_roles? "hidden" : null
+          className: role != allow_roles || role != "GERENTE"? "hidden" : null
         }
       ]
     },
