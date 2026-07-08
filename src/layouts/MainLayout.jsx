@@ -34,6 +34,17 @@ export function MainLayout() {
       ]
     },
     {
+          label: "Admissão",
+          icon: 'pi pi-user-plus',
+          items: [
+        {
+          label: 'Vagas',
+          icon: 'pi pi-briefcase',
+          command: () => {navigate("/admissao/vagas")}
+        },
+      ]
+    },
+    {
       label: "RPA Center",
       icon: 'pi pi-verified',
       className: deny ? "hidden" : null,

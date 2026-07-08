@@ -28,8 +28,10 @@ import { Init } from "./pages/Init"
 import { History } from "./pages/Requisicoes/history";
 import { Products } from "./pages/Estoque/products";
 import { Movements } from "./pages/Estoque/movements";
+import { MobileMovement } from "./pages/Estoque/mobile_movement.jsx"
 import { Floaters } from "./pages/Requisicoes/floaters";
 import ProjetosPage from "./pages/Projetos/ProjetosPage";
+import { Vacancies } from "./pages/Admissao/vacancies.jsx"
 
 addLocale('pt-BR', {
   firstDayOfWeek: 0,
@@ -89,12 +91,15 @@ export function AppRoutes() {
         <Route path="/" element={<Auth />} />
         <Route path="/login" element={<Auth />} />
         <Route path="/reposicoes/requisicao" element={<Request />} />
+        <Route path="/estoque/movimentacao" element={<MobileMovement />} />
 
         <Route element={<MainLayout />}>
           {/* Init Page */}
           <Route path="/init" element={<Init />} />
-
           <Route path="/projetos" element={<ProjetosPage />} />
+
+          {/* Admissão */}
+          <Route path="/admissao/vagas" element={<Vacancies />} />
 
           {/* Reposicoes */}
           <Route path="/reposicoes/requisicoes" element={<Requests />} />
