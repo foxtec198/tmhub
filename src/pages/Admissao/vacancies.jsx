@@ -411,17 +411,30 @@ export function Vacancies() {
             </div>
 
             <div className="flex justify-content-between align-items-center flex-wrap gap-2">
-                <FloatLabel>
-                    <Dropdown
-                        id="departamento-filtro"
-                        className="w-18rem"
-                        value={departFilter}
-                        onChange={(e) => setDepartFilter(e.value)}
-                        options={departamentoOptions}
-                        showClear
-                    />
-                    <label htmlFor="departamento-filtro">Filtrar por departamento</label>
-                </FloatLabel>
+                <div className="flex align-items-center gap-2">
+                    <FloatLabel>
+                        <Dropdown
+                            id="departamento-filtro"
+                            className="w-18rem"
+                            value={departFilter}
+                            onChange={(e) => setDepartFilter(e.value)}
+                            options={departamentoOptions}
+                            showClear
+                        />
+                        <label htmlFor="departamento-filtro">Filtrar por departamento</label>
+                    </FloatLabel>
+
+                    {departFilter && (
+                        <Button
+                            icon="pi pi-filter-slash"
+                            text
+                            rounded
+                            severity="secondary"
+                            tooltip="Limpar filtro"
+                            onClick={() => setDepartFilter(null)}
+                        />
+                    )}
+                </div>
 
                 <SelectButton value={order} onChange={(e) => e.value && setOrder(e.value)} options={orderOptions} />
             </div>
