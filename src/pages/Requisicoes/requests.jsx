@@ -135,7 +135,10 @@ export function Requests() {
 
     return (
         <main className="flex flex-column gap-1">
-            <h2 className="spaceg">Requisições</h2>
+            <h2 className="inter flex align-items-center gap-2" style={{ color: "var(--green-600)", fontWeight: 900 }}>
+                <i className="pi pi-sync"></i>
+                Requisições
+            </h2>
 
             <Button 
                 icon="pi pi-plus"
@@ -149,6 +152,7 @@ export function Requests() {
                     bottom: "20px"
                 }}
             />
+            
             <div className="flex gap-2 align-items-center">
                 <DashCard
                     title="Abertas"

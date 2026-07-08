@@ -6,7 +6,6 @@ import { capitalize, deny_roles, allow_roles } from "../utils/ui";
 import './main.css'
 
 export function MainLayout() {
-  
   const [displayName, setDisplayName] = useState("");
   const [role, setRole] = useState("");
   const navigate = useNavigate();
@@ -58,6 +57,7 @@ export function MainLayout() {
         {
           label: 'Histórico',
           icon: 'pi pi-history',
+          display: false,
           command: () => {navigate("/reposicoes/historico")}
         },
         {

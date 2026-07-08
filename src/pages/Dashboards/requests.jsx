@@ -21,7 +21,6 @@ import connect from "../../utils/request"
 
 // CSS
 import "./request.css"
-import { InputText } from "primereact/inputtext"
 import { Dropdown } from "primereact/dropdown"
 
 
@@ -96,11 +95,8 @@ const MOCK = {
 
 // Logic and UI
 export function RequestReport() {
-    // Obter cores setadas no CSS (ROOT)
-    const rootStyle = getComputedStyle(document.documentElement);
-
-    // Overlay Panel Ref
-    const op_filters = useRef();
+    const rootStyle = getComputedStyle(document.documentElement); // Obter cores setadas no CSS (ROOT)
+    const op_filters = useRef(); // Overlay Panel Ref
 
     const defaultFilters = {
         contrato: null,
@@ -163,7 +159,7 @@ export function RequestReport() {
             if (filters.colaborador && item.ausente !== filters.colaborador) return false;
             return true;
         });
-    }, [histOriginal, filters.contrato, filters.departamento, filters.supervisor, filters.colaborador ]);
+    }, [histOriginal, filters.contrato, filters.departamento, filters.supervisor, filters.colaborador]);
 
     const clearFilters = () => {
         setFilters(() => ({ ...defaultFilters }));
@@ -426,10 +422,10 @@ export function RequestReport() {
             tension: 0.4,
             fill: true,
             backgroundColor: 'rgba(241, 67, 67, 0.42)',
-            label: "Multa por dia.",
+            label: "Custo de Reservas Técnicas por dia.",
             data: dataForMult
         }]
-    }
+    };
 
     const dataLocals = {
         labels: labelLocal,
@@ -442,7 +438,12 @@ export function RequestReport() {
             categoryPercentage: 0.7,
 
         }]
-    }
+    };
+
+    const dadosTabelaFiltraveis = dadosTabela.map(row => ({
+        ...row,
+        cobertura_search: `${row.ausente ?? ""} ${row.reserva ?? ""}`
+    }));
 
     const columns = [
         {
@@ -461,12 +462,13 @@ export function RequestReport() {
         {
             header: "Coberturas",
             style: { maxWidth: "20rem" },
+            field: "cobertura_search",
             body: (row) => {
-                return <span className="flex gap-2">
-                    <span className="inter text-truncate">{row.ausente.split(" ")[0]} {row.ausente.split(" ").at(-1)}</span>
+                return <div className="flex gap-2">
+                    <span className="text-truncate inter">{row.ausente.split(" ")[0]} {row.ausente.split(" ").at(-1)}</span>
                     <i className="pi pi-arrow-right" style={{ color: `var(--${row.reserva == "SEM COBERTURA" ? "red-500" : "green-500"})` }}></i>
                     <span className="font-bold text-truncate">{row.reserva.split(" ")[0]} {row.reserva.split(" ").at(-1)}</span>
-                </span>
+                </div>
             }
         },
         {
@@ -477,7 +479,7 @@ export function RequestReport() {
             header: "Motivo",
             field: "motivo"
         }
-    ]
+    ];
 
     const cores = [
         ['rgba(76, 175, 80, 0.75)', 'rgba(244, 67, 54, 0.75)'],
@@ -493,7 +495,7 @@ export function RequestReport() {
     ];
 
     return (
-        <main className="flex flex-column p-2 gap-2">
+        <main className="flex flex-column p-2 gap-2 w-full">
             <div className="flex justify-content-between align-items-center w-full">
                 <div className="flex gap-2 p-2 w-full">
                     <DashCard
@@ -653,7 +655,7 @@ export function RequestReport() {
                     </FloatLabel>
 
                     <Divider className="mt-4" />
-                    <Button 
+                    <Button
                         className="font-bold w-full border-none"
                         icon="pi pi-filter-slash"
                         label="Limpar Filtros"
@@ -719,7 +721,28 @@ export function RequestReport() {
                                 options={{
                                     aspectRatio: 2.5,
                                     responsive: true,
-                                    maintainAspectRatio: false
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            labels: {
+                                                usePointStyle: true,
+                                                pointStyle: 'rectRounded',
+                                                padding: 20
+                                            }
+                                        },
+                                        tooltip: {
+                                            mode: 'index',
+                                            intersect: false,
+                                            callbacks: {
+                                                title(items) {
+                                                    return `Dia ${items[0].label}`;
+                                                },
+                                                label(context) {
+                                                    return `${context.dataset.label}: ${to_real(context.raw)}`;
+                                                }
+                                            }
+                                        }
+                                    }
                                 }}
                             />
                         </div>
@@ -730,11 +753,12 @@ export function RequestReport() {
                         <Table
                             tableClassName="w-full"
                             columns={columns}
-                            data={dadosTabela}
+                            data={dadosTabelaFiltraveis}
                             rows={3}
                             style={{
                                 fontSize: "10px"
                             }}
+                            search
                         />
                     </div>
                 </div>
@@ -744,7 +768,7 @@ export function RequestReport() {
                     <TabView className="h-full">
                         <TabPanel header="Departamentos">
                             <div className="flex flex-column h-full">
-                                <div className="flex flex-wrap justify-content-between align-items-center gap-2 p-2" style={{ minHeight: "9rem" }}>
+                                <div className="flex flex-wrap justify-content-between align-items-center gap-2 p-2" >
                                     {departamentos.map((item, index) => {
                                         const [cor1, cor2] = cores[index % cores.length];
                                         const testeData = {
@@ -760,7 +784,7 @@ export function RequestReport() {
                                         return (
                                             <div key={item} className="flex flex-column flex-grow-1 justify-content-center align-items-center text-center shadow-6 border-round-lg" style={{ flexBasis: "100px" }}>
                                                 <Chart className="flex-grow-1" type="doughnut" data={testeData} options={optionsDptos} style={{
-                                                    width: '100px',
+                                                    width: '70px',
                                                 }} />
                                                 <span className="font-bold inter"> Dpto. {item[0]}</span>
                                             </div>
