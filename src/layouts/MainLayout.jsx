@@ -29,7 +29,7 @@ export function MainLayout() {
         {
           label: "Novo",
           icon: "pi pi-plus",
-          className: role != allow_roles || role != "GERENTE"? "hidden" : null
+          className: role != allow_roles? "hidden" : null
         }
       ]
     },
@@ -75,7 +75,6 @@ export function MainLayout() {
           label: 'Reservas Tecnicas',
           icon: 'pi pi-users',
           command: () => {navigate("/reposicoes/reservas")},
-          className: role != allow_roles? "hidden" : null
         },
       ]
     },
