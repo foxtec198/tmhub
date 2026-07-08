@@ -10,6 +10,7 @@ export function MainLayout() {
   const [role, setRole] = useState("");
   const navigate = useNavigate();
   const deny = deny_roles.includes(role)
+  const allow = allow_roles.includes(role)
 
   const items = [
     {
@@ -29,7 +30,7 @@ export function MainLayout() {
         {
           label: "Novo",
           icon: "pi pi-plus",
-          className: role != allow_roles? "hidden" : null
+          className: !allow ? "hidden" : null
         }
       ]
     },
