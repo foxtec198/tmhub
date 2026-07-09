@@ -21,7 +21,7 @@ import "./index.css"
 // Routes
 import { RequestReport } from "./pages/Dashboards/requests"
 import { Requests } from "./pages/Requisicoes/requests"
-import { Request } from "./pages/Requisicoes/new_request.jsx"
+import { Request } from "./pages/Requisicoes/new.jsx"
 import { Frotas } from "./pages/Frotas"
 import { Auth } from "./pages/Auth"
 import { Init } from "./pages/Init"

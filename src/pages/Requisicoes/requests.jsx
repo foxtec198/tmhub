@@ -5,43 +5,77 @@ import { ButtonGroup } from "primereact/buttongroup"
 import { Tag } from "primereact/tag";
 import { DashCard } from "../../components/Card";
 import { Inplace, InplaceDisplay, InplaceContent, } from 'primereact/inplace';
-import { InputText } from "primereact/inputtext";
+import { DropdownWS } from "../../components/DropdownWithSearch";
+import { Toast } from "primereact/toast";
+import { confirmDialog } from 'primereact/confirmdialog';
+import { ConfirmDialog } from 'primereact/confirmdialog';
 
 // Utils
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { socketio } from "../../utils/socketio";
 import { useToast } from "../../contexts/ToastContext";
+import { useLoading } from "../../contexts/LoadingContext";
 import { useNavigate } from "react-router-dom";
 import connect from "../../utils/request";
-
 
 export function Requests() {
     const [requests, setRequests] = useState(null);
     const [refresh, setRefresh] = useState(null);
-    const [reserva, setReserva] = useState("");
 
     const [abertas, setAbertas] = useState(0)
     const [emAtraso, setEmAtraso] = useState(0)
     const [expiradas, setExpiradas] = useState(0)
 
-    const { showToast } = useToast();
+    const [active, setActive] = useState(false);
 
+    const { showToast } = useToast();
+    const setLoading = useLoading();
     const navigate = useNavigate();
+    const toast = useRef(null);
 
     const reasonColors = {
         "AFASTAMENTO": "var(--red-900)",
-        "ATESTADO": "var(--red-200)",
-        "DECLARAÇÃO": "var(--pink-400)",
-        "POSTO VAGO": "var(--gray-500)",
+        "ATESTADO": "var(--green-600)",
+        "DECLARAÇÃO": "var(--violet-600)",
+        "POSTO VAGO": "var(--red-500)",
         "INJUSTIFICADA": "var(--red-900)",
+        "OUTROS": "var(--gray-900)",
     }
 
     async function setStatus(id, status) {
-        try{
+        try {
+            setLoading(true)
             await connect.post("/repo", { id: id, status: status })
             showToast("success", "Sucesso", "Requisilçõ salva com sucesso!")
-        } catch(err){ showToast("error", "Erro", err.reponse.data) }   
+        }
+        catch (err) { showToast("error", status == "approved" ? "Erro na Aprovação" : "Erro na Reprovação", err.reponse.data) }
+        finally { setLoading(false) }
     }
+
+    const accept = (value) => {
+        async function updateReq() {
+            try {
+                setLoading(true)
+                await connect.patch('/repo/request', value)
+                showToast("success", "Sucesso", "Alteração salva com sucesso!")
+                setActive(false)
+            }
+            catch (err) { showToast("error", "Erro na requisição", err.response.data) }
+            finally { setLoading(false) }
+        }; updateReq();
+    }
+
+    const confirm = (campo, value) => {
+        confirmDialog({
+            message: `Deseja confirmar a alteração?`,
+            header: `Troca de ${campo}`,
+            icon: 'pi pi-exclamation-triangle',
+            defaultFocus: 'accept',
+            acceptLabel: "Sim",
+            rejectLabel: "Não",
+            accept: () => accept(value),
+        });
+    };
 
     const table_itens = [
         {
@@ -57,15 +91,15 @@ export function Requests() {
             body: (row) => {
                 return (
                     <div className="flex">
-                        <Inplace closable>
+                        <Inplace closable className="text-sm" active={active}>
                             <InplaceDisplay>{row.ausencia}</InplaceDisplay>
 
                             <InplaceContent>
-                                <InputText
-                                    className="w-min"
-                                />
-                                <Button
-                                    icon="pi pi-check"
+                                <DropdownWS
+                                    uri="/funcionarios"
+                                    className="w-10rem text-truncate"
+                                    optionLabel="nome"
+                                    onChange={(value) => {confirm("Ausente", { id: row.id, ausente_id: value }) }}
                                 />
                             </InplaceContent>
                         </Inplace>
@@ -77,11 +111,47 @@ export function Requests() {
             field: "reserva",
             header: "Reserva",
             class: "text-truncate",
+            body: (row) => {
+                return (
+                    <div className="flex">
+                        <Inplace closable className="text-sm" active={active}>
+                            <InplaceDisplay>{row.reserva}</InplaceDisplay>
+
+                            <InplaceContent>
+                                <DropdownWS
+                                    uri="/funcionarios"
+                                    className="w-10rem text-truncate"
+                                    onChange={(value) => {confirm("Reserva", { id: row.id, reserva_id: value }) }}
+                                />
+                            </InplaceContent>
+                        </Inplace>
+                    </div>
+                )
+            }
         },
         {
             field: "local",
             header: "Local",
             class: "text-truncate",
+            body: (row) => {
+                return (
+                    <div className="flex">
+                        <Inplace closable className="text-sm">
+                            <InplaceDisplay>{row.local}</InplaceDisplay>
+
+                            <InplaceContent>
+                                <DropdownWS
+                                    uri="/centro"
+                                    className="w-10rem text-truncate"
+                                    optionsValuesForDict={{ nome: "local" }}
+                                    onChange={(centro) => {confirm("Local", { id: row.id, centro_id: centro }) }}
+                                />
+                            </InplaceContent>
+                        </Inplace>
+                    </div>
+                )
+            }
+
         },
         {
             field: "supervisor",
@@ -109,14 +179,14 @@ export function Requests() {
                     <Button
                         icon="pi pi-times"
                         severity="danger"
-                        onClick={() => { setStatus(row.id, "reproved")}}
+                        onClick={() => { setStatus(row.id, "reproved") }}
                         data-pr-tooltip="Reprovar Solicitação"
                     />
                     <Button
                         data-pr-tooltip="Aprovar Solicitação"
                         icon="pi pi-check-circle"
                         severity="success"
-                        onClick={() => { setStatus(row.id, "approved")}}
+                        onClick={() => { setStatus(row.id, "approved") }}
                     />
                 </ButtonGroup>
             },
@@ -135,12 +205,15 @@ export function Requests() {
 
     return (
         <main className="flex flex-column gap-1">
+            <Toast ref={toast} />
+            <ConfirmDialog />
+
             <h2 className="inter flex align-items-center gap-2" style={{ color: "var(--green-600)", fontWeight: 900 }}>
                 <i className="pi pi-sync"></i>
                 Requisições
             </h2>
 
-            <Button 
+            <Button
                 icon="pi pi-plus"
                 size="large"
                 className="p-4 btn-float"
@@ -152,7 +225,7 @@ export function Requests() {
                     bottom: "20px"
                 }}
             />
-            
+
             <div className="flex gap-2 align-items-center">
                 <DashCard
                     title="Abertas"

@@ -56,9 +56,9 @@ export function Floaters() {
 
                 const resv = await connect.get(`/reservas`);
                 setReservas(resv.data)
-            } catch (err) {
-                showToast("error", "Erro na requisição", err.response.data)
-            } finally { setLoading(false) }
+            } 
+            catch (err) {showToast("error", "Erro na requisição", err.response.data)} 
+            finally { setLoading(false) }
         }; load();
     }, [debouncedSearch, refresh]);
 
