@@ -187,6 +187,7 @@ export function Requests() {
                     data={requests}
                     tableClassName="w-full h-full"
                     rows={5}
+                    search={true}
                     style={{
                         width: "100%",
                         height: "100dvh",

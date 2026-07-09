@@ -26,7 +26,7 @@ export function Table({
     const header = (
         <div className="flex min-w-full justify-content-between align-items-center">
             {search
-                ?<FloatLabel>
+                ?<FloatLabel className="mt-3">
                     <InputText
                         value={globalFilterDash}
                         onChange={(e) => setGlobalFilterDash(e.target.value)}

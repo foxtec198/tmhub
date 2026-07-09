@@ -157,9 +157,10 @@ export function RequestReport() {
             if (filters.departamento && item.dpto !== filters.departamento) return false;
             if (filters.supervisor && item.supervisor !== filters.supervisor) return false;
             if (filters.colaborador && item.ausente !== filters.colaborador) return false;
+            if (filters.status && item.status !== filters.status) return false;
             return true;
         });
-    }, [histOriginal, filters.contrato, filters.departamento, filters.supervisor, filters.colaborador]);
+    }, [histOriginal, filters.contrato, filters.departamento, filters.supervisor, filters.colaborador, filters.status]);
 
     const clearFilters = () => {
         setFilters(() => ({ ...defaultFilters }));
@@ -170,6 +171,7 @@ export function RequestReport() {
             if (filters.departamento && item.dpto !== filters.departamento) return false;
             if (filters.supervisor && item.supervisor !== filters.supervisor) return false;
             if (filters.motivo && item.motivo !== filters.motivo) return false;
+            if (filters.status && item.status !== filters.status) return false;
 
             return true;
         });
@@ -185,6 +187,7 @@ export function RequestReport() {
             if (filters.contrato && item.local !== filters.contrato) return false;
             if (filters.supervisor && item.supervisor !== filters.supervisor) return false;
             if (filters.motivo && item.motivo !== filters.motivo) return false;
+            if (filters.status && item.status !== filters.status) return false;
 
             return true;
         });
@@ -200,6 +203,7 @@ export function RequestReport() {
             if (filters.departamento && item.dpto !== filters.departamento) return false;
             if (filters.contrato && item.local !== filters.contrato) return false;
             if (filters.supervisor && item.supervisor !== filters.supervisor) return false;
+            if (filters.status && item.status !== filters.status) return false;
 
             return true;
         });
@@ -215,11 +219,28 @@ export function RequestReport() {
             if (filters.departamento && item.dpto !== filters.departamento) return false;
             if (filters.contrato && item.local !== filters.contrato) return false;
             if (filters.motivo && item.motivo !== filters.motivo) return false;
+            if (filters.status && item.status !== filters.status) return false;
 
             return true;
         });
 
         return [...new Set(histFiltro.map(i => i.supervisor))]
+            .sort()
+            .map(i => ({ label: i, value: i }));
+
+    }, [histOriginal, filters]);
+
+    const statusOptions = useMemo(() => {
+        const histFiltro = histOriginal.filter(item => {
+            if (filters.departamento && item.dpto !== filters.departamento) return false;
+            if (filters.contrato && item.local !== filters.contrato) return false;
+            if (filters.supervisor && item.supervisor !== filters.supervisor) return false;
+            if (filters.motivo && item.motivo !== filters.motivo) return false;
+
+            return true;
+        });
+
+        return [...new Set(histFiltro.map(i => i.status))]
             .sort()
             .map(i => ({ label: i, value: i }));
 
@@ -300,7 +321,6 @@ export function RequestReport() {
         }, {});
 
         setDepartamentos(Object.entries(dptos));
-
 
         // Cards
         setRealizadas(total);
@@ -444,12 +464,12 @@ export function RequestReport() {
 
     const dadosTabelaFiltraveis = dadosTabela.map(row => ({
         ...row,
-        cobertura_search: `${row.ausente ?? ""} ${row.reserva ?? ""}`
+        cobertura_search: `${row.ausente ?? ""} ${!row.reserva?"SEM COBERTURA":row.reserva}`
     }));
 
     const columns = [
         {
-            header: "Centro de Custo",
+            header: "Local da Falta",
             field: "local",
             class: "text-truncate"
         },
@@ -466,10 +486,11 @@ export function RequestReport() {
             style: { maxWidth: "20rem" },
             field: "cobertura_search",
             body: (row) => {
-                return <div className="flex gap-2">
+                return <div className="flex justify-content-between gap-2">
                     <span className="text-truncate inter">{row.ausente.split(" ")[0]} {row.ausente.split(" ").at(-1)}</span>
-                    <i className="pi pi-arrow-right" style={{ color: `var(--${row.reserva == "SEM COBERTURA" ? "red-500" : "green-500"})` }}></i>
-                    <span className="font-bold text-truncate">{row.reserva.split(" ")[0]} {row.reserva.split(" ").at(-1)}</span>
+                    <i className="pi pi-arrow-right" style={{ color: `var(--${!row.reserva || row.reserva == "SEM COBERTURA"? "red-500" : "green-500"})` }}></i>
+                    <span className="font-bold text-truncate">{row.reserva? row.reserva.split(" ")[0]:"SEM"}  { row.reserva?row.reserva.split(" ").at(-1):"COBERTURA"}
+                    </span>
                 </div>
             }
         },
@@ -654,6 +675,21 @@ export function RequestReport() {
                             }
                         />
                         <label htmlFor="">Supervisores: </label>
+                    </FloatLabel>
+
+                    <FloatLabel className="w-full mb-4">
+                        <Dropdown
+                            options={statusOptions}
+                            value={filters.status}
+                            className="w-full"
+                            onChange={(e) =>
+                                setFilters(prev => ({
+                                    ...prev,
+                                    status: e.value
+                                }))
+                            }
+                        />
+                        <label htmlFor="">Status: </label>
                     </FloatLabel>
 
                     <Divider className="mt-4" />

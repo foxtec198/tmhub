@@ -13,6 +13,12 @@ export function History(){
         }; getHistory();
     }, [])
 
+    const columns = [
+        {   
+            header: ""
+        }
+    ]
+
     return (
         <>
             <h2 className="inter flex align-items-center gap-2" style={{ color: "var(--green-600)", fontWeight: 900 }}>
@@ -20,7 +26,8 @@ export function History(){
                 Histórico
             </h2>
             <Table
-                data={[]}
+                data={dateFilter}
+                columns={columns}
             />
         </>
     )
