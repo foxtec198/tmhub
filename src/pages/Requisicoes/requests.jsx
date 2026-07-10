@@ -195,9 +195,10 @@ export function Requests() {
 
     useEffect(() => {
         async function get_requests() {
-            const res = await connect.get("/repo/request")
+            const res = await connect.get("/repo/request?status=pending")
             setAbertas(res.data.length)
             setRequests(res.data)
+            console.log(res.data)
         }; get_requests();
     }, [refresh]);
 
