@@ -6,11 +6,11 @@ import { capitalize, deny_roles, allow_roles } from "../utils/ui";
 import './main.css'
 
 export function MainLayout() {
-  
   const [displayName, setDisplayName] = useState("");
   const [role, setRole] = useState("");
   const navigate = useNavigate();
   const deny = deny_roles.includes(role)
+  const allow = allow_roles.includes(role)
 
   const items = [
     {
@@ -30,7 +30,7 @@ export function MainLayout() {
         {
           label: "Novo",
           icon: "pi pi-plus",
-          className: role != allow_roles? "hidden" : null
+          className: !allow ? "hidden" : null
         }
       ]
     },
@@ -69,13 +69,13 @@ export function MainLayout() {
         {
           label: 'Histórico',
           icon: 'pi pi-history',
+          display: false,
           command: () => {navigate("/reposicoes/historico")}
         },
         {
           label: 'Reservas Tecnicas',
           icon: 'pi pi-users',
           command: () => {navigate("/reposicoes/reservas")},
-          className: role != allow_roles? "hidden" : null
         },
       ]
     },
