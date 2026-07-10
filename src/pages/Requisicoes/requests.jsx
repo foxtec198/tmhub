@@ -26,8 +26,6 @@ export function Requests() {
     const [emAtraso, setEmAtraso] = useState(0)
     const [expiradas, setExpiradas] = useState(0)
 
-    const [active, setActive] = useState(false);
-
     const { showToast } = useToast();
     const setLoading = useLoading();
     const navigate = useNavigate();
@@ -47,6 +45,7 @@ export function Requests() {
             setLoading(true)
             await connect.post("/repo", { id: id, status: status })
             showToast("success", "Sucesso", "Requisilçõ salva com sucesso!")
+            setRefresh(prev => !prev)
         }
         catch (err) { showToast("error", status == "approved" ? "Erro na Aprovação" : "Erro na Reprovação", err.reponse.data) }
         finally { setLoading(false) }
@@ -58,7 +57,6 @@ export function Requests() {
                 setLoading(true)
                 await connect.patch('/repo/request', value)
                 showToast("success", "Sucesso", "Alteração salva com sucesso!")
-                setActive(false)
             }
             catch (err) { showToast("error", "Erro na requisição", err.response.data) }
             finally { setLoading(false) }
@@ -91,7 +89,7 @@ export function Requests() {
             body: (row) => {
                 return (
                     <div className="flex">
-                        <Inplace closable className="text-sm" active={active}>
+                        <Inplace closable className="text-sm">
                             <InplaceDisplay>{row.ausencia}</InplaceDisplay>
 
                             <InplaceContent>
@@ -114,7 +112,7 @@ export function Requests() {
             body: (row) => {
                 return (
                     <div className="flex">
-                        <Inplace closable className="text-sm" active={active}>
+                        <Inplace closable className="text-sm">
                             <InplaceDisplay>{row.reserva}</InplaceDisplay>
 
                             <InplaceContent>
@@ -202,7 +200,7 @@ export function Requests() {
         }; get_requests();
     }, [refresh]);
 
-    useEffect(() => { socketio.on("new_request", () => setRefresh(prev => !prev)); }, []);
+    useEffect(() => { socketio.on("new_request", () => {console.log("Atualizando"); setRefresh(prev => !prev)}); }, []);
 
     return (
         <main className="flex flex-column gap-1">
