@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Dropdown } from "primereact/dropdown";
 import connect from "../utils/request";
-import { useLoading } from "../contexts/LoadingContext";
 
 export function DropdownWS({
     uri,
@@ -12,8 +11,10 @@ export function DropdownWS({
     optionValue = "id",
     optionLabel = "nome",
     limit = 50,
+    fetchAll = false,
     minSearch = 2,
     debounce = 400,
+    staticOptions = [],
     value,
     onChange
 }) {
@@ -36,7 +37,9 @@ export function DropdownWS({
 
             const params = new URLSearchParams();
 
-            params.append("limit", limit);
+            if (!fetchAll) {
+                params.append("limit", limit);
+            }
 
             if (search) {
                 params.append("search", search);
@@ -50,11 +53,16 @@ export function DropdownWS({
 
             const response = await connect.get(`${uri}?${params.toString()}`);
 
-            const options = response.data.map(item => ({
+            const remoteOptions = response.data.map(item => ({
                 nome: item[optionsValuesForDict.nome],
                 id: item.id
             }));
-            setOptions(options);
+
+            const staticIds = new Set(staticOptions.map((item) => item.id));
+            setOptions([
+                ...staticOptions,
+                ...remoteOptions.filter((item) => !staticIds.has(item.id)),
+            ]);
         } catch (error) {
             console.error(error);
             setOptions([]);

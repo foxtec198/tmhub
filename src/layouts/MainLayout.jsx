@@ -6,11 +6,25 @@ import { capitalize, deny_roles, allow_roles } from "../utils/ui";
 import './main.css'
 
 export function MainLayout() {
-  const [displayName, setDisplayName] = useState("");
-  const [role, setRole] = useState("");
+  const [displayName] = useState(() => localStorage.getItem("display_name") || "");
+  const [role] = useState(() => {
+    const storedRole = localStorage.getItem("role");
+    return storedRole ? capitalize(storedRole) : "";
+  });
+  const [isMenuVisible, setIsMenuVisible] = useState(
+    () => !window.matchMedia("(max-width: 960px)").matches
+  );
   const navigate = useNavigate();
   const deny = deny_roles.includes(role)
   const allow = allow_roles.includes(role)
+
+  const navigateTo = (path) => {
+    navigate(path);
+
+    if (window.matchMedia("(max-width: 960px)").matches) {
+      setIsMenuVisible(false);
+    }
+  };
 
   const items = [
     {
@@ -20,12 +34,12 @@ export function MainLayout() {
         {
           label: 'Reposições',
           icon: 'pi pi-sync',
-          command: () => {navigate("/reports/reposicoes")}
+          command: () => { navigateTo("/reports/reposicoes") }
         },
         {
           label: 'Logística',
           icon: 'pi pi-truck',
-          command: () => {navigate("/reports/logistica")}
+          command: () => { navigateTo("/reports/logistica") }
         },
         {
           label: "Novo",
@@ -35,13 +49,13 @@ export function MainLayout() {
       ]
     },
     {
-          label: "Admissão",
-          icon: 'pi pi-user-plus',
-          items: [
+      label: "Admissão",
+      icon: 'pi pi-user-plus',
+      items: [
         {
           label: 'Vagas',
           icon: 'pi pi-briefcase',
-          command: () => {navigate("/admissao/vagas")}
+          command: () => { navigateTo("/admissao/vagas") }
         },
       ]
     },
@@ -53,7 +67,7 @@ export function MainLayout() {
         {
           label: 'HK Bot',
           icon: 'pi pi-clock',
-          command: () => {}
+          command: () => { }
         },
       ]
     },
@@ -64,18 +78,18 @@ export function MainLayout() {
         {
           label: 'Requisições',
           icon: 'pi pi-question',
-          command: () => {navigate("/reposicoes/requisicoes")}
+          command: () => { navigateTo("/reposicoes/requisicoes") }
         },
         {
           label: 'Histórico',
           icon: 'pi pi-history',
           display: false,
-          command: () => {navigate("/reposicoes/historico")}
+          command: () => { navigateTo("/reposicoes/historico") }
         },
         {
           label: 'Reservas Tecnicas',
           icon: 'pi pi-users',
-          command: () => {navigate("/reposicoes/reservas")},
+          command: () => { navigateTo("/reposicoes/reservas") },
         },
       ]
     },
@@ -86,55 +100,68 @@ export function MainLayout() {
         {
           label: 'Produtos',
           icon: 'pi pi-barcode',
-          command: () => {navigate("/estoque/produtos")}
+          command: () => { navigateTo("/estoque/produtos") }
         },
         {
           label: 'Movimentações',
           icon: 'pi pi-arrow-right-arrow-left',
-          command: () => {navigate("/estoque/movimentacoes")}
+          command: () => { navigateTo("/estoque/movimentacoes") }
         },
       ]
     },
     {
       label: 'Meus Projetos',
       icon: 'pi pi-spinner-dotted',
-      command: () => { navigate("/projetos") }
+      command: () => { navigateTo("/projetos") }
     },
     {
       label: 'Frotas',
       disabled: "True",
       icon: 'pi pi-car',
-      command: () => { navigate("/frotas") }
+      command: () => { navigateTo("/frotas") }
     },
     {
       label: 'Sair',
       icon: 'pi pi-sign-out',
-      command: () => { localStorage.clear(); navigate("/") }
+      command: () => { localStorage.clear(); navigateTo("/") }
     },
   ];
 
   useEffect(() => {
-    const dn = localStorage.getItem("display_name") || null;
-    const rl = localStorage.getItem("role") || null
-
-    if (dn && rl) {
-      setDisplayName(dn);
-      setRole(capitalize(rl));
-      return;
-    };
-
-    return navigate("/");
-  }, [navigate]);
+    if (!displayName || !role) {
+      navigate("/");
+    }
+  }, [displayName, navigate, role]);
 
   return (
-    <div className="flex flex-column" style={{ minHeight: "100dvh", padding: "0px" }}>
+    <div className={`app-layout ${isMenuVisible ? "menu-open" : "menu-closed"}`}>
       {/* DOCKER */}
-      <div className="flex nav shadow-6 px-3 align-items-center justify-content-between">
-        <a className="cursor-pointer fadein animation-duration-2000" onClick={() => {navigate("/init")}}>
-          <img src="/brands/main_brand.svg" width={180} className="p-5" />
-        </a>
+      <header className="layout-header shadow-6 px-3">
+        <div className="flex align-items-center gap-2">
+          <button
+            type="button"
+            className="layout-menu-toggle"
+            aria-controls="main-sidebar"
+            aria-expanded={isMenuVisible}
+            aria-label={isMenuVisible ? "Ocultar menu principal" : "Exibir menu principal"}
+            title={isMenuVisible ? "Ocultar menu" : "Exibir menu"}
+            onClick={() => setIsMenuVisible((visible) => !visible)}
+          >
+            <i className={`pi ${isMenuVisible ? "pi-angle-left" : "pi-bars"}`} aria-hidden="true" />
+          </button>
+
+          <button
+            type="button"
+            className="layout-brand fadein animation-duration-2000"
+            aria-label="Ir para a tela inicial"
+            onClick={() => navigateTo("/init")}
+          >
+            <img src="/brands/main_brand.svg" alt="TM Hub" />
+          </button>
+        </div>
+
         <div className="flex gap-2 align-items-center flipup animation-duration-500">
-          <div className="flex flex-column text-right">
+          <div className="layout-user-info flex flex-column text-right">
             <span className="font-bold">{displayName}</span>
             <span className="text-700 font-italic">{role}</span>
           </div>
@@ -144,18 +171,27 @@ export function MainLayout() {
             size="large"
           />
         </div>
-      </div>
+      </header>
 
       {/* MAIN CONTENT */}
-      <main className="w-full frame flex gap-2">
+      <div className="layout-body">
+        <button
+          type="button"
+          className="layout-sidebar-backdrop"
+          aria-label="Fechar menu principal"
+          onClick={() => setIsMenuVisible(false)}
+        />
+
         {/* MENU BAR */}
-        <div className="flex p-2 bg-primary overflow-x-hidden shadow-4 flex-column">
-          <PanelMenu model={items} className="w-full md:w-20rem mt-5" />
-        </div>
+        <aside id="main-sidebar" className="layout-sidebar bg-primary shadow-4" aria-hidden={!isMenuVisible}>
+          <PanelMenu model={items} className="layout-panel-menu" />
+        </aside>
 
         {/* PANEL FRAME */}
-        <div className="w-full h-full"><Outlet /></div>
-      </main>
+        <main className="layout-outlet">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

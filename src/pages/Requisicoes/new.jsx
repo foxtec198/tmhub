@@ -1,7 +1,6 @@
 // Widgets ----------------------------------------------
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
-import { Tag } from "primereact/tag";
 import { Stepper } from 'primereact/stepper';
 import { StepperPanel } from 'primereact/stepperpanel';
 import { Checkbox } from "primereact/checkbox";
@@ -44,6 +43,19 @@ export function Request() {
     const setLoading = useLoading();
     const { showToast } = useToast();
 
+    const today = new Date();
+    const minRequestDate = new Date(today);
+    const maxRequestDate = new Date(today);
+    minRequestDate.setDate(today.getDate() - 7);
+    maxRequestDate.setDate(today.getDate() + 7);
+
+    function selectedDateWithCurrentTime(selectedDate) {
+        const now = new Date();
+        const date = new Date(selectedDate);
+        date.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+        return date;
+    }
+
     async function createRequest() {
         setLoading(true);
         try {
@@ -55,11 +67,12 @@ export function Request() {
                     reserva_id: checked ? 0: replace.id,
                     motivo: reason,
                     advertencia: warning,
-                    data: new Date(filterData),
+                    data: selectedDateWithCurrentTime(filterData),
                     obs: obs
                 }
                 await connect.post("/repo/request", data)
                 showToast("success", "Sucesso na requisição", "Sua requisição foi criada com sucesso, aguarde novidades por email!")
+                selectedReplace(null); selectedLocal(null); selectedAbsent(null); selectedReason(null); setObs(null), selectedWarning(null)
             }
             else{showToast("warn", "Atenção!", "Preencha todos os dados")}
         }
@@ -98,7 +111,7 @@ export function Request() {
             setCenterOptions(centers)
         }
 
-        getSups(); getFuncs(); getCenters();
+        getSups(); getFuncs(); getCenters(); getReplaces();
     }, [])
 
     return (
@@ -183,7 +196,7 @@ export function Request() {
                                     value={replace}
                                     virtualScrollerOptions={{ itemSize: 38 }}
                                     onChange={(e) => selectedReplace(e.value)}
-                                    options={allFuncsOptions}
+                                    options={replaces}
                                     placeholder="Quem vai repor?"
                                     optionLabel="name"
                                     filter
@@ -219,13 +232,17 @@ export function Request() {
                                 />
                                 
                                 <div className="flex justify-content-between align-items-center mb-4">
-                                    <label htmlFor="data">Selecione o periodo</label>
+                                    <label htmlFor="data">Selecione a data</label>
                                     <Calendar
                                         id="data"
                                         className="w-20rem"
                                         value={filterData}
                                         dateFormat="dd/mm/yy"
+                                        locale="pt-BR"
                                         onChange={(e)=>setFilterData(e.value)}
+                                        minDate={minRequestDate}
+                                        maxDate={maxRequestDate}
+                                        readOnlyInput
 
                                     />
                                 </div>

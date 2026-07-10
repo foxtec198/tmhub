@@ -27,6 +27,13 @@ export async function updateProject(id, body) {
     return data;
 }
 
+export async function deleteProject(id) {
+    const { data } = await connect.delete("/projetos", {
+        params: { id }
+    });
+    return data;
+}
+
 export async function getUsers(){
     const { data }  = await connect.get("/usuarios")
     const colors = ["#7c5cff", "#22a3a3", "#e0763a", "#c14b6b", "#3d78c9", "#2f9e44"];

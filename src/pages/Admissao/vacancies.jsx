@@ -404,7 +404,7 @@ export function Vacancies() {
                         key={s.value}
                         title={s.label}
                         className="border-round-lg p-1 spaceg flex-grow-1"
-                        style={{ background: s.color, color: '#fff' }}
+                        style={{ background: s.color, color: '#fff', flexBasis: '10rem', height: "6rem" }}
                         value={grouped[s.value]?.length || 0}
                     />
                 ))}

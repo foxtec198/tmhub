@@ -1,25 +1,32 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Avatar } from 'primereact/avatar';
 import { AvatarGroup } from 'primereact/avatargroup';
-import { createProject, getProjects, getUsers, renameProject, updateProject } from './services/project';
+import { createProject, deleteProject, getProjects, getUsers, renameProject, updateProject } from './services/project';
 import { deleteCard, updateCard } from './services/card';
 import ProjectsSidebar from '../../components/ProjectsSidebar';
 import KanbanBoard from '../../components/KanbanBoard';
 import CardDetailDialog from '../../components/CardDetailDialog';
 import MembersDialog from '../../components/MembersDialog';
 import NewProjectDialog from '../../components/NewProjectDialog';
+import { useToast } from '../../contexts/ToastContext';
 import './ProjetosPage.css';
 
 export default function ProjetosPage() {
   const [projetos, setProjetos] = useState([]);
-  const [currentUserId, setCurrentUserId] = useState(null);
+  const [currentUserId] = useState(() => {
+    const storedId = Number(localStorage.getItem('current_id'));
+    return Number.isInteger(storedId) && storedId > 0 ? storedId : null;
+  });
   const [usuarios, setUsuarios] = useState([]);
   const [projetoAtivoId, setProjetoAtivoId] = useState(null);
   const [cardSelecionado, setCardSelecionado] = useState(null);
   const [projetoParaMembrosId, setProjetoParaMembrosId] = useState(null);
   const [novoProjetoAberto, setNovoProjetoAberto] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [deletingProject, setDeletingProject] = useState(false);
+  const { showToast } = useToast();
 
   const projetoParaMembros = projetoParaMembrosId
     ? projetos.find((p) => p.id === projetoParaMembrosId) || null
@@ -67,7 +74,47 @@ export default function ProjetosPage() {
   async function criarProjeto(novoProjeto) {
     const data = await createProject(novoProjeto);
     setProjetos((prev) => [...prev, data]);
-    setProjetoAtivoId(data.id);
+    selecionarProjeto(data.id);
+  }
+
+  function selecionarProjeto(id) {
+    setProjetoAtivoId(id);
+
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      setSidebarOpen(false);
+    }
+  }
+
+  async function excluirProjeto(projeto) {
+    try {
+      setDeletingProject(true);
+      await deleteProject(projeto.id);
+      setProjetos((prev) => prev.filter((item) => item.id !== projeto.id));
+      setProjetoAtivoId(null);
+      setProjetoParaMembrosId(null);
+      showToast('success', 'Projeto excluído', 'O projeto foi excluído com sucesso.');
+    } catch (error) {
+      showToast(
+        'error',
+        'Erro ao excluir projeto',
+        error.response?.data?.message || error.response?.data || 'Não foi possível excluir o projeto.'
+      );
+    } finally {
+      setDeletingProject(false);
+    }
+  }
+
+  function confirmarExclusaoProjeto(projeto) {
+    confirmDialog({
+      header: `Excluir ${projeto.nome}`,
+      message: 'Todas as colunas e cards deste projeto serão excluídos. Deseja continuar?',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Excluir',
+      rejectLabel: 'Cancelar',
+      acceptClassName: 'p-button-danger',
+      defaultFocus: 'reject',
+      accept: () => excluirProjeto(projeto),
+    });
   }
 
   async function salvarCard(cardAtualizado) {
@@ -104,35 +151,50 @@ export default function ProjetosPage() {
     ? projetoAtivo.memberIds.map((id) => usuarios.find((u) => u.id === id)).filter(Boolean)
     : [];
 
-  async function loadProjects() {
-    const users = await getUsers();
-    setUsuarios(users);
-    
-    const data = await getProjects();
-    setProjetos(data);
-  }
-  
   useEffect(() => {
-    const id = localStorage.getItem("current_id")
-    setCurrentUserId(parseInt(id))
+    let active = true;
+
+    async function loadProjects() {
+      const [users, data] = await Promise.all([getUsers(), getProjects()]);
+      if (!active) return;
+
+      setUsuarios(users);
+      setProjetos(data);
+    }
+
     loadProjects();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (
-    <div className="projetos-page" style={{ height: '90dvh' }}>
+    <div className={`projetos-page ${sidebarOpen ? 'projetos-page--sidebar-open' : 'projetos-page--sidebar-closed'}`}>
+      <ConfirmDialog />
       <ProjectsSidebar
         projetos={meusProjetos}
         projetoAtivoId={projetoAtivo?.id}
         todosUsuarios={usuarios}
-        onSelect={setProjetoAtivoId}
+        currentUserId={currentUserId}
+        onSelect={selecionarProjeto}
         onRename={renomearProjeto}
         onOpenMembers={(id) => setProjetoParaMembrosId(id)}
         onNovoProjeto={() => setNovoProjetoAberto(true)}
+        onClose={() => setSidebarOpen(false)}
       />
 
       <div className="projetos-board-wrapper">
         <div className="projetos-board-wrapper__topo">
           <div className="flex align-items-center gap-3">
+            <Button
+              icon={sidebarOpen ? 'pi pi-angle-left' : 'pi pi-bars'}
+              text
+              rounded
+              aria-label={sidebarOpen ? 'Recolher projetos' : 'Mostrar projetos'}
+              title={sidebarOpen ? 'Recolher projetos' : 'Trocar projeto'}
+              onClick={() => setSidebarOpen((open) => !open)}
+            />
             <h2 className="m-0 text-xl font-semibold">{projetoAtivo ? projetoAtivo.nome : 'Projetos'}</h2>
             {projetoAtivo && (
               <AvatarGroup>
@@ -150,7 +212,7 @@ export default function ProjetosPage() {
           </div>
 
           <div className="flex align-items-center gap-2">
-            {projetoAtivo && (
+            {projetoAtivo && projetoAtivo.donoId === currentUserId && (
               <Button
                 icon="pi pi-users"
                 label="Membros"
@@ -158,16 +220,16 @@ export default function ProjetosPage() {
                 onClick={() => setProjetoParaMembrosId(projetoAtivo.id)}
               />
             )}
-
-            <Dropdown
-              value={currentUserId}
-              options={usuarios}
-              optionLabel="nome"
-              optionValue="id"
-              onChange={(e) => { setCurrentUserId(e.value); setProjetoAtivoId(null); }}
-              className="w-14rem"
-              title="Ver como"
-            />
+            {projetoAtivo && projetoAtivo.donoId === currentUserId && (
+              <Button
+                icon="pi pi-trash"
+                label="Excluir"
+                severity="danger"
+                text
+                loading={deletingProject}
+                onClick={() => confirmarExclusaoProjeto(projetoAtivo)}
+              />
+            )}
           </div>
         </div>
 

@@ -9,6 +9,7 @@ import { Knob } from 'primereact/knob';
 import { Button } from "primereact/button"
 import { OverlayPanel } from "primereact/overlaypanel"
 import { FloatLabel } from "primereact/floatlabel"
+import { Dropdown } from "primereact/dropdown"
 
 // Components
 import { DashCard } from "../../components/Card"
@@ -21,7 +22,6 @@ import connect from "../../utils/request"
 
 // CSS
 import "./request.css"
-import { Dropdown } from "primereact/dropdown"
 
 
 // MOCKS
@@ -518,13 +518,13 @@ export function RequestReport() {
     ];
 
     return (
-        <main className="flex flex-column p-2 gap-2 w-full">
-            <div className="flex justify-content-between align-items-center w-full">
-                <div className="flex gap-2 p-2 w-full">
+        <main className="request-dashboard flex flex-column p-2 gap-2 w-full">
+            <div className="dashboard-toolbar flex justify-content-between align-items-center w-full">
+                <div className="dashboard-summary flex gap-2 p-2 w-full">
                     <DashCard
                         icon="pi pi-verified"
                         title="Fechadas"
-                        className="border-round-lg text-truncate flex-grow-1"
+                        className="border-round-lg flex-grow-1"
                         style={{
                             backgroundColor: 'var(--green-900)',
                             height: "5rem",
@@ -535,7 +535,7 @@ export function RequestReport() {
                     <DashCard
                         icon="pi pi-folder-open "
                         title="Abertas"
-                        className="border-round-lg text-truncate flex-grow-1"
+                        className="border-round-lg flex-grow-1"
                         style={{
                             backgroundColor: 'var(--green-500)',
                             height: "5rem",
@@ -546,7 +546,7 @@ export function RequestReport() {
                     <DashCard
                         icon="pi pi-calendar "
                         title="Cobertas"
-                        className="border-round-lg text-truncate flex-grow-1"
+                        className="border-round-lg flex-grow-1"
                         style={{
                             backgroundColor: 'var(--green-800)',
                             height: "5rem",
@@ -557,7 +557,7 @@ export function RequestReport() {
                     <DashCard
                         icon="pi pi-paperclip"
                         title="Descobertas"
-                        className="border-round-lg text-truncate flex-grow-1"
+                        className="border-round-lg flex-grow-1"
                         style={{
                             backgroundColor: 'var(--green-400)',
                             height: "5rem",
@@ -568,7 +568,7 @@ export function RequestReport() {
                     <DashCard
                         icon="pi pi-dollar"
                         title="Custo de Reservas"
-                        className="border-round-lg text-truncate flex-grow-1"
+                        className="border-round-lg flex-grow-1"
                         style={{
                             backgroundColor: 'var(--gray-700)',
                             height: "5rem",
@@ -577,7 +577,7 @@ export function RequestReport() {
                         value={to_real(totalDeMultas)}
                     />
                     <div
-                        className="flex justify-content-center flex-grow-1 gap-2 align-items-center border-round-lg shadow-6 p-3"
+                        className="dashboard-highlight flex justify-content-center flex-grow-1 gap-2 align-items-center border-round-lg shadow-6 p-3"
                         style={{ backgroundColor: 'var(--white-600)', height: "5rem", color: '#333' }}>
                         <Knob
                             value={valorDoLocalComMaisFaltas}
@@ -594,7 +594,7 @@ export function RequestReport() {
                     </div>
                 </div>
 
-                <OverlayPanel ref={op_filters} className="p-3 flex flex-column w-25rem">
+                <OverlayPanel ref={op_filters} className="dashboard-filter-panel p-3 flex flex-column w-25rem">
                     <span className="inter mb-5 font-bold">Filtre os dados do Dashboard.</span>
 
                     <Divider className="my-5"></Divider>
@@ -703,7 +703,7 @@ export function RequestReport() {
 
                 <Button
                     icon="pi pi-filter-fill"
-                    className="border-round-lg shadow-6"
+                    className="dashboard-filter-button border-round-lg shadow-6"
                     onClick={(e) => op_filters.current.toggle(e)}
                     style={{
                         background: "ghostwhite",
@@ -715,11 +715,11 @@ export function RequestReport() {
                 />
             </div>
 
-            <div className="flex w-full min-h-full gap-4">
-                <div className="flex flex-column flex-grow-1 gap-4">
+            <div className="dashboard-content flex w-full min-h-full gap-4">
+                <div className="dashboard-main flex flex-column flex-grow-1 gap-4">
                     {/* CHARTS FRAME */}
-                    <div className="flex flex-grow-1 gap-4 max-h-15rem">
-                        <div className="border-round-lg p-3 gap-2 flex flex-column justify-content-center align-items-center shadow-6 flex-grow-1">
+                    <div className="dashboard-charts flex flex-grow-1 gap-4 max-h-15rem">
+                        <div className="dashboard-chart-card border-round-lg p-3 gap-2 flex flex-column justify-content-center align-items-center shadow-6 flex-grow-1">
                             <Chart data={dataRepos}
                                 options={{
                                     aspectRatio: 2.5,
@@ -750,10 +750,10 @@ export function RequestReport() {
                                         }
                                     }
                                 }}
-                                className="flex align-items-center justify-content-center w-30rem h-full"
+                                className="dashboard-chart flex align-items-center justify-content-center h-full"
                             />
                         </div>
-                        <div className="border-round-lg p-4 flex flex-column justify-content-center align-items-center shadow-6 flex-grow-1">
+                        <div className="dashboard-chart-card border-round-lg p-4 flex flex-column justify-content-center align-items-center shadow-6 flex-grow-1">
                             <Chart data={dataMults}
                                 className="w-full h-full"
                                 options={{
@@ -787,11 +787,12 @@ export function RequestReport() {
                     </div>
 
                     {/* TABLE FRAME */}
-                    <div className="flex overflow-hidden flex-grow-1 p-2 border-round-lg shadow-6 ">
+                    <div className="dashboard-table flex overflow-hidden flex-grow-1 p-2 border-round-lg shadow-6">
                         <Table
                             tableClassName="w-full"
                             columns={columns}
                             data={dadosTabelaFiltraveis}
+                            rowsPerPageOptions = {[3, 10, 50, 100]}
                             rows={3}
                             style={{
                                 fontSize: "10px"
@@ -802,7 +803,7 @@ export function RequestReport() {
                 </div>
 
                 {/* STATUS CARD */}
-                <div className="flex flex-column p-4 flex-grow-1 border-round-lg shadow-6 overflow-y-auto" style={{ width: "25rem", maxHeight: "72dvh" }}>
+                <div className="dashboard-status flex flex-column p-4 flex-grow-1 border-round-lg shadow-6">
                     <TabView className="h-full">
                         <TabPanel header="Departamentos">
                             <div className="flex flex-column h-full">

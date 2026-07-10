@@ -1,25 +1,25 @@
-.p-menuitem-icon,
-.p-panelmenu-icon,
-.p-panelmenu-header-icon,
-.p-icon,
-.p-menuitem-text,
-.p-panelmenu-header-label {
+.layout-sidebar .p-menuitem-icon,
+.layout-sidebar .p-panelmenu-icon,
+.layout-sidebar .p-panelmenu-header-icon,
+.layout-sidebar .p-icon,
+.layout-sidebar .p-menuitem-text,
+.layout-sidebar .p-panelmenu-header-label {
   color: white;
 }
 
-.p-panelmenu,
-.p-panelmenu-panel,
-.p-panelmenu-header-content,
-.p-panelmenu-header-link,
-.p-panelmenu-content,
-.p-menuitem-content,
-.p-menuitem-link {
+.layout-sidebar .p-panelmenu,
+.layout-sidebar .p-panelmenu-panel,
+.layout-sidebar .p-panelmenu-header-content,
+.layout-sidebar .p-panelmenu-header-link,
+.layout-sidebar .p-panelmenu-content,
+.layout-sidebar .p-menuitem-content,
+.layout-sidebar .p-menuitem-link {
   background: transparent !important;
   border: none !important;
 }
 
 /* Relevo nos itens PRINCIPAIS do menu */
-.p-panelmenu-header-link {
+.layout-sidebar .p-panelmenu-header-link {
   border-radius: 8px;
   margin: 2px 5px;
   width: calc(100% - 16px);
@@ -28,7 +28,7 @@
               transform var(--transition-fast, 0.15s ease);
 }
 
-.p-panelmenu-header-link:hover {
+.layout-sidebar .p-panelmenu-header-link:hover {
   background: rgba(255, 255, 255, 0.08) !important;
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.25),
@@ -36,20 +36,20 @@
   transform: translateX(1px);
 }
 
-.p-panelmenu-header-link:active {
+.layout-sidebar .p-panelmenu-header-link:active {
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
   transform: translateX(2px) scale(0.99);
 }
 
 /* Item principal expandido permanece destacado */
-.p-panelmenu-header-link[aria-expanded="true"],
-.p-panelmenu-header.p-highlight .p-panelmenu-header-link,
-.p-panelmenu-header.p-panelmenu-header-active .p-panelmenu-header-link {
+.layout-sidebar .p-panelmenu-header-link[aria-expanded="true"],
+.layout-sidebar .p-panelmenu-header.p-highlight .p-panelmenu-header-link,
+.layout-sidebar .p-panelmenu-header.p-panelmenu-header-active .p-panelmenu-header-link {
   background: rgba(255, 255, 255, 0.1) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
-.p-menuitem-link{
+.layout-sidebar .p-menuitem-link{
   padding-left: 60px;
   border-radius: 8px;
   margin: 2px 8px;
@@ -60,7 +60,7 @@
 }
 
 /* Relevo ao passar o mouse sobre um subitem do menu */
-.p-panelmenu-content .p-menuitem-link:hover {
+.layout-sidebar .p-panelmenu-content .p-menuitem-link:hover {
   background: rgba(255, 255, 255, 0.08) !important;
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.25),
@@ -69,29 +69,175 @@
 }
 
 /* Feedback ao clicar, "afundando" o botão de volta */
-.p-panelmenu-content .p-menuitem-link:active {
+.layout-sidebar .p-panelmenu-content .p-menuitem-link:active {
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
   transform: translateX(2px) scale(0.99);
 }
 
 /* Item atualmente ativo/selecionado permanece destacado */
-.p-panelmenu-content .p-menuitem-link.p-panelmenu-header-link[aria-expanded="true"],
-.p-panelmenu-content .router-link-active .p-menuitem-link {
+.layout-sidebar .p-panelmenu-content .p-menuitem-link.p-panelmenu-header-link[aria-expanded="true"],
+.layout-sidebar .p-panelmenu-content .router-link-active .p-menuitem-link {
   background: rgba(255, 255, 255, 0.1) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
-.nav {
-  min-height: 10dvh;
-  max-height: 10dvh;
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  min-width: 0;
+  overflow: hidden;
 }
 
-.frame {
-  min-height: 90dvh;
-  max-height: 90dvh;
-  overflow-y: auto;
+.layout-header {
+  z-index: 20;
+  display: flex;
+  flex: 0 0 4.75rem;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--surface-card, #fff);
 }
 
-.panel_frame {
-  min-height: 90dvh;
+.layout-brand,
+.layout-menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.layout-brand {
+  padding: 0.5rem;
+}
+
+.layout-brand img {
+  display: block;
+  width: 10rem;
+  max-width: 32vw;
+  height: auto;
+}
+
+.layout-menu-toggle {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  color: var(--primary-color);
+  font-size: 1.25rem;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.layout-menu-toggle:hover,
+.layout-menu-toggle:focus-visible {
+  color: var(--secondary-color);
+  background: var(--surface-100, #f5f5f5);
+  outline: none;
+}
+
+.layout-body {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.layout-sidebar {
+  z-index: 10;
+  flex: 0 0 18rem;
+  width: 18rem;
+  min-width: 18rem;
+  height: 100%;
+  overflow: hidden;
+  opacity: 1;
+  transition: width 0.2s ease, min-width 0.2s ease, flex-basis 0.2s ease, opacity 0.15s ease;
+}
+
+.layout-panel-menu {
+  width: 100%;
+  height: 100%;
+  padding: 1.25rem 0.75rem;
+  overflow: hidden;
+}
+
+.menu-closed .layout-sidebar {
+  flex-basis: 0;
+  width: 0;
+  min-width: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.layout-outlet {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.layout-outlet > * {
+  min-width: 0;
+}
+
+.layout-sidebar-backdrop {
+  display: none;
+}
+
+@media screen and (max-width: 960px) {
+  .layout-header {
+    flex-basis: 4.25rem;
+    padding-inline: 0.5rem !important;
+  }
+
+  .layout-brand {
+    padding-inline: 0;
+  }
+
+  .layout-brand img {
+    width: 8rem;
+  }
+
+  .layout-sidebar {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: min(18rem, calc(100vw - 3rem));
+    min-width: min(18rem, calc(100vw - 3rem));
+    transform: translateX(0);
+    transition: transform 0.2s ease, opacity 0.15s ease;
+  }
+
+  .menu-closed .layout-sidebar {
+    width: min(18rem, calc(100vw - 3rem));
+    min-width: min(18rem, calc(100vw - 3rem));
+    transform: translateX(-100%);
+  }
+
+  .menu-open .layout-sidebar-backdrop {
+    position: absolute;
+    z-index: 5;
+    inset: 0;
+    display: block;
+    border: 0;
+    background: rgba(0, 0, 0, 0.35);
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .layout-user-info {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layout-sidebar {
+    transition: none;
+  }
 }

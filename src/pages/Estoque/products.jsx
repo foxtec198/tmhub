@@ -222,23 +222,23 @@ export function Products() {
         <main className="flex flex-column gap-3 products-page">
             <ConfirmDialog />
 
-            <div className="flex gap-2 align-items-center">
+            <div className="flex flex-wrap gap-2 align-items-center">
                 <DashCard
                     title="Total"
-                    className="border-round-lg p-1 spaceg flex-grow-1"
-                    style={{ background: 'var(--primary-color)', color: '#fff' }}
+                    className="flex-grow-1 border-round-lg p-1 spaceg flex-grow-1"
+                    style={{ background: 'var(--primary-color)', color: '#fff', flexBasis: "200px" }}
                     value={totals.total}
                 />
                 <DashCard
                     title="Estoque Baixo"
-                    className="border-round-lg p-1 spaceg flex-grow-1"
-                    style={{ background: 'var(--warning)', color: '#fff' }}
+                    className="flex-grow-1 border-round-lg p-1 spaceg flex-grow-1"
+                    style={{ background: 'var(--warning)', color: '#fff', flexBasis: "200px" }}
                     value={totals.baixo}
                 />
                 <DashCard
                     title="Esgotados"
-                    className="border-round-lg p-1 spaceg flex-grow-1"
-                    style={{ background: 'var(--danger)', color: '#fff' }}
+                    className="flex-grow-1 border-round-lg p-1 spaceg flex-grow-1"
+                    style={{ background: 'var(--danger)', color: '#fff', flexBasis: "200px" }}
                     value={totals.esgotado}
                 />
             </div>
@@ -252,6 +252,7 @@ export function Products() {
                     tableClassName="w-full h-full"
                     style={{ width: '100%', height: '100dvh' }}
                     columns={table_itens}
+                    search
                 />
             </div>
 

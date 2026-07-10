@@ -5,7 +5,7 @@ import { Button } from 'primereact/button';
 import { AvatarGroup } from 'primereact/avatargroup';
 import { Avatar } from 'primereact/avatar';
 
-function ProjectRow({ projeto, ativo, todosUsuarios, onSelect, onRename, onOpenMembers }) {
+function ProjectRow({ projeto, ativo, todosUsuarios, currentUserId, onSelect, onRename, onOpenMembers }) {
   const [editando, setEditando] = useState(false);
   const [nomeTemp, setNomeTemp] = useState(projeto.nome);
 
@@ -17,6 +17,7 @@ function ProjectRow({ projeto, ativo, todosUsuarios, onSelect, onRename, onOpenM
   }
 
   const membros = projeto.memberIds.map((id) => todosUsuarios.find((u) => u.id === id)).filter(Boolean);
+  const canManage = projeto.donoId === currentUserId;
 
   return (
     <div
@@ -41,14 +42,16 @@ function ProjectRow({ projeto, ativo, todosUsuarios, onSelect, onRename, onOpenM
         ) : (
           <span className="projeto-item__nome">{projeto.nome}</span>
         )}
-        <Button
-          icon="pi pi-pencil"
-          text
-          rounded
-          size="small"
-          className="projeto-item__editar"
-          onClick={(e) => { e.stopPropagation(); setEditando(true); }}
-        />
+        {canManage && (
+          <Button
+            icon="pi pi-pencil"
+            text
+            rounded
+            size="small"
+            className="projeto-item__editar"
+            onClick={(e) => { e.stopPropagation(); setEditando(true); }}
+          />
+        )}
       </div>
 
       <div className="projeto-item__rodape" onClick={() => onSelect(projeto.id)}>
@@ -64,14 +67,16 @@ function ProjectRow({ projeto, ativo, todosUsuarios, onSelect, onRename, onOpenM
             />
           ))}
         </AvatarGroup>
-        <Button
-          icon="pi pi-users"
-          text
-          rounded
-          size="small"
-          title="Gerenciar membros"
-          onClick={(e) => { e.stopPropagation(); onOpenMembers(projeto.id); }}
-        />
+        {canManage && (
+          <Button
+            icon="pi pi-users"
+            text
+            rounded
+            size="small"
+            title="Gerenciar membros"
+            onClick={(e) => { e.stopPropagation(); onOpenMembers(projeto.id); }}
+          />
+        )}
       </div>
     </div>
   );
@@ -81,16 +86,29 @@ export default function ProjectsSidebar({
   projetos,
   projetoAtivoId,
   todosUsuarios,
+  currentUserId,
   onSelect,
   onRename,
   onOpenMembers,
   onNovoProjeto,
+  onClose,
 }) {
   return (
     <div className="projetos-sidebar">
       <div className="projetos-sidebar__header">
         <span>Meus projetos</span>
-        <Button icon="pi pi-plus" rounded text size="small" onClick={onNovoProjeto} title="Novo projeto" />
+        <div className="flex align-items-center gap-1">
+          <Button icon="pi pi-plus" rounded text size="small" onClick={onNovoProjeto} title="Novo projeto" />
+          <Button
+            icon="pi pi-times"
+            rounded
+            text
+            size="small"
+            className="projetos-sidebar__fechar"
+            onClick={onClose}
+            title="Recolher projetos"
+          />
+        </div>
       </div>
 
       <div className="projetos-sidebar__lista">
@@ -105,6 +123,7 @@ export default function ProjectsSidebar({
             projeto={projeto}
             ativo={projeto.id === projetoAtivoId}
             todosUsuarios={todosUsuarios}
+            currentUserId={currentUserId}
             onSelect={onSelect}
             onRename={onRename}
             onOpenMembers={onOpenMembers}

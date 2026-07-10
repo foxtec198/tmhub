@@ -11,28 +11,42 @@ export function Table({
     data = [],
     columns = [],
     loading = false,
-    mode = "paginate", // "paginate" ou "scroll"
-    rows = 10,
+    mode = "paginate",
+    rows = 5,
+    rowsPerPageOptions = [5, 10, 50, 100],
     tableClassName,
     dateValue,
     setRefresh,
     style,
+    tableStyle,
     search,
     handleSetDate,
-
 }) {
     const [globalFilterDash, setGlobalFilterDash] = useState("");
-    
+
+    const renderResponsiveCell = (column) => (rowData, options) => {
+        const content = typeof column.body === "function"
+            ? column.body(rowData, options)
+            : rowData?.[column.field];
+
+        return (
+            <div className="tm-table-cell">
+                <span className="tm-table-card-label">{column.mobileHeader || column.header}</span>
+                <div className="tm-table-card-value">{content ?? "—"}</div>
+            </div>
+        );
+    };
+
     const header = (
-        <div className="flex min-w-full justify-content-between align-items-center">
+        <div className="tm-table-header flex min-w-full justify-content-between align-items-center gap-3">
             {search
-                ?<FloatLabel className="mt-3">
+                ? <FloatLabel className="mt-3">
                     <InputText
                         value={globalFilterDash}
                         onChange={(e) => setGlobalFilterDash(e.target.value)}
                     />
                     <label htmlFor="">Buscar...</label>
-                </FloatLabel> :null
+                </FloatLabel> : null
             }
 
             {handleSetDate
@@ -59,20 +73,30 @@ export function Table({
             emptyMessage="Nenhum resultado encontrado."
             paginator={mode === "paginate"}
             rows={rows}
-            scrollable={mode === "scroll"}
+            rowsPerPageOptions={rowsPerPageOptions}
+
+            scrollable
             scrollHeight={mode === "scroll" ? "400px" : undefined}
-            paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+            tableStyle={{
+                minWidth: `${Math.max(columns.length * 180, 800)}px`,
+                ...tableStyle,
+            }}
+
+            paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
             currentPageReportTemplate="Mostrando {first} até {last} de {totalRecords} resultados"
             stripedRows
-            style={style}
-            className={tableClassName}
+            style={{
+                width: "100%",
+                ...style,
+            }}
+            className={`tm-responsive-table ${tableClassName || ""}`}
         >
             {columns.map((col) => (
                 <Column
                     key={col.field || col.header}
                     field={col.field}
                     header={col.header}
-                    body={col.body}
+                    body={renderResponsiveCell(col)}
                     sortable={col.sortable}
                     style={col.style}
                     className={col.class}

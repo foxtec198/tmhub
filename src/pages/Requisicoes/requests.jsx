@@ -18,13 +18,32 @@ import { useLoading } from "../../contexts/LoadingContext";
 import { useNavigate } from "react-router-dom";
 import connect from "../../utils/request";
 
+const NO_REPLACEMENT_OPTION = [
+    { id: 0, nome: "SEM COBERTURA" },
+];
+
+const REQUEST_STATUS = {
+    pending: { label: "PENDENTE", color: "var(--yellow-600)" },
+    updated: { label: "ALTERADA", color: "var(--blue-600)" },
+};
+
+function hasValidReplacement(row) {
+    if (row.reserva_id !== undefined && Number(row.reserva_id) === 0) {
+        return false;
+    }
+
+    const replacement = String(row.reserva || "").trim().toUpperCase();
+    return Boolean(replacement) && !["SEM COBERTURA", "SEM INFORMAÇÃO", "NONE", "NULL"].includes(replacement);
+}
+
 export function Requests() {
     const [requests, setRequests] = useState(null);
-    const [refresh, setRefresh] = useState(null);
+    const [refresh, setRefresh] = useState(0);
 
     const [abertas, setAbertas] = useState(0)
-    const [emAtraso, setEmAtraso] = useState(0)
-    const [expiradas, setExpiradas] = useState(0)
+    const [emAtraso] = useState(0)
+    const [expiradas] = useState(0)
+    const [deletingId, setDeletingId] = useState(null)
 
     const { showToast } = useToast();
     const setLoading = useLoading();
@@ -45,9 +64,9 @@ export function Requests() {
             setLoading(true)
             await connect.post("/repo", { id: id, status: status })
             showToast("success", "Sucesso", "Requisilçõ salva com sucesso!")
-            setRefresh(prev => !prev)
+            setRefresh(prev => prev + 1)
         }
-        catch (err) { showToast("error", status == "approved" ? "Erro na Aprovação" : "Erro na Reprovação", err.reponse.data) }
+        catch (err) { showToast("error", status === "approved" ? "Erro na Aprovação" : "Erro na Reprovação", err.response?.data || "Não foi possível alterar o status.") }
         finally { setLoading(false) }
     }
 
@@ -56,9 +75,10 @@ export function Requests() {
             try {
                 setLoading(true)
                 await connect.patch('/repo/request', value)
+                setRefresh(prev => prev + 1)
                 showToast("success", "Sucesso", "Alteração salva com sucesso!")
             }
-            catch (err) { showToast("error", "Erro na requisição", err.response.data) }
+            catch (err) { showToast("error", "Erro na requisição", err.response?.data || "Não foi possível atualizar a requisição.") }
             finally { setLoading(false) }
         }; updateReq();
     }
@@ -75,12 +95,54 @@ export function Requests() {
         });
     };
 
+    async function deleteRequest(row) {
+        try {
+            setDeletingId(row.id)
+            await connect.delete("/repo/request", {
+                data: { id: row.id }
+            })
+            showToast("success", "Requisição excluída", "A requisição foi excluída com sucesso.")
+            setRefresh(prev => prev + 1)
+        }
+        catch (err) {
+            showToast("error", "Erro ao excluir requisição", err.response?.data?.message || err.response?.data || "Não foi possível excluir a requisição.")
+        }
+        finally {
+            setDeletingId(null)
+        }
+    }
+
+    function confirmRequestDeletion(row) {
+        confirmDialog({
+            header: `Excluir requisição #${row.id}`,
+            message: "Essa ação também pode excluir o histórico e a timeline vinculados. Deseja continuar?",
+            icon: "pi pi-exclamation-triangle",
+            acceptLabel: "Excluir",
+            rejectLabel: "Cancelar",
+            acceptClassName: "p-button-danger",
+            defaultFocus: "reject",
+            accept: () => deleteRequest(row),
+        })
+    }
+
     const table_itens = [
         {
             field: "data",
             header: "Data",
             class: "text-truncate",
             body: (row) => new Date(row.data).toLocaleDateString("pt-br")
+        },
+        {
+            field: "status",
+            header: "Status",
+            body: (row) => {
+                const status = REQUEST_STATUS[row.status] || {
+                    label: row.status?.toUpperCase() || "DESCONHECIDO",
+                    color: "var(--gray-600)",
+                };
+
+                return <Tag value={status.label} style={{ background: status.color }} rounded />;
+            }
         },
         {
             field: "ausencia",
@@ -95,9 +157,10 @@ export function Requests() {
                             <InplaceContent>
                                 <DropdownWS
                                     uri="/funcionarios"
+                                    fetchAll
                                     className="w-10rem text-truncate"
                                     optionLabel="nome"
-                                    onChange={(value) => {confirm("Ausente", { id: row.id, ausente_id: value }) }}
+                                    onChange={(value) => { confirm("Ausente", { id: row.id, ausente_id: value }) }}
                                 />
                             </InplaceContent>
                         </Inplace>
@@ -117,9 +180,10 @@ export function Requests() {
 
                             <InplaceContent>
                                 <DropdownWS
-                                    uri="/funcionarios"
+                                    uri="/reservas"
+                                    staticOptions={NO_REPLACEMENT_OPTION}
                                     className="w-10rem text-truncate"
-                                    onChange={(value) => {confirm("Reserva", { id: row.id, reserva_id: value }) }}
+                                    onChange={(value) => { confirm("Reserva", { id: row.id, reserva_id: value }) }}
                                 />
                             </InplaceContent>
                         </Inplace>
@@ -142,7 +206,7 @@ export function Requests() {
                                     uri="/centro"
                                     className="w-10rem text-truncate"
                                     optionsValuesForDict={{ nome: "local" }}
-                                    onChange={(centro) => {confirm("Local", { id: row.id, centro_id: centro }) }}
+                                    onChange={(centro) => { confirm("Local", { id: row.id, centro_id: centro }) }}
                                 />
                             </InplaceContent>
                         </Inplace>
@@ -176,7 +240,7 @@ export function Requests() {
                 return <ButtonGroup className="flex">
                     <Button
                         icon="pi pi-times"
-                        severity="danger"
+                        severity="help"
                         onClick={() => { setStatus(row.id, "reproved") }}
                         data-pr-tooltip="Reprovar Solicitação"
                     />
@@ -184,7 +248,18 @@ export function Requests() {
                         data-pr-tooltip="Aprovar Solicitação"
                         icon="pi pi-check-circle"
                         severity="success"
+                        disabled={!hasValidReplacement(row)}
+                        title={hasValidReplacement(row) ? "Aprovar solicitação" : "Selecione uma reserva antes de aprovar"}
                         onClick={() => { setStatus(row.id, "approved") }}
+                    />
+                    <Button
+                        icon="pi pi-trash"
+                        severity="danger"
+                        loading={deletingId === row.id}
+                        disabled={deletingId !== null}
+                        aria-label={`Excluir requisição ${row.id}`}
+                        title="Excluir requisição"
+                        onClick={() => confirmRequestDeletion(row)}
                     />
                 </ButtonGroup>
             },
@@ -193,17 +268,29 @@ export function Requests() {
 
     useEffect(() => {
         async function get_requests() {
-            const res = await connect.get("/repo/request?status=pending")
+            const res = await connect.get("/repo/request?status=pending,updated")
             setAbertas(res.data.length)
             setRequests(res.data)
             console.log(res.data)
         }; get_requests();
     }, [refresh]);
 
-    useEffect(() => { socketio.on("new_request", () => {console.log("Atualizando"); setRefresh(prev => !prev)}); }, []);
+    useEffect(() => {
+        const refreshRequests = () => {
+            setRefresh(prev => prev + 1)
+        }
+
+        socketio.on("new_request", refreshRequests);
+        socketio.on("new_history", refreshRequests);
+
+        return () => {
+            socketio.off("new_request", refreshRequests)
+            socketio.off("new_history", refreshRequests)
+        }
+    }, []);
 
     return (
-        <main className="flex flex-column gap-1">
+        <main className="flex flex-column gap-1 p-2">
             <Toast ref={toast} />
             <ConfirmDialog />
 
