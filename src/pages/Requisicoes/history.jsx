@@ -71,8 +71,19 @@ function formatDate(value) {
     });
 }
 
+function formatFilterDate(value) {
+    if (!value) return null;
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    return `${day}/${month}/${date.getFullYear()}`;
+}
+
 export function History() {
-    const [dateFilter] = useState({});
+    const [dateFilter, setDateFilter] = useState(null);
     const [tableData, setTableData] = useState([]);
     const [refresh, setRefresh] = useState(0);
     const [selectedRequest, setSelectedRequest] = useState(null);
@@ -93,7 +104,12 @@ export function History() {
     useEffect(() => {
         async function getHistory() {
             try {
-                const response = await connect.post("/repo/history", dateFilter);
+                const init = formatFilterDate(dateFilter?.[0]);
+                const end = formatFilterDate(dateFilter?.[1]);
+                const filterData = init
+                    ? { init, ...(end ? { end } : {}) }
+                    : {};
+                const response = await connect.post("/repo/history", filterData);
                 const data = response.data.map((item) => ({
                     ...item,
                     newStatus: STATUS_MAP[item.status] ?? "DESCONHECIDO",
@@ -348,6 +364,8 @@ export function History() {
                     search
                     data={tableData}
                     columns={columns}
+                    dateValue={dateFilter}
+                    handleSetDate={setDateFilter}
                     setRefresh={setRefresh}
                     tableClassName="overflow-scroll"
                 />

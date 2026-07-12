@@ -821,7 +821,7 @@ export function RequestReport() {
                                         };
 
                                         return (
-                                            <div key={item} className="flex flex-column flex-grow-1 justify-content-center align-items-center text-center shadow-6 border-round-lg" style={{ flexBasis: "100px" }}>
+                                            <div key={item} className="dashboard-department-card flex flex-column flex-grow-1 justify-content-center align-items-center text-center shadow-6 border-round-lg" style={{ flexBasis: "100px" }}>
                                                 <Chart className="flex-grow-1" type="doughnut" data={testeData} options={optionsDptos} style={{
                                                     width: '70px',
                                                 }} />

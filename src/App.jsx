@@ -32,6 +32,9 @@ import { MobileMovement } from "./pages/Estoque/mobile_movement.jsx"
 import { Floaters } from "./pages/Requisicoes/floaters";
 import ProjetosPage from "./pages/Projetos/ProjetosPage";
 import { Vacancies } from "./pages/Admissao/vacancies.jsx"
+import { Settings } from "./pages/Configuracoes"
+
+document.documentElement.dataset.theme = localStorage.getItem("theme") === "dark" ? "dark" : "light";
 
 addLocale('pt-BR', {
   firstDayOfWeek: 0,
@@ -97,6 +100,7 @@ export function AppRoutes() {
           {/* Init Page */}
           <Route path="/init" element={<Init />} />
           <Route path="/projetos" element={<ProjetosPage />} />
+          <Route path="/configuracoes" element={<Settings />} />
 
           {/* Admissão */}
           <Route path="/admissao/vagas" element={<Vacancies />} />

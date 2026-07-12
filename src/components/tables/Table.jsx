@@ -53,8 +53,14 @@ export function Table({
                 ? <FloatLabel>
                     <Calendar
                         value={dateValue}
-                        onChange={(e) => { handleSetDate(e.target.value); setRefresh(prev => !prev) }}
+                        onChange={(e) => {
+                            handleSetDate(e.value);
+                            setRefresh?.((prev) => !prev);
+                        }}
                         dateFormat="dd/mm/yy"
+                        selectionMode="range"
+                        placeholder="Selecione um período."
+                        readOnlyInput
                         showButtonBar
                     />
                     <label htmlFor="">Selecione um periodo</label>

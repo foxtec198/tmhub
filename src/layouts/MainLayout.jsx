@@ -3,10 +3,13 @@ import { useEffect, useState } from "react";
 import { PanelMenu } from "primereact/panelmenu";
 import { Avatar } from "primereact/avatar";
 import { capitalize, deny_roles, allow_roles } from "../utils/ui";
+import connect from "../utils/request";
+import { getInitials, storeProfile } from "../utils/profile";
 import './main.css'
 
 export function MainLayout() {
-  const [displayName] = useState(() => localStorage.getItem("display_name") || "");
+  const [displayName, setDisplayName] = useState(() => localStorage.getItem("display_name") || "");
+  const [profilePhoto, setProfilePhoto] = useState(() => localStorage.getItem("profile_photo"));
   const [role] = useState(() => {
     const storedRole = localStorage.getItem("role");
     return storedRole ? capitalize(storedRole) : "";
@@ -121,6 +124,11 @@ export function MainLayout() {
       command: () => { navigateTo("/frotas") }
     },
     {
+      label: 'Configurações',
+      icon: 'pi pi-cog',
+      command: () => { navigateTo("/configuracoes") }
+    },
+    {
       label: 'Sair',
       icon: 'pi pi-sign-out',
       command: () => { localStorage.clear(); navigateTo("/") }
@@ -132,6 +140,17 @@ export function MainLayout() {
       navigate("/");
     }
   }, [displayName, navigate, role]);
+
+  useEffect(() => {
+    const updateProfile = (profile) => {
+      setDisplayName(profile.nome || "");
+      setProfilePhoto(profile.foto_perfil || null);
+    };
+    const listener = (event) => updateProfile(event.detail);
+    window.addEventListener("tmhub:profile", listener);
+    connect.get("/usuarios/perfil").then(({ data }) => { storeProfile(data); updateProfile(data); }).catch(() => {});
+    return () => window.removeEventListener("tmhub:profile", listener);
+  }, []);
 
   return (
     <div className={`app-layout ${isMenuVisible ? "menu-open" : "menu-closed"}`}>
@@ -166,7 +185,8 @@ export function MainLayout() {
             <span className="text-700 font-italic">{role}</span>
           </div>
           <Avatar
-            label={displayName[0]}
+            image={profilePhoto || undefined}
+            label={!profilePhoto ? getInitials(displayName) : undefined}
             shape="circle"
             size="large"
           />

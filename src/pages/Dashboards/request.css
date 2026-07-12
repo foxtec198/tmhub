@@ -48,6 +48,64 @@
     min-height: 15rem;
 }
 
+:root[data-theme="dark"] .dashboard-chart-card,
+:root[data-theme="dark"] .dashboard-chart,
+:root[data-theme="dark"] .dashboard-chart canvas {
+    background: transparent !important;
+}
+
+:root[data-theme="dark"] .dashboard-chart-card {
+    background: linear-gradient(145deg, #111 0%, #18231b 100%) !important;
+    border: 1px solid #304b36;
+}
+
+:root[data-theme="dark"] .dashboard-table {
+    background: #111;
+    border: 1px solid #304035;
+}
+
+:root[data-theme="dark"] .dashboard-status,
+:root[data-theme="dark"] .dashboard-status .p-tabview,
+:root[data-theme="dark"] .dashboard-status .p-tabview-panels,
+:root[data-theme="dark"] .dashboard-status .p-tabview-panel {
+    background: #111 !important;
+    color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .dashboard-status {
+    border: 1px solid #304b36;
+}
+
+:root[data-theme="dark"] .dashboard-status .p-tabview-nav-container,
+:root[data-theme="dark"] .dashboard-status .p-tabview-nav,
+:root[data-theme="dark"] .dashboard-status .p-tabview-nav li,
+:root[data-theme="dark"] .dashboard-status .p-tabview-nav-link {
+    background: #171a18 !important;
+    border-color: #333 !important;
+}
+
+:root[data-theme="dark"] .dashboard-status .p-tabview-nav-link {
+    color: #70e38d !important;
+}
+
+:root[data-theme="dark"] .dashboard-status .p-tabview-selected .p-tabview-nav-link,
+:root[data-theme="dark"] .dashboard-status .p-highlight .p-tabview-nav-link {
+    background: #203d29 !important;
+    border-color: #4bd66e !important;
+    color: #91efa7 !important;
+}
+
+:root[data-theme="dark"] .dashboard-department-card {
+    background: linear-gradient(145deg, #222 0%, #17251b 100%);
+    border: 1px solid #36533d;
+    color: #dff7e5;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .4) !important;
+}
+
+:root[data-theme="dark"] .dashboard-department-card canvas {
+    background: transparent !important;
+}
+
 .dashboard-chart {
     width: 100%;
 }

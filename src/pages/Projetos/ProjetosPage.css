@@ -10,6 +10,73 @@
   --projetos-accent: #7c5cff;
 }
 
+:root[data-theme="dark"] {
+  --projetos-bg: #050505;
+  --projetos-coluna-bg: #1b211d;
+  --projetos-card-bg: #111;
+  --projetos-borda: #334239;
+  --projetos-texto-suave: #a9b0ab;
+  --projetos-accent: #4bd66e;
+}
+
+:root[data-theme="dark"] .projetos-sidebar,
+:root[data-theme="dark"] .projetos-board-wrapper__topo {
+  background: #111;
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .projetos-sidebar {
+  background: linear-gradient(180deg, #111 0%, #102318 100%);
+}
+
+:root[data-theme="dark"] .projetos-sidebar__header,
+:root[data-theme="dark"] .projeto-item__nome,
+:root[data-theme="dark"] .kanban-column__titulo,
+:root[data-theme="dark"] .kanban-card__titulo {
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .projeto-item:hover {
+  background: #222b24;
+}
+
+:root[data-theme="dark"] .projeto-item--ativo {
+  background: #203d29;
+}
+
+:root[data-theme="dark"] .kanban-column,
+:root[data-theme="dark"] .kanban-board__nova-coluna-form {
+  border: 1px solid #333;
+}
+
+:root[data-theme="dark"] .kanban-column__contador {
+  background: #333;
+  color: #d4dad6;
+}
+
+:root[data-theme="dark"] .kanban-card {
+  border-color: #2d352f;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .32);
+}
+
+:root[data-theme="dark"] .kanban-card:hover {
+  border-color: var(--projetos-accent);
+  background: #17251b;
+}
+
+:root[data-theme="dark"] .kanban-column__slot--over {
+  background: rgba(75, 214, 110, .12);
+}
+
+:root[data-theme="dark"] .p-dialog .p-button.p-button-outlined {
+  border-color: #4bd66e;
+  color: #70e38d;
+}
+
+:root[data-theme="dark"] .p-dialog .p-button.p-button-text {
+  color: #70e38d;
+}
+
 .projetos-page {
   position: relative;
   display: flex;

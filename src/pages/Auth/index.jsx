@@ -74,6 +74,9 @@ export function Auth() {
             localStorage.removeItem("tentativas");
             localStorage.setItem("display_name", res.data.display_name);
             localStorage.setItem("role", res.data.role);
+            if (res.data.email) localStorage.setItem("email", res.data.email);
+            if (res.data.foto_perfil) localStorage.setItem("profile_photo", res.data.foto_perfil);
+            else localStorage.removeItem("profile_photo");
             sessionStorage.setItem("token", res.data.access_token);
             localStorage.setItem("current_id", res.data.id);
             navigate("/init")

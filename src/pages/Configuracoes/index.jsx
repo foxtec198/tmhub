@@ -1,0 +1,133 @@
+import { useEffect, useRef, useState } from "react";
+import { Button } from "primereact/button";
+import { Dialog } from "primereact/dialog";
+import { InputOtp } from "primereact/inputotp";
+import { InputSwitch } from "primereact/inputswitch";
+import { InputText } from "primereact/inputtext";
+import { Password } from "primereact/password";
+import { Avatar } from "primereact/avatar";
+import connect from "../../utils/request";
+import { getInitials, storeProfile } from "../../utils/profile";
+import { useToast } from "../../contexts/ToastContext";
+import { useLoading } from "../../contexts/LoadingContext";
+import "./settings.css";
+
+const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).{8,}$/;
+
+export function Settings() {
+  const [profile, setProfile] = useState({ nome: "", email: "", foto_perfil: null });
+  const [dark, setDark] = useState(() => localStorage.getItem("theme") === "dark");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [emailDialog, setEmailDialog] = useState(false);
+  const [otp, setOtp] = useState("");
+  const fileRef = useRef(null);
+  const { showToast } = useToast();
+  const setLoading = useLoading();
+
+  useEffect(() => {
+    connect.get("/usuarios/perfil").then(({ data }) => {
+      setProfile(data);
+      storeProfile(data);
+    }).catch(() => {});
+  }, []);
+
+  const save = async (payload, message) => {
+    setLoading(true);
+    try {
+      const { data } = await connect.patch("/usuarios/perfil", payload);
+      setProfile(data);
+      storeProfile(data);
+      showToast("success", "Configurações", message);
+      return true;
+    } catch (error) {
+      showToast("error", "Não foi possível salvar", error.response?.data || "Tente novamente.");
+      return false;
+    } finally { setLoading(false); }
+  };
+
+  const changeTheme = (enabled) => {
+    setDark(enabled);
+    localStorage.setItem("theme", enabled ? "dark" : "light");
+    document.documentElement.dataset.theme = enabled ? "dark" : "light";
+  };
+
+  const changePhoto = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!/image\/(png|jpeg|webp)/.test(file.type) || file.size > 1_500_000) {
+      showToast("warn", "Foto inválida", "Use PNG, JPG ou WEBP de até 1,5 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => save({ foto_perfil: reader.result }, "Foto atualizada.");
+    reader.readAsDataURL(file);
+  };
+
+  const changePassword = async () => {
+    if (!strongPassword.test(newPassword)) return showToast("warn", "Senha fraca", "Use 8 ou mais caracteres, maiúscula, minúscula, número e caractere especial.");
+    if (newPassword !== confirmPassword) return showToast("warn", "Senhas diferentes", "A confirmação deve ser igual à nova senha.");
+    if (await save({ senha_atual: currentPassword, nova_senha: newPassword }, "Senha atualizada.")) {
+      setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+    }
+  };
+
+  const requestCode = async () => {
+    setLoading(true);
+    try {
+      await connect.post("/usuarios/email/codigo", { email: newEmail });
+      setOtp(""); setEmailDialog(true);
+      showToast("success", "Código enviado", "Confira o novo endereço de e-mail.");
+    } catch (error) { showToast("error", "E-mail", error.response?.data || "Não foi possível enviar o código."); }
+    finally { setLoading(false); }
+  };
+
+  const confirmEmail = async () => {
+    setLoading(true);
+    try {
+      const { data } = await connect.post("/usuarios/email/confirmar", { codigo: otp });
+      setProfile(data); storeProfile(data); setEmailDialog(false); setNewEmail("");
+      showToast("success", "E-mail alterado", "Seu novo e-mail foi confirmado.");
+    } catch (error) { showToast("error", "Código inválido", error.response?.data || "Confira o código."); }
+    finally { setLoading(false); }
+  };
+
+  return <section className="settings-page">
+    <div className="settings-heading"><div><span className="settings-kicker">Sua conta</span><h1>Configurações</h1><p>Personalize seu perfil, acesso e aparência do TM Hub.</p></div></div>
+    <div className="settings-grid">
+      <article className="settings-card profile-card">
+        <div className="settings-card-title"><i className="pi pi-user"/><div><h2>Perfil</h2><p>Como você aparece no TM Hub</p></div></div>
+        <div className="photo-row">
+          <Avatar image={profile.foto_perfil || undefined} label={!profile.foto_perfil ? getInitials(profile.nome) : undefined} shape="circle" className="settings-avatar" />
+          <div><Button label="Trocar foto" icon="pi pi-camera" outlined onClick={() => fileRef.current?.click()} /><input ref={fileRef} type="file" hidden accept="image/png,image/jpeg,image/webp" onChange={changePhoto}/><small>PNG, JPG ou WEBP · máximo 1,5 MB</small></div>
+        </div>
+        <label>Nome de usuário</label><div className="settings-inline"><InputText value={profile.nome || ""} onChange={(e) => setProfile({ ...profile, nome: e.target.value })}/><Button label="Salvar" onClick={() => save({ nome: profile.nome }, "Nome atualizado.")}/></div>
+      </article>
+
+      <article className="settings-card">
+        <div className="settings-card-title"><i className="pi pi-palette"/><div><h2>Aparência</h2><p>Escolha o tema da interface</p></div></div>
+        <div className="theme-option"><div><strong>Modo escuro</strong><span>Preto como base e verde como destaque</span></div><InputSwitch checked={dark} onChange={(e) => changeTheme(e.value)} /></div>
+      </article>
+
+      <article className="settings-card">
+        <div className="settings-card-title"><i className="pi pi-envelope"/><div><h2>E-mail</h2><p>Atual: {profile.email || "Não informado"}</p></div></div>
+        <label>Novo e-mail</label><div className="settings-inline"><InputText type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="voce@empresa.com"/><Button label="Verificar" icon="pi pi-send" onClick={requestCode}/></div>
+      </article>
+
+      <article className="settings-card password-card">
+        <div className="settings-card-title"><i className="pi pi-lock"/><div><h2>Alterar senha</h2><p>Proteja sua conta com uma senha forte</p></div></div>
+        <div className="password-fields"><Password value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} feedback={false} toggleMask placeholder="Senha atual"/><Password value={newPassword} onChange={(e) => setNewPassword(e.target.value)} toggleMask placeholder="Nova senha" promptLabel="Digite uma senha" weakLabel="Fraca" mediumLabel="Média" strongLabel="Forte"/><Password value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} feedback={false} toggleMask placeholder="Confirmar nova senha"/></div>
+        <p className="password-hint"><i className="pi pi-info-circle"/> Mínimo de 8 caracteres, com maiúscula, minúscula, número e caractere especial.</p>
+        <Button label="Atualizar senha" icon="pi pi-shield" onClick={changePassword}/>
+      </article>
+    </div>
+
+    <Dialog header="Confirme seu novo e-mail" visible={emailDialog} onHide={() => setEmailDialog(false)} className="otp-dialog" modal>
+      <p>Digite o código de 6 dígitos enviado para <strong>{newEmail}</strong>.</p>
+      <InputOtp value={otp} onChange={(e) => setOtp(e.value)} integerOnly length={6}/>
+      <div className="dialog-actions"><Button label="Cancelar" text onClick={() => setEmailDialog(false)}/><Button label="Confirmar e-mail" disabled={String(otp).length !== 6} onClick={confirmEmail}/></div>
+    </Dialog>
+  </section>;
+}

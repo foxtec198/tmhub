@@ -36,6 +36,40 @@
   transform: translateX(1px);
 }
 
+:root[data-theme="dark"] .layout-sidebar .p-panelmenu-header-link:hover,
+:root[data-theme="dark"] .layout-sidebar .p-panelmenu-content .p-menuitem-link:hover {
+  background: rgba(75, 214, 110, 0.14) !important;
+  box-shadow: inset 3px 0 #4bd66e, 0 3px 10px rgba(0, 0, 0, 0.28);
+}
+
+:root[data-theme="dark"] .layout-sidebar .p-panelmenu-header-link[aria-expanded="true"],
+:root[data-theme="dark"] .layout-sidebar .p-panelmenu-header.p-highlight .p-panelmenu-header-link {
+  background: rgba(75, 214, 110, 0.1) !important;
+}
+
+:root[data-theme="dark"] .layout-menu-toggle {
+  color: #70e38d;
+}
+
+:root[data-theme="dark"] .layout-menu-toggle:hover,
+:root[data-theme="dark"] .layout-menu-toggle:focus-visible {
+  color: #91efa7;
+  background: #203d29;
+}
+
+/* No tema escuro, o degradê da sidebar deve aparecer por trás dos itens. */
+:root[data-theme="dark"] .layout-sidebar .p-panelmenu,
+:root[data-theme="dark"] .layout-sidebar .p-panelmenu-panel,
+:root[data-theme="dark"] .layout-sidebar .p-panelmenu-header,
+:root[data-theme="dark"] .layout-sidebar .p-panelmenu-header-content,
+:root[data-theme="dark"] .layout-sidebar .p-panelmenu-header-link,
+:root[data-theme="dark"] .layout-sidebar .p-panelmenu-content,
+:root[data-theme="dark"] .layout-sidebar .p-menuitem,
+:root[data-theme="dark"] .layout-sidebar .p-menuitem-content,
+:root[data-theme="dark"] .layout-sidebar .p-menuitem-link {
+  background: transparent !important;
+}
+
 .layout-sidebar .p-panelmenu-header-link:active {
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
   transform: translateX(2px) scale(0.99);
