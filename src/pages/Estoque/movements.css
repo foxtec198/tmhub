@@ -1,8 +1,9 @@
+/* Layout específico de movimentações; tokens visuais são centralizados no tema global. */
 .movements-page {
     width: 100%;
     height: 100%;
-    background: var(--bg-page);
-    font-family: var(--font-base);
+    background: var(--surface-ground);
+    font-family: inherit;
     color: var(--text-primary);
     padding: 24px;
 }
@@ -16,7 +17,7 @@
 
 .movements-header h1,
 .movements-title {
-    font-family: var(--font-display);
+    font-family: "Space Grotesk", sans-serif;
     font-size: 1.6rem;
     font-weight: 600;
     color: var(--text-primary);

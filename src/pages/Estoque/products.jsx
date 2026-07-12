@@ -118,7 +118,8 @@ export function Products() {
                 await connect.patch(PRODUCTS_ENDPOINT, form);
                 showToast('success', 'Sucesso!', 'Produto atualizado com sucesso.');
             } else {
-                const { id, ...payload } = form;
+                const payload = { ...form };
+                delete payload.id;
                 await connect.post(PRODUCTS_ENDPOINT, payload);
                 showToast('success', 'Sucesso!', 'Produto criado com sucesso.');
             }
@@ -232,13 +233,13 @@ export function Products() {
                 <DashCard
                     title="Estoque Baixo"
                     className="flex-grow-1 border-round-lg p-1 spaceg flex-grow-1"
-                    style={{ background: 'var(--warning)', color: '#fff', flexBasis: "200px" }}
+                    style={{ background: 'var(--yellow-700)', color: '#fff', flexBasis: "200px" }}
                     value={totals.baixo}
                 />
                 <DashCard
                     title="Esgotados"
                     className="flex-grow-1 border-round-lg p-1 spaceg flex-grow-1"
-                    style={{ background: 'var(--danger)', color: '#fff', flexBasis: "200px" }}
+                    style={{ background: 'var(--red-600)', color: '#fff', flexBasis: "200px" }}
                     value={totals.esgotado}
                 />
             </div>

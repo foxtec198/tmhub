@@ -12,6 +12,7 @@ import { useToast } from "../../contexts/ToastContext";
 import connect from "../../utils/request";
 import { socketio } from "../../utils/socketio";
 
+// Endpoints do fluxo de histórico agrupados para evitar URLs espalhadas.
 const HISTORY_API = {
     update: "/repo/history",
     delete: "/repo/history",
@@ -58,6 +59,7 @@ const STATUS_MAP = {
 };
 
 function formatDate(value) {
+    // Datas inválidas são exibidas como fallback em vez de quebrar a tabela.
     if (!value) return "—";
 
     const date = new Date(value);
@@ -83,6 +85,7 @@ function formatFilterDate(value) {
 }
 
 export function History() {
+    // Estado da consulta, edição, timeline e feedback de operações assíncronas.
     const [dateFilter, setDateFilter] = useState(null);
     const [tableData, setTableData] = useState([]);
     const [refresh, setRefresh] = useState(0);
@@ -101,6 +104,7 @@ export function History() {
 
     const { showToast } = useToast();
 
+    // Carrega o histórico de acordo com a data selecionada.
     useEffect(() => {
         async function getHistory() {
             try {
@@ -130,6 +134,7 @@ export function History() {
         getHistory();
     }, [dateFilter, refresh, showToast]);
 
+    // Atualiza o formulário somente quando uma requisição válida é selecionada.
     useEffect(() => {
         const refreshHistory = () => {
             setRefresh((current) => current + 1);
@@ -352,6 +357,7 @@ export function History() {
         },
     ];
 
+    // Tela composta por filtro, tabela, edição e trilha de auditoria.
     return (
         <>
             <ConfirmDialog />

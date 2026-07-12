@@ -146,6 +146,15 @@ body, html, :root, #root {
     color:#79e695!important;
     border-color:#3f7e4e;
 }
+:root[data-theme="dark"] .products-page,
+:root[data-theme="dark"] .movements-page {
+    background:var(--dark-black);
+    color:var(--text-primary);
+}
+:root[data-theme="dark"] .products-page .category-item {
+    background:#1b211d;
+    border-color:var(--dark-border);
+}
 :root[data-theme="dark"] ::-webkit-scrollbar-thumb { background:#333;border-radius:999px; }
 :root[data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background:#376143; }
 

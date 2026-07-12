@@ -26,6 +26,7 @@ import "./request.css"
 
 // MOCKS
 const totalOfReplaces = 19
+// Dados de fallback mantidos apenas para desenvolvimento visual sem API.
 const MOCK = {
     res: {
         "data": {
@@ -95,6 +96,7 @@ const MOCK = {
 
 // Logic and UI
 export function RequestReport() {
+    // Filtros enviados ao backend e referência do painel flutuante de filtros.
     const rootStyle = getComputedStyle(document.documentElement); // Obter cores setadas no CSS (ROOT)
     const op_filters = useRef(); // Overlay Panel Ref
 
@@ -109,6 +111,7 @@ export function RequestReport() {
     const [filters, setFilters] = useState(defaultFilters);
 
     // Dar refresh na pagina com os novos dados
+    // Alterar refresh força uma nova consulta sem acoplar os handlers ao efeito.
     const [refresh, setRefresh] = useState(null);
 
     // Historico de reposições
@@ -121,6 +124,7 @@ export function RequestReport() {
     const [filter, setFilter] = useState([primeiroDia, ultimoDia]);
 
     // Statics
+    // Indicadores consolidados exibidos nos cards superiores.
     const [realizadas, setRealizadas] = useState(0);
     const [abertas, setAbertas] = useState(0);
     const [postosCobertos, setPostosCobertos] = useState(0);
@@ -132,6 +136,7 @@ export function RequestReport() {
 
     // Dados para CHARTS
     // Chart de Reposicoes
+    // Séries derivadas para os gráficos Chart.js.
     const [labelReposicoes, setLabels] = useState(null)
     const [dadosReposicoes, setDadosReposicoes] = useState(null)
     const [labelLocal, setlabelLocal] = useState(null)
@@ -145,6 +150,7 @@ export function RequestReport() {
     const [dataForMult, setdataForMult] = useState(null)
 
     // Dados da Tabela
+    // Recorte tabular e percentuais do MeterGroup.
     const [dadosTabela, setDadosTabela] = useState([])
 
     // Dados do Meter Group
@@ -247,6 +253,7 @@ export function RequestReport() {
     }, [histOriginal, filters]);
 
     // Use Effect para a consulta
+    // Carrega o histórico bruto sempre que o período/refresh mudar.
     useEffect(() => {
         async function getData() {
 
@@ -265,6 +272,7 @@ export function RequestReport() {
     }, [refresh]);
 
     // Use Effect para os filtros
+    // Recalcula cards, gráficos e tabela a partir do histórico já carregado.
     useEffect(() => {
         if (!hist.length) return;
 
@@ -401,6 +409,7 @@ export function RequestReport() {
 
     }, [hist, abertas]);
 
+    // Configuração compartilhada pelos doughnuts de departamento.
     const optionsDptos = {
         cutout: '60%',
         plugins: {
@@ -408,6 +417,7 @@ export function RequestReport() {
         }
     };
 
+    // Datasets são recriados com o estado atual para o wrapper do Chart.js.
     const dataRepos = {
         labels: labelReposicoes,
         datasets: [{
@@ -467,6 +477,7 @@ export function RequestReport() {
         cobertura_search: `${row.ausente ?? ""} ${!row.reserva?"SEM COBERTURA":row.reserva}`
     }));
 
+    // Contrato declarativo consumido pelo componente Table reutilizável.
     const columns = [
         {
             header: "Local da Falta",
@@ -517,6 +528,7 @@ export function RequestReport() {
         ['rgba(85, 139, 47, 0.75)', 'rgba(216, 67, 21, 0.75)']
     ];
 
+    // A tela é dividida em toolbar, indicadores, gráficos, tabela e painel lateral.
     return (
         <main className="request-dashboard flex flex-column p-2 gap-2 w-full">
             <div className="dashboard-toolbar flex justify-content-between align-items-center w-full">

@@ -8,11 +8,13 @@ import { Button } from 'primereact/button';
 import { Avatar } from 'primereact/avatar';
 
 export default function CardDetailDialog({ visible, card, membrosDoProjeto, onHide, onSave, onDelete }) {
+  // O formulário usa cópias locais para não alterar o card antes de Salvar.
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [etiqueta, setEtiqueta] = useState('');
   const [memberIds, setMemberIds] = useState([]);
 
+  // Trocar o card selecionado reinicializa todos os campos do diálogo.
   useEffect(() => {
     if (card) {
       setTitulo(card.titulo || '');
@@ -24,6 +26,7 @@ export default function CardDetailDialog({ visible, card, membrosDoProjeto, onHi
 
   if (!card) return null;
 
+  // Preserva o título anterior quando o campo for enviado vazio.
   function salvar() {
     onSave({
       ...card,

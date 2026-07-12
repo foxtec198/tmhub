@@ -14,6 +14,7 @@ import { get_first_name } from "../../utils/ui";
 
 // Login and UI (uiiii)
 export function Floaters() {
+    // refresh coordena as duas listas após inclusão ou remoção de reserva.
     const setLoading = useLoading();
     const { showToast } = useToast();
     const [refresh, setRefresh] = useState(false);
@@ -39,6 +40,7 @@ export function Floaters() {
         });
     }, [reservas, searchReservas]);
 
+    // Debounce evita consultar colaboradores a cada tecla digitada.
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(search);
@@ -47,6 +49,7 @@ export function Floaters() {
         return () => clearTimeout(timer);
     }, [search]);
 
+    // Consulta o catálogo filtrado e as reservas já cadastradas.
     useEffect(() => {
         async function load() {
             try {
@@ -83,6 +86,7 @@ export function Floaters() {
         }finally{ setLoading(false) }
     }
     
+    // Duas listas permitem promover colaboradores e remover reservas existentes.
     return (
         <main className="h-full p-2">
             <h2 className="inter flex align-items-center gap-2" style={{ color: "var(--green-600)", fontWeight: 900 }}>

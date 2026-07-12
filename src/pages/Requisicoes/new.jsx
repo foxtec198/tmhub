@@ -14,6 +14,7 @@ import connect from "../../utils/request";
 import { InputText } from "primereact/inputtext";
 
 export function Request() {
+    // Campos do formulário e seleções relacionadas ao colaborador ausente.
     const [user, selectedUser] = useState(null)
     const [replace, selectedReplace] = useState(null)
     const [local, selectedLocal] = useState(null)
@@ -23,6 +24,7 @@ export function Request() {
     const [obs, setObs] = useState("")
     const [checked, setChecked] = useState(false)
 
+    // Opções remotas carregadas para os dropdowns do formulário.
     const [supsOtions, setSupsOptions] = useState(null)
     const [allFuncsOptions, setAllFuncsOptions] = useState(null)
     const [replaces, setReplaces] = useState(null)
@@ -56,6 +58,7 @@ export function Request() {
         return date;
     }
 
+    // Valida os campos obrigatórios e envia a nova requisição ao backend.
     async function createRequest() {
         setLoading(true);
         try {
@@ -81,6 +84,7 @@ export function Request() {
 
     }
 
+    // Pré-carrega supervisores, colaboradores e centros usados pelo formulário.
     useEffect(() => {
         async function getSups() {
             const res = await connect.get("/supervisores");
@@ -114,6 +118,7 @@ export function Request() {
         getSups(); getFuncs(); getCenters(); getReplaces();
     }, [])
 
+    // Formulário público e responsivo de abertura de reposição.
     return (
         <>
             <div className="flex min-h-screen px-4 py-6 flex-column justify-content-between align-items-center">

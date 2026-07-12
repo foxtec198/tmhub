@@ -14,6 +14,7 @@ import { useToast } from '../../contexts/ToastContext';
 import './ProjetosPage.css';
 
 export default function ProjetosPage() {
+  // Estado normalizado da tela: projetos carregados, seleção e diálogos abertos.
   const [projetos, setProjetos] = useState([]);
   const [currentUserId] = useState(() => {
     const storedId = Number(localStorage.getItem('current_id'));
@@ -32,6 +33,7 @@ export default function ProjetosPage() {
     ? projetos.find((p) => p.id === projetoParaMembrosId) || null
     : null;
 
+  // O usuário enxerga somente projetos dos quais participa.
   const meusProjetos = useMemo(
     () => projetos.filter((p) => (p.memberIds || []).includes(currentUserId)),
     [projetos, currentUserId]
@@ -42,6 +44,7 @@ export default function ProjetosPage() {
     return meusProjetos[0] || null;
   }, [meusProjetos, projetoAtivoId]);
 
+  // Atualizações otimistas mantêm o board responsivo enquanto a API persiste.
   async function atualizarProjeto(projetoAtualizado) {
     setProjetos((prev) => prev.map((p) => (p.id === projetoAtualizado.id ? projetoAtualizado : p)));
     const data = await updateProject(projetoAtualizado.id, projetoAtualizado);
@@ -54,6 +57,7 @@ export default function ProjetosPage() {
     setProjetos((prev) => prev.map((p) => (p.id === data.id ? data : p)));
   }
 
+  // Inclui ou remove um usuário sem duplicar IDs no vínculo do projeto.
   async function alternarMembro(projetoId, usuarioId) {
     const projeto = projetos.find((p) => p.id === projetoId);
     if (!projeto) return;
@@ -117,6 +121,7 @@ export default function ProjetosPage() {
     });
   }
 
+  // Cards são atualizados no mapa do projeto e depois reconciliados com a API.
   async function salvarCard(cardAtualizado) {
     if (!projetoAtivo) return;
 
@@ -151,6 +156,7 @@ export default function ProjetosPage() {
     ? projetoAtivo.memberIds.map((id) => usuarios.find((u) => u.id === id)).filter(Boolean)
     : [];
 
+  // Usuários e projetos são independentes e podem ser carregados em paralelo.
   useEffect(() => {
     let active = true;
 
@@ -169,6 +175,7 @@ export default function ProjetosPage() {
     };
   }, []);
 
+  // Orquestra sidebar, board Kanban e diálogos; regras internas ficam nos filhos.
   return (
     <div className={`projetos-page ${sidebarOpen ? 'projetos-page--sidebar-open' : 'projetos-page--sidebar-closed'}`}>
       <ConfirmDialog />

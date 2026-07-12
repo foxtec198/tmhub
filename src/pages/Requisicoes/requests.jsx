@@ -18,6 +18,7 @@ import { useLoading } from "../../contexts/LoadingContext";
 import { useNavigate } from "react-router-dom";
 import connect from "../../utils/request";
 
+// Opção sentinela usada quando a requisição será concluída sem substituto.
 const NO_REPLACEMENT_OPTION = [
     { id: 0, nome: "SEM COBERTURA" },
 ];
@@ -28,6 +29,7 @@ const REQUEST_STATUS = {
 };
 
 function hasValidReplacement(row) {
+    // Centraliza a regra de negócio usada nos botões e na representação do status.
     if (row.reserva_id !== undefined && Number(row.reserva_id) === 0) {
         return false;
     }
@@ -37,6 +39,7 @@ function hasValidReplacement(row) {
 }
 
 export function Requests() {
+    // Dados da fila, totais de resumo e estado de operações destrutivas.
     const [requests, setRequests] = useState(null);
     const [refresh, setRefresh] = useState(0);
 
@@ -125,6 +128,7 @@ export function Requests() {
         })
     }
 
+    // Definição das colunas e ações disponíveis em cada fase da requisição.
     const table_itens = [
         {
             field: "data",
@@ -266,6 +270,7 @@ export function Requests() {
         },
     ];
 
+    // Busca a fila novamente depois de qualquer alteração bem-sucedida.
     useEffect(() => {
         async function get_requests() {
             const res = await connect.get("/repo/request?status=pending,updated")
@@ -275,6 +280,7 @@ export function Requests() {
         }; get_requests();
     }, [refresh]);
 
+    // Mantém os indicadores superiores sincronizados com a fila carregada.
     useEffect(() => {
         const refreshRequests = () => {
             setRefresh(prev => prev + 1)
@@ -289,6 +295,7 @@ export function Requests() {
         }
     }, []);
 
+    // Renderiza indicadores, tabela operacional e diálogos de confirmação.
     return (
         <main className="flex flex-column gap-1 p-2">
             <Toast ref={toast} />

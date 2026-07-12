@@ -1,51 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@300..700&display=swap');
-
-:root {
-    --accent: #4BD66E;
-    --text-secondary: #555;
-    --text-primary: #272323;
-    --secondary-color: #10451D;
-    --primary-color: #155C27;
-
-    --primary-color-dark: #0D3E1C;
-    --primary-color-light: #1E7A38;
-    --accent-light: #E7FBEC;
-    --accent-dark: #2FAE4F;
-
-    --bg-page: #F4F6F5;
-    --bg-card: #FFFFFF;
-    --border-color: #E4E7E6;
-    --border-color-light: #EFF2F1;
-
-    --text-muted: #8A8F8D;
-    --text-inverse: #FFFFFF;
-
-    --danger: #D9534F;
-    --danger-dark: #B03B37;
-    --warning: #B08D2C;
-    --warning-bg: #B08D2C;
-
-    --font-base: 'Inter', sans-serif;
-    --font-display: 'Space Grotesk', sans-serif;
-
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 14px;
-    --radius-pill: 999px;
-
-    --shadow-sm: 0 1px 2px rgba(16, 69, 29, 0.06);
-    --shadow-md: 0 4px 14px rgba(16, 69, 29, 0.08);
-    --shadow-lg: 0 8px 24px rgba(16, 69, 29, 0.12);
-
-    --transition-fast: 0.15s ease;
-    --transition-base: 0.25s ease;
-}
-
+/* Layout específico de produtos. Cores e tipografia vêm do tema global/PrimeReact. */
 .products-page {
     width: 100%;
     height: 100%;
-    background: var(--bg-page);
-    font-family: var(--font-base);
+    background: var(--surface-ground);
+    font-family: inherit;
     color: var(--text-primary);
     padding: 24px;
 }
@@ -61,7 +19,7 @@
 
 .products-header h1,
 .products-title {
-    font-family: var(--font-display);
+    font-family: "Space Grotesk", sans-serif;
     font-size: 1.6rem;
     font-weight: 600;
     color: var(--text-primary);
@@ -84,7 +42,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 12px;
-    background: var(--bg-page);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
+    background: var(--surface-ground);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--border-radius);
 }

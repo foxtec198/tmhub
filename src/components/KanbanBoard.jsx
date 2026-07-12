@@ -5,10 +5,12 @@ import { Button } from 'primereact/button';
 import KanbanColumn from '../pages/Projetos/KanbanColumn';
 
 export default function KanbanBoard({ projeto, todosUsuarios, onUpdateProjeto, onOpenCard }) {
+  // Estados transitórios de drag-and-drop e criação de coluna.
   const [draggingCardId, setDraggingCardId] = useState(null);
   const [novaColunaAberta, setNovaColunaAberta] = useState(false);
   const [novaColunaTitulo, setNovaColunaTitulo] = useState('');
 
+  // Converte IDs persistidos nos objetos usados pelos avatares.
   function membrosPorCard(card) {
     return (card.memberIds || [])
       .map((id) => todosUsuarios.find((u) => u.id === id))

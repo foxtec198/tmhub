@@ -12,9 +12,11 @@ import { useToast } from "../../contexts/ToastContext";
 import { useLoading } from "../../contexts/LoadingContext";
 import "./settings.css";
 
+// Mantida igual à validação do backend para feedback imediato no formulário.
 const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).{8,}$/;
 
 export function Settings() {
+  // Perfil, preferência visual e estados dos fluxos de senha/e-mail.
   const [profile, setProfile] = useState({ nome: "", email: "", foto_perfil: null });
   const [dark, setDark] = useState(() => localStorage.getItem("theme") === "dark");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -27,6 +29,7 @@ export function Settings() {
   const { showToast } = useToast();
   const setLoading = useLoading();
 
+  // A API é a fonte de verdade; o storage apenas alimenta o MainLayout rapidamente.
   useEffect(() => {
     connect.get("/usuarios/perfil").then(({ data }) => {
       setProfile(data);
@@ -34,6 +37,7 @@ export function Settings() {
     }).catch(() => {});
   }, []);
 
+  // Ponto único para alterações de nome, foto e senha.
   const save = async (payload, message) => {
     setLoading(true);
     try {
@@ -48,12 +52,14 @@ export function Settings() {
     } finally { setLoading(false); }
   };
 
+  // O atributo no elemento raiz ativa os seletores globais sem recarregar a página.
   const changeTheme = (enabled) => {
     setDark(enabled);
     localStorage.setItem("theme", enabled ? "dark" : "light");
     document.documentElement.dataset.theme = enabled ? "dark" : "light";
   };
 
+  // Valida tipo/tamanho antes de converter a imagem para a representação persistida.
   const changePhoto = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -74,6 +80,7 @@ export function Settings() {
     }
   };
 
+  // Primeiro passo do e-mail: solicita o OTP para o novo endereço.
   const requestCode = async () => {
     setLoading(true);
     try {
@@ -84,6 +91,7 @@ export function Settings() {
     finally { setLoading(false); }
   };
 
+  // Segundo passo: confirma o OTP e somente então atualiza o perfil local.
   const confirmEmail = async () => {
     setLoading(true);
     try {
@@ -94,6 +102,7 @@ export function Settings() {
     finally { setLoading(false); }
   };
 
+  // Cards separam preferências visuais de operações sensíveis da conta.
   return <section className="settings-page">
     <div className="settings-heading"><div><span className="settings-kicker">Sua conta</span><h1>Configurações</h1><p>Personalize seu perfil, acesso e aparência do TM Hub.</p></div></div>
     <div className="settings-grid">
