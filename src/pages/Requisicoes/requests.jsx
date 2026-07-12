@@ -3,7 +3,7 @@ import { Table } from "../../components/tables/Table";
 import { Button } from "primereact/button";
 import { ButtonGroup } from "primereact/buttongroup"
 import { Tag } from "primereact/tag";
-import { DashCard } from "../../components/Card";
+import { DashCard } from "../../components/DashCard";
 import { Inplace, InplaceDisplay, InplaceContent, } from 'primereact/inplace';
 import { DropdownWS } from "../../components/DropdownWithSearch";
 import { Toast } from "primereact/toast";

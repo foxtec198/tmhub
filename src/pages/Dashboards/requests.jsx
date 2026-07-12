@@ -12,7 +12,7 @@ import { FloatLabel } from "primereact/floatlabel"
 import { Dropdown } from "primereact/dropdown"
 
 // Components
-import { DashCard } from "../../components/Card"
+import { DashCard } from "../../components/DashCard"
 import { Table } from "../../components/tables/Table"
 
 // Utils
@@ -579,10 +579,10 @@ export function RequestReport() {
                     />
                     <DashCard
                         icon="pi pi-dollar"
-                        title="Custo de Reservas"
-                        className="border-round-lg flex-grow-1"
+                        title="Custo Reservas"
+                        className="border-round-lg text-truncate flex-grow-1"
                         style={{
-                            backgroundColor: 'var(--gray-700)',
+                            backgroundColor: 'var(--gray-800)',
                             height: "5rem",
                             color: "#fff",
                         }}
@@ -597,7 +597,8 @@ export function RequestReport() {
                             min={0}
                             max={100}
                             valueColor={valorDoLocalComMaisFaltas >= totalOfReplaces ? "var(--red-600)" : "var(--green-600)"}
-                            size={70}
+                            textColor="#fff"
+                            size={60}
                         />
                         <div className="flex flex-column flex-grow-1 justify-content-between">
                             <span className="spaceg text-lg font-bold spaceg text-1xl">Contrato com mais faltas</span>
@@ -721,8 +722,6 @@ export function RequestReport() {
                         background: "ghostwhite",
                         border: "1px solid ghostwhite",
                         color: "#3a3535",
-                        width: '65px',
-                        height: '65px',
                     }}
                 />
             </div>

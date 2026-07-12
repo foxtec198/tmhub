@@ -64,7 +64,6 @@
     display: grid;
     gap: 0.85rem;
     padding: 0.75rem;
-    background: var(--surface-ground, #f8f9fa);
   }
 
   .tm-responsive-table .p-datatable-tbody > tr {

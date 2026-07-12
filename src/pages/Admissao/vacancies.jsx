@@ -11,7 +11,7 @@ import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
 import { Dialog } from 'primereact/dialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
-import { DashCard } from '../../components/Card';
+import { DashCard } from '../../components/DashCard';
 
 // Utils
 import { useEffect, useMemo, useRef, useState } from 'react';

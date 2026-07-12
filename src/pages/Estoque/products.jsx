@@ -9,7 +9,7 @@ import { Tag } from 'primereact/tag';
 import { Dialog } from 'primereact/dialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Table } from '../../components/tables/Table';
-import { DashCard } from '../../components/Card';
+import { DashCard } from '../../components/DashCard';
 
 import { useEffect, useMemo, useState } from 'react';
 import connect from '../../utils/request';

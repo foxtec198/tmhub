@@ -29,6 +29,20 @@
     min-height: 5rem;
 }
 
+.dashboard-highlight{
+    background: var(--gray-900) !important;
+    color: #fff !important;
+}
+
+.cdr span{
+    font-size: 14px !important;
+}
+
+.dashboard-highlight .p-knob{
+    background: none !important;
+    color: #fff;
+}
+
 .dashboard-highlight {
     flex-basis: 28rem;
     min-width: 28rem;
@@ -118,7 +132,13 @@
     overflow: hidden;
 }
 
+
 @media screen and (max-width: 1280px) {
+    .dashboard-filter-button{
+        width: 40px;
+        height: 40px;
+    }
+
     .dashboard-toolbar {
         align-items: flex-start !important;
     }
