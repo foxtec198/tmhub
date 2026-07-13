@@ -2,7 +2,7 @@
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Calendar } from "primereact/calendar";
 import { FloatLabel } from "primereact/floatlabel";
 import './index.css'
@@ -23,6 +23,8 @@ export function Table({
     handleSetDate,
 }) {
     const [globalFilterDash, setGlobalFilterDash] = useState("");
+    const searchInputId = useId();
+    const dateInputId = useId();
 
     const renderResponsiveCell = (column) => (rowData, options) => {
         const content = typeof column.body === "function"
@@ -42,16 +44,18 @@ export function Table({
             {search
                 ? <FloatLabel className="mt-3">
                     <InputText
+                        id={searchInputId}
                         value={globalFilterDash}
                         onChange={(e) => setGlobalFilterDash(e.target.value)}
                     />
-                    <label htmlFor="">Buscar...</label>
+                    <label htmlFor={searchInputId}>Buscar...</label>
                 </FloatLabel> : null
             }
 
             {handleSetDate
                 ? <FloatLabel>
                     <Calendar
+                        inputId={dateInputId}
                         value={dateValue}
                         onChange={(e) => {
                             handleSetDate(e.value);
@@ -63,7 +67,7 @@ export function Table({
                         readOnlyInput
                         showButtonBar
                     />
-                    <label htmlFor="">Selecione um periodo</label>
+                    <label htmlFor={dateInputId}>Selecione um período</label>
                 </FloatLabel>
                 : null
             }

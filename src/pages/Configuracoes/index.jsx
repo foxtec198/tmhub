@@ -6,10 +6,12 @@ import { InputSwitch } from "primereact/inputswitch";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Avatar } from "primereact/avatar";
+import { TabPanel, TabView } from "primereact/tabview";
 import connect from "../../utils/request";
 import { getInitials, storeProfile } from "../../utils/profile";
 import { useToast } from "../../contexts/ToastContext";
 import { useLoading } from "../../contexts/LoadingContext";
+import { UsersSettings } from "./UsersSettings";
 import "./settings.css";
 
 // Mantida igual à validação do backend para feedback imediato no formulário.
@@ -105,6 +107,8 @@ export function Settings() {
   // Cards separam preferências visuais de operações sensíveis da conta.
   return <section className="settings-page">
     <div className="settings-heading"><div><span className="settings-kicker">Sua conta</span><h1>Configurações</h1><p>Personalize seu perfil, acesso e aparência do TM Hub.</p></div></div>
+    <TabView className="settings-tabs">
+      <TabPanel header="Minha conta" leftIcon="pi pi-user mr-2">
     <div className="settings-grid">
       <article className="settings-card profile-card">
         <div className="settings-card-title"><i className="pi pi-user"/><div><h2>Perfil</h2><p>Como você aparece no TM Hub</p></div></div>
@@ -132,6 +136,12 @@ export function Settings() {
         <Button label="Atualizar senha" icon="pi pi-shield" onClick={changePassword}/>
       </article>
     </div>
+      </TabPanel>
+
+      <TabPanel header="Usuários" leftIcon="pi pi-users mr-2">
+        <UsersSettings />
+      </TabPanel>
+    </TabView>
 
     <Dialog header="Confirme seu novo e-mail" visible={emailDialog} onHide={() => setEmailDialog(false)} className="otp-dialog" modal>
       <p>Digite o código de 6 dígitos enviado para <strong>{newEmail}</strong>.</p>

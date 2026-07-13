@@ -11,7 +11,7 @@ const connect = axios.create({
 connect.interceptors.request.use((config) => {
   const token = sessionStorage.getItem("token");
   if (token) config.headers["Access-Token"] = token;
-  config.headers["Content-Type"] = 'application/json'
+  if (!(config.data instanceof FormData)) config.headers["Content-Type"] = 'application/json'
   return config;
 });
 
