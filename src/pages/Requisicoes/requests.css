@@ -62,6 +62,15 @@
   box-shadow: 0 0 0 .2rem rgba(99, 229, 139, .18), 0 12px 30px rgba(0, 0, 0, .3) !important;
 }
 
+/* The action buttons must sit directly on the table/card surface in both themes. */
+.request-actions-group.p-button-group,
+:root[data-theme="dark"] .request-actions-group.p-button-group {
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
 .quick-request-dialog {
   width: min(38rem, calc(100vw - 2rem));
 }
