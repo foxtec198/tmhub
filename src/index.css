@@ -54,6 +54,70 @@ body, html, :root, #root {
 :root[data-theme="dark"] .p-multiselect,
 :root[data-theme="dark"] .p-calendar input,
 :root[data-theme="dark"] textarea { background:#181a18;color:#f4f7f5;border-color:#3b4a3f; }
+/* Shared dark dropdown contract: white content with green interactive states. */
+:root[data-theme="dark"] .p-dropdown {
+    background:#151b17!important;
+    border-color:#3f6f4a!important;
+}
+:root[data-theme="dark"] .p-dropdown .p-dropdown-label,
+:root[data-theme="dark"] .p-dropdown .p-dropdown-label.p-placeholder {
+    color:#f3f7f4!important;
+}
+:root[data-theme="dark"] .p-dropdown .p-dropdown-label.p-placeholder {
+    color:#b7c2ba!important;
+}
+:root[data-theme="dark"] .p-dropdown .p-dropdown-trigger,
+:root[data-theme="dark"] .p-dropdown .p-dropdown-clear-icon,
+:root[data-theme="dark"] .p-dropdown .p-dropdown-filter-icon {
+    color:#63e58b!important;
+}
+:root[data-theme="dark"] .p-dropdown:not(.p-disabled):hover,
+:root[data-theme="dark"] .p-dropdown:not(.p-disabled).p-focus {
+    border-color:#63e58b!important;
+    box-shadow:0 0 0 .15rem rgba(99,229,139,.14)!important;
+}
+:root[data-theme="dark"] .p-dropdown-panel {
+    color:#f3f7f4!important;
+    background:#111713!important;
+    border:1px solid #3f6f4a!important;
+    box-shadow:0 16px 36px rgba(0,0,0,.46)!important;
+}
+:root[data-theme="dark"] .p-dropdown-panel .p-dropdown-header {
+    background:#172019!important;
+    border-bottom:1px solid #315b3b!important;
+}
+:root[data-theme="dark"] .p-dropdown-panel .p-dropdown-filter {
+    color:#fff!important;
+    background:#101612!important;
+    border-color:#4b8759!important;
+}
+:root[data-theme="dark"] .p-dropdown-panel .p-dropdown-filter:focus {
+    border-color:#63e58b!important;
+    box-shadow:0 0 0 .15rem rgba(99,229,139,.16)!important;
+}
+:root[data-theme="dark"] .p-dropdown-panel .p-dropdown-filter-icon,
+:root[data-theme="dark"] .p-dropdown-panel .p-dropdown-clear-icon {
+    color:#63e58b!important;
+}
+:root[data-theme="dark"] .p-dropdown-panel .p-dropdown-items,
+:root[data-theme="dark"] .p-dropdown-panel .p-dropdown-items-wrapper {
+    background:#111713!important;
+}
+:root[data-theme="dark"] .p-dropdown-panel .p-dropdown-item {
+    color:#f3f7f4!important;
+    background:transparent!important;
+}
+:root[data-theme="dark"] .p-dropdown-panel .p-dropdown-item:not(.p-highlight):not(.p-disabled):hover {
+    color:#dff8e5!important;
+    background:#203d29!important;
+}
+:root[data-theme="dark"] .p-dropdown-panel .p-dropdown-item.p-highlight {
+    color:#7df09a!important;
+    background:#294b32!important;
+}
+:root[data-theme="dark"] .p-dropdown-panel .p-dropdown-empty-message {
+    color:#cbd5ce!important;
+}
 :root[data-theme="dark"] .p-inputtext:enabled:hover,
 :root[data-theme="dark"] .p-dropdown:not(.p-disabled):hover,
 :root[data-theme="dark"] .p-multiselect:not(.p-disabled):hover { border-color:#3f7e4e; }

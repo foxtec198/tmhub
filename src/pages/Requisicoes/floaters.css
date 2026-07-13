@@ -1,0 +1,107 @@
+.floaters-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.floater-summary-card {
+  min-width: 0;
+  padding: .55rem .8rem 1rem;
+  color: #fff;
+  background: linear-gradient(135deg, #116a31, #188944);
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 14px;
+}
+
+.floaters-splitter {
+  width: 100%;
+  height: calc(100dvh - 18rem);
+  min-height: 22rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.floaters-splitter .p-splitter-panel {
+  min-width: 0;
+}
+
+.floaters-splitter .p-splitter-gutter {
+  background: #dfe6e1;
+}
+
+.floaters-splitter .p-splitter-gutter-handle {
+  background: var(--primary-color);
+}
+
+.floater-card {
+  min-height: 5rem;
+  max-height: 5.5rem;
+  color: #333;
+  background: #f8f9fa;
+}
+
+.floater-card>div {
+  min-width: 0;
+}
+
+:root[data-theme="dark"] .floater-summary-card {
+  color: #eaffef;
+  background: linear-gradient(135deg, #173c23, #20552f);
+  border-color: #3f704b;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .28);
+}
+
+:root[data-theme="dark"] .floaters-splitter {
+  background: #202422;
+  border-color: #414b45;
+}
+
+:root[data-theme="dark"] .floaters-splitter .p-splitter-panel {
+  background: #242826;
+}
+
+:root[data-theme="dark"] .floaters-splitter .p-splitter-gutter {
+  background: #3a423d;
+}
+
+:root[data-theme="dark"] .floaters-splitter .p-splitter-gutter-handle {
+  background: #63e58b;
+}
+
+:root[data-theme="dark"] .floater-card {
+  color: #d8ded9;
+  background: #303533;
+  border: 1px solid #47514b;
+}
+
+:root[data-theme="dark"] .floater-card:nth-of-type(even) {
+  background: #383d3a;
+}
+
+@media(max-width: 760px) {
+  .floaters-splitter {
+    height: calc(100dvh - 22rem);
+    min-height: 28rem;
+  }
+
+  .floater-card {
+    max-height: none;
+  }
+
+  .floater-card>div>div:first-child {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .floater-card .p-divider-vertical {
+    display: none;
+  }
+}
+
+@media(max-width: 520px) {
+  .floaters-summary {
+    grid-template-columns: 1fr;
+  }
+}

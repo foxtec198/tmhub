@@ -364,6 +364,7 @@ export function History() {
             <h2 className="inter px-4 flex align-items-center gap-2" style={{ color: "var(--green-600)", fontWeight: 900 }}>
                 <i className="pi pi-clock" /> Histórico
             </h2>
+            <p className="px-4 mt-0 mb-3 text-secondary">Consulte requisições concluídas por período, edite informações e acompanhe cada evento da timeline.</p>
 
             <div className="p-3 ms-3 border-round-xl shadow-6">
                 <Table

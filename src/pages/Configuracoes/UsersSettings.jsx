@@ -34,6 +34,7 @@ export function UsersSettings() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [spreadsheet, setSpreadsheet] = useState(null);
+  const [importing, setImporting] = useState(false);
   const fileInput = useRef(null);
   const setLoading = useLoading();
   const { showToast } = useToast();
@@ -99,22 +100,25 @@ export function UsersSettings() {
   const importUsers = async (event) => {
     event.preventDefault();
     if (!spreadsheet) return showToast("warn", "Planilha", "Selecione um arquivo .xlsx.");
+    if (spreadsheet.size > 10 * 1024 * 1024) return showToast("warn", "Planilha", "O arquivo deve ter no máximo 10 MB.");
 
     const data = new FormData();
     data.append("file", spreadsheet);
-    setLoading(true);
+    setImporting(true);
     try {
-      const response = await connect.post("/usuarios/importar", data);
+      const response = await connect.post("/usuarios/importar", data, { timeout: 120000 });
       showToast("success", "Importação concluída", response.data?.message || "Usuários importados.");
       setBulkDialog(false);
       setSpreadsheet(null);
+      if (fileInput.current) fileInput.current.value = "";
       setRefresh((current) => current + 1);
     } catch (error) {
       const response = error.response?.data;
-      const details = response?.errors?.slice(0, 3).join(" ");
-      showToast("error", "Falha na importação", details || response?.message || response || "Confira a planilha.");
+      const details = Array.isArray(response?.errors) ? response.errors.slice(0, 3).join(" ") : null;
+      const message = typeof response === "string" ? response : response?.message;
+      showToast("error", "Falha na importação", details || message || (error.code === "ECONNABORTED" ? "A importação excedeu o tempo limite." : "Confira a planilha."));
     } finally {
-      setLoading(false);
+      setImporting(false);
     }
   };
 
@@ -160,13 +164,13 @@ export function UsersSettings() {
       </form>
     </Dialog>
 
-    <Dialog header="Importar usuários" visible={bulkDialog} modal className="user-dialog" onHide={() => setBulkDialog(false)}>
+    <Dialog header="Importar usuários" visible={bulkDialog} modal className="user-dialog" closable={!importing} closeOnEscape={!importing} onHide={() => !importing && setBulkDialog(false)}>
       <form className="bulk-user-form" onSubmit={importUsers}>
         <p>A importação é transacional: se alguma linha estiver inválida, nenhum usuário será criado.</p>
-        <Button type="button" label="Baixar planilha modelo" icon="pi pi-download" outlined onClick={downloadTemplate} />
-        <input ref={fileInput} type="file" accept=".xlsx" onChange={(event) => setSpreadsheet(event.target.files?.[0] || null)} />
+        <Button type="button" label="Baixar planilha modelo" icon="pi pi-download" outlined onClick={downloadTemplate} disabled={importing} />
+        <input ref={fileInput} type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" disabled={importing} onChange={(event) => setSpreadsheet(event.target.files?.[0] || null)} />
         {spreadsheet ? <small>Arquivo selecionado: {spreadsheet.name}</small> : null}
-        <div className="dialog-actions"><Button type="button" label="Cancelar" text onClick={() => setBulkDialog(false)} /><Button type="submit" label="Importar usuários" icon="pi pi-upload" /></div>
+        <div className="dialog-actions"><Button type="button" label="Cancelar" text disabled={importing} onClick={() => setBulkDialog(false)} /><Button type="submit" label={importing ? "Importando..." : "Importar usuários"} icon="pi pi-upload" loading={importing} disabled={!spreadsheet || importing} /></div>
       </form>
     </Dialog>
   </div>;

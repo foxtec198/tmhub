@@ -614,6 +614,7 @@ export function RequestReport() {
 
                     <FloatLabel className="w-full mb-4">
                         <Calendar
+                            inputId="dashboard-period"
                             locale="pt-BR"
                             value={filter}
                             placeholder="Selecione um período."
@@ -624,15 +625,16 @@ export function RequestReport() {
                             // showButtonBar
                             className="w-full"
                         />
-                        <label htmlFor="">Selecione um periodo</label>
+                        <label htmlFor="dashboard-period">Selecione um período</label>
                     </FloatLabel>
 
                     <FloatLabel className="w-full mb-4">
                         <Dropdown
+                            inputId="dashboard-contract"
                             filter
                             appendTo="self"
                             className="w-full"
-                            panelClassName="w-full"
+                            panelClassName="w-full dashboard-filter-dropdown"
                             value={filters.contrato}
                             options={contratosOptions}
                             onChange={(e) =>
@@ -642,11 +644,13 @@ export function RequestReport() {
                                 }))
                             }
                         />
-                        <label htmlFor="">Contratos: </label>
+                        <label htmlFor="dashboard-contract">Contratos: </label>
                     </FloatLabel>
 
                     <FloatLabel className="w-full mb-4">
                         <Dropdown
+                            inputId="dashboard-department"
+                            panelClassName="dashboard-filter-dropdown"
                             className="w-full"
                             value={filters.departamento}
                             options={dptoOptions}
@@ -657,11 +661,13 @@ export function RequestReport() {
                                 }))
                             }
                         />
-                        <label htmlFor="">Departamentos: </label>
+                        <label htmlFor="dashboard-department">Departamentos: </label>
                     </FloatLabel>
 
                     <FloatLabel className="w-full mb-4">
                         <Dropdown
+                            inputId="dashboard-reason"
+                            panelClassName="dashboard-filter-dropdown"
                             options={motivoOptions}
                             value={filters.motivo}
                             className="w-full"
@@ -672,11 +678,13 @@ export function RequestReport() {
                                 }))
                             }
                         />
-                        <label htmlFor="">Motivos: </label>
+                        <label htmlFor="dashboard-reason">Motivos: </label>
                     </FloatLabel>
 
                     <FloatLabel className="w-full mb-4">
                         <Dropdown
+                            inputId="dashboard-supervisor"
+                            panelClassName="dashboard-filter-dropdown"
                             options={supervisorOptions}
                             value={filters.supervisor}
                             className="w-full"
@@ -687,11 +695,13 @@ export function RequestReport() {
                                 }))
                             }
                         />
-                        <label htmlFor="">Supervisores: </label>
+                        <label htmlFor="dashboard-supervisor">Supervisores: </label>
                     </FloatLabel>
 
                     <FloatLabel className="w-full mb-4">
                         <Dropdown
+                            inputId="dashboard-status"
+                            panelClassName="dashboard-filter-dropdown"
                             options={statusOptions}
                             value={filters.status}
                             className="w-full"
@@ -702,7 +712,7 @@ export function RequestReport() {
                                 }))
                             }
                         />
-                        <label htmlFor="">Status: </label>
+                        <label htmlFor="dashboard-status">Status: </label>
                     </FloatLabel>
 
                     <Divider className="mt-4" />

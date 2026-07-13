@@ -4,7 +4,8 @@ import { Button } from "primereact/button";
 import { Stepper } from 'primereact/stepper';
 import { StepperPanel } from 'primereact/stepperpanel';
 import { Checkbox } from "primereact/checkbox";
-import { Calendar } from "primereact/calendar";
+import { SelectButton } from "primereact/selectbutton";
+import { InputNumber } from "primereact/inputnumber";
 
 // Utils ------------------------------------------------
 import { useState, useRef, useEffect } from "react";
@@ -12,6 +13,7 @@ import { useToast } from "../../contexts/ToastContext";
 import { useLoading } from "../../contexts/LoadingContext";
 import connect from "../../utils/request";
 import { InputText } from "primereact/inputtext";
+import "./new.css";
 
 export function Request() {
     // Campos do formulário e seleções relacionadas ao colaborador ausente.
@@ -23,13 +25,15 @@ export function Request() {
     const [reason, selectedReason] = useState(null)
     const [obs, setObs] = useState("")
     const [checked, setChecked] = useState(false)
+    const [dateChoice, setDateChoice] = useState("today")
+    const [durationDays, setDurationDays] = useState(1)
 
     // Opções remotas carregadas para os dropdowns do formulário.
     const [supsOtions, setSupsOptions] = useState(null)
     const [allFuncsOptions, setAllFuncsOptions] = useState(null)
     const [replaces, setReplaces] = useState(null)
     const [centersOptions, setCenterOptions] = useState(null)
-    const [filterData, setFilterData] = useState(new Date())
+    const dateOptions = [{ label: "Hoje", value: "today" }, { label: "Amanhã", value: "tomorrow" }]
 
     const reasonOptions = [
         "AFASTAMENTO",
@@ -45,37 +49,32 @@ export function Request() {
     const setLoading = useLoading();
     const { showToast } = useToast();
 
-    const today = new Date();
-    const minRequestDate = new Date(today);
-    const maxRequestDate = new Date(today);
-    minRequestDate.setDate(today.getDate() - 7);
-    maxRequestDate.setDate(today.getDate() + 7);
-
-    function selectedDateWithCurrentTime(selectedDate) {
+    function selectedRequestDate() {
+        // The API requires the actual submission time even when tomorrow is selected.
         const now = new Date();
-        const date = new Date(selectedDate);
-        date.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
-        return date;
+        if (dateChoice === "tomorrow") now.setDate(now.getDate() + 1);
+        return now;
     }
 
     // Valida os campos obrigatórios e envia a nova requisição ao backend.
     async function createRequest() {
         setLoading(true);
         try {
-            if(user && absent && local){
+            if(user && absent && local && reason && (checked || replace)){
                 const data = {
                     supervisor_id: user.id,
                     centro_id: local.id,
                     ausente_id: absent.id,
-                    reserva_id: checked ? 0: replace.id,
+                    reserva_id: checked ? 0 : replace.id,
                     motivo: reason,
                     advertencia: warning,
-                    data: selectedDateWithCurrentTime(filterData),
+                    data: selectedRequestDate(),
+                    quantidade_dias: ["ATESTADO", "AFASTAMENTO"].includes(reason) ? durationDays : 1,
                     obs: obs
                 }
                 await connect.post("/repo/request", data)
                 showToast("success", "Sucesso na requisição", "Sua requisição foi criada com sucesso, aguarde novidades por email!")
-                selectedReplace(null); selectedLocal(null); selectedAbsent(null); selectedReason(null); setObs(null), selectedWarning(null)
+                selectedReplace(null); selectedLocal(null); selectedAbsent(null); selectedReason(null); setObs(""); selectedWarning(null); setDurationDays(1); setDateChoice("today")
             }
             else{showToast("warn", "Atenção!", "Preencha todos os dados")}
         }
@@ -121,14 +120,13 @@ export function Request() {
     // Formulário público e responsivo de abertura de reposição.
     return (
         <>
-            <div className="flex min-h-screen px-4 py-6 flex-column justify-content-between align-items-center">
+            <div className="request-create-page flex min-h-screen px-4 py-6 flex-column justify-content-between align-items-center">
                 {/* HEADER */}
                 <div className="flex flex-column align-items-center justify-content-center text-center">
                     <img
-                        src="/brands/no_slogan_bran.svg"
+                        src="/brands/main_brand.svg"
                         alt="Logo"
-                        className="px-5 fadein animation-duration-2000"
-                        style={{ width: 350 }}
+                        className="request-create-logo px-5 fadein animation-duration-2000"
                     />
 
                     <span
@@ -138,7 +136,7 @@ export function Request() {
                 </div>
 
                 {/* HEADER */}
-                <div className="flexw-full" style={{ height: "50vh", minWidth: "22rem" }}>
+                <div className="request-stepper-shell flexw-full" style={{ height: "50vh", minWidth: "22rem" }}>
                     <Stepper ref={stepperRef}>
                         <StepperPanel header="Login">
                             <div className="flex flex-column text-medium text-center">
@@ -212,7 +210,7 @@ export function Request() {
                                     panelStyle={{ maxWidth: '100%' }}
                                     className="w-full mb-3"
                                     value={reason}
-                                    onChange={(e) => selectedReason(e.value)}
+                                    onChange={(e) => { selectedReason(e.value); if (!["ATESTADO", "AFASTAMENTO"].includes(e.value)) setDurationDays(1) }}
                                     options={reasonOptions}
                                     placeholder="Selecione o Motivo"
                                     optionLabel="name"
@@ -236,20 +234,16 @@ export function Request() {
                                     placeholder="Observação"
                                 />
                                 
-                                <div className="flex justify-content-between align-items-center mb-4">
-                                    <label htmlFor="data">Selecione a data</label>
-                                    <Calendar
-                                        id="data"
-                                        className="w-20rem"
-                                        value={filterData}
-                                        dateFormat="dd/mm/yy"
-                                        locale="pt-BR"
-                                        onChange={(e)=>setFilterData(e.value)}
-                                        minDate={minRequestDate}
-                                        maxDate={maxRequestDate}
-                                        readOnlyInput
+                                {["ATESTADO", "AFASTAMENTO"].includes(reason) && (
+                                    <div className="flex flex-column gap-2 mb-3">
+                                        <label htmlFor="duration-days">Quantidade de dias</label>
+                                        <InputNumber inputId="duration-days" value={durationDays} onValueChange={(e) => setDurationDays(e.value || 1)} min={1} max={365} showButtons />
+                                    </div>
+                                )}
 
-                                    />
+                                <div className="flex justify-content-between align-items-center gap-3 mb-4">
+                                    <span className="font-medium">Data da ausência</span>
+                                    <SelectButton value={dateChoice} options={dateOptions} onChange={(e) => e.value && setDateChoice(e.value)} allowEmpty={false} />
                                 </div>
 
                                 <div className="flex justify-content-end align-items-center text-end">

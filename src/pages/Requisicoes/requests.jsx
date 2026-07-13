@@ -9,6 +9,13 @@ import { DropdownWS } from "../../components/DropdownWithSearch";
 import { Toast } from "primereact/toast";
 import { confirmDialog } from 'primereact/confirmdialog';
 import { ConfirmDialog } from 'primereact/confirmdialog';
+import { SpeedDial } from "primereact/speeddial";
+import { Dialog } from "primereact/dialog";
+import { Calendar } from "primereact/calendar";
+import { InputNumber } from "primereact/inputnumber";
+import { QuickRequestDialog } from "./QuickRequestDialog";
+import { RequestImportDialog } from "./RequestImportDialog";
+import "./requests.css";
 
 // Utils
 import { useEffect, useRef, useState } from "react"
@@ -38,6 +45,13 @@ function hasValidReplacement(row) {
     return Boolean(replacement) && !["SEM COBERTURA", "SEM INFORMAÇÃO", "NONE", "NULL"].includes(replacement);
 }
 
+function withCurrentTime(value) {
+    const date = new Date(value)
+    const now = new Date()
+    date.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds())
+    return date
+}
+
 export function Requests() {
     // Dados da fila, totais de resumo e estado de operações destrutivas.
     const [requests, setRequests] = useState(null);
@@ -47,11 +61,48 @@ export function Requests() {
     const [emAtraso] = useState(0)
     const [expiradas] = useState(0)
     const [deletingId, setDeletingId] = useState(null)
+    const [quickDialog, setQuickDialog] = useState(false)
+    const [importDialog, setImportDialog] = useState(false)
+    const [usageDialog, setUsageDialog] = useState(false)
+    const [usageDate, setUsageDate] = useState(new Date())
+    const [reservationUsage, setReservationUsage] = useState({ usadas: [], disponiveis: [] })
 
     const { showToast } = useToast();
     const setLoading = useLoading();
     const navigate = useNavigate();
     const toast = useRef(null);
+
+    // Blob downloads avoid navigating away from the operational queue.
+    const exportRequests = async () => {
+        try {
+            const { data } = await connect.get("/repo/request/export", { responseType: "blob" })
+            const url = URL.createObjectURL(data)
+            const anchor = document.createElement("a")
+            anchor.href = url
+            anchor.download = "requisicoes_abertas.xlsx"
+            anchor.click()
+            setTimeout(() => URL.revokeObjectURL(url), 0)
+        } catch (error) { showToast("error", "Exportação", error.response?.data || "Não foi possível exportar.") }
+    }
+
+    // Query a single business day; the backend accounts for multi-day request overlaps.
+    const loadReservationUsage = async (date = usageDate) => {
+        const value = new Date(date)
+        const yyyyMmDd = `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`
+        try {
+            const { data } = await connect.get("/repo/reservas-uso", { params: { data: yyyyMmDd } })
+            setReservationUsage(data)
+        } catch (error) { showToast("error", "Uso das reservas", error.response?.data || "Não foi possível consultar as reservas.") }
+    }
+
+    // Quarter-circle actions keep the mobile trigger accessible without covering the table.
+    const speedDialItems = [
+        { label: "Nova página", icon: "pi pi-external-link", command: () => navigate("/reposicoes/requisicao") },
+        { label: "Lançamento rápido", icon: "pi pi-plus-circle", command: () => setQuickDialog(true) },
+        { label: "Importar planilha", icon: "pi pi-upload", command: () => setImportDialog(true) },
+        { label: "Exportar planilha", icon: "pi pi-file-excel", command: exportRequests },
+        { label: "Uso diário das reservas", icon: "pi pi-calendar", command: () => { setUsageDialog(true); loadReservationUsage() } },
+    ]
 
     const reasonColors = {
         "AFASTAMENTO": "var(--red-900)",
@@ -134,7 +185,7 @@ export function Requests() {
             field: "data",
             header: "Data",
             class: "text-truncate",
-            body: (row) => new Date(row.data).toLocaleDateString("pt-br")
+            body: (row) => <Inplace closable><InplaceDisplay>{new Date(row.data).toLocaleDateString("pt-br")}</InplaceDisplay><InplaceContent><Calendar value={new Date(row.data)} onChange={(e) => e.value && confirm("Data", { id: row.id, data: withCurrentTime(e.value) })} dateFormat="dd/mm/yy" showIcon /></InplaceContent></Inplace>
         },
         {
             field: "status",
@@ -161,10 +212,10 @@ export function Requests() {
                             <InplaceContent>
                                 <DropdownWS
                                     uri="/funcionarios"
-                                    fetchAll
                                     className="w-10rem text-truncate"
                                     optionLabel="nome"
                                     onChange={(value) => { confirm("Ausente", { id: row.id, ausente_id: value }) }}
+                                    fetchAll
                                 />
                             </InplaceContent>
                         </Inplace>
@@ -239,6 +290,13 @@ export function Requests() {
             }
         },
         {
+            header: "Dias",
+            field: "quantidade_dias",
+            body: (row) => ["ATESTADO", "AFASTAMENTO"].includes(row.motivo)
+                ? <Inplace closable><InplaceDisplay>{row.quantidade_dias || 1}</InplaceDisplay><InplaceContent><InputNumber value={row.quantidade_dias || 1} min={1} max={365} showButtons onValueChange={(e) => e.value && confirm("Duração", { id: row.id, quantidade_dias: e.value })} /></InplaceContent></Inplace>
+                : "—",
+        },
+        {
             header: "Ações",
             body: (row) => {
                 return <ButtonGroup className="flex">
@@ -305,19 +363,9 @@ export function Requests() {
                 <i className="pi pi-sync"></i>
                 Requisições
             </h2>
+            <p className="mt-0 mb-3 text-secondary">Acompanhe as reposições abertas, atualize os dados e acesse rapidamente novos lançamentos e relatórios.</p>
 
-            <Button
-                icon="pi pi-plus"
-                size="large"
-                className="p-4 btn-float"
-                rounded
-                onClick={() => navigate("/reposicoes/requisicao")}
-                style={{
-                    position: "absolute",
-                    right: "20px",
-                    bottom: "20px"
-                }}
-            />
+            <div className="requests-speed-dial"><SpeedDial model={speedDialItems} type="quarter-circle" direction="up-left" radius={132} showIcon="pi pi-plus" hideIcon="pi pi-times" /></div>
 
             <div className="flex gap-2 align-items-center">
                 <DashCard
@@ -363,6 +411,15 @@ export function Requests() {
                     setRefresh={setRefresh}
                 />
             </div>
+            <QuickRequestDialog visible={quickDialog} onHide={() => setQuickDialog(false)} onCreated={() => setRefresh((value) => value + 1)} />
+            <RequestImportDialog visible={importDialog} onHide={() => setImportDialog(false)} onImported={() => setRefresh((value) => value + 1)} />
+            <Dialog header="Uso diário das reservas" visible={usageDialog} modal className="reserve-usage-dialog" onHide={() => setUsageDialog(false)}>
+                <Calendar value={usageDate} onChange={(e) => { if (e.value) { setUsageDate(e.value); loadReservationUsage(e.value) } }} dateFormat="dd/mm/yy" showIcon readOnlyInput />
+                <div className="reserve-usage-grid">
+                    <section><h3>Usadas ({reservationUsage.usadas.length})</h3><div className="reserve-usage-list">{reservationUsage.usadas.length ? reservationUsage.usadas.map((item) => <div className="reserve-usage-item" key={item.id}><strong>{item.nome}</strong><span>{item.matricula}</span></div>) : <span className="reserve-usage-empty">Nenhuma reserva usada nesta data.</span>}</div></section>
+                    <section><h3>Disponíveis ({reservationUsage.disponiveis.length})</h3><div className="reserve-usage-list">{reservationUsage.disponiveis.length ? reservationUsage.disponiveis.map((item) => <div className="reserve-usage-item" key={item.id}><strong>{item.nome}</strong><span>{item.matricula}</span></div>) : <span className="reserve-usage-empty">Nenhuma reserva disponível nesta data.</span>}</div></section>
+                </div>
+            </Dialog>
         </main>
     );
 };

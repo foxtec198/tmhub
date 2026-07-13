@@ -120,6 +120,21 @@
     text-align: right;
   }
 
+  /* Action groups must not add a second dark surface inside mobile table cards. */
+  .tm-table-card-value > .p-button-group,
+  .tm-table-card-value > .p-buttongroup,
+  .tm-table-card-value .p-buttonset {
+    display: inline-flex;
+    padding: 0;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .tm-responsive-table .p-datatable-tbody > tr > td:last-child .tm-table-cell {
+    background: transparent !important;
+  }
+
   .tm-table-card-value .text-truncate,
   .tm-table-card-value [class*="text-truncate-"] {
     max-width: 100%;

@@ -1,0 +1,160 @@
+/* Fixed quarter-circle launcher: only buttons are painted; every support layer stays transparent. */
+.requests-speed-dial {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 20;
+}
+
+.requests-speed-dial .p-speeddial {
+  position: relative;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.requests-speed-dial .p-speeddial.p-component,
+.requests-speed-dial .p-speeddial-button-wrapper {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.requests-speed-dial .p-speeddial-list,
+.requests-speed-dial .p-speeddial-list.p-component {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.requests-speed-dial .p-speeddial-action {
+  width: 3.25rem;
+  height: 3.25rem;
+  color: #dff8e5;
+  background: #26322a !important;
+  border: 1px solid #41634a !important;
+  border-radius: 50%;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, .24);
+}
+
+.requests-speed-dial .p-speeddial-action:hover {
+  color: #071009;
+  background: var(--accent) !important;
+}
+
+.requests-speed-dial .p-speeddial-button {
+  width: 4rem;
+  height: 4rem;
+  color: #071009 !important;
+  background: var(--accent) !important;
+  border: 3px solid rgba(255, 255, 255, .58);
+  border-color: #a7f3b9 !important;
+  box-shadow: 0 10px 28px rgba(22, 122, 49, .32);
+}
+
+.requests-speed-dial .p-speeddial-button:hover,
+.requests-speed-dial .p-speeddial-button:focus,
+.requests-speed-dial .p-speeddial-button:active,
+.requests-speed-dial .p-speeddial-opened .p-speeddial-button {
+  color: #020603 !important;
+  background: #63e58b !important;
+  border-color: #c3f8cf !important;
+  box-shadow: 0 0 0 .2rem rgba(99, 229, 139, .18), 0 12px 30px rgba(0, 0, 0, .3) !important;
+}
+
+.quick-request-dialog {
+  width: min(38rem, calc(100vw - 2rem));
+}
+
+.quick-request-form {
+  display: grid;
+  gap: 1rem;
+  padding-top: .5rem;
+}
+
+/* Spreadsheet import uses local progress instead of the global full-screen loading overlay. */
+.request-import-dialog {
+  width: min(38rem, calc(100vw - 2rem));
+}
+
+.request-import-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.request-import-form input[type="file"] {
+  padding: 1rem;
+  border: 1px dashed #90a096;
+  border-radius: 10px;
+}
+
+:root[data-theme="dark"] .request-import-form input[type="file"] {
+  color: #dce7df;
+  background: #171c18;
+  border-color: #477653;
+}
+
+.reserve-usage-dialog {
+  width: min(52rem, calc(100vw - 2rem));
+}
+
+.reserve-usage-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.reserve-usage-list {
+  min-height: 12rem;
+  max-height: 24rem;
+  overflow: auto;
+  padding: 1rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+}
+
+.reserve-usage-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .7rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.reserve-usage-item:last-child {
+  border-bottom: 0;
+}
+
+.reserve-usage-empty {
+  display: block;
+  color: var(--text-color-secondary);
+  padding: .75rem;
+  text-align: center;
+}
+
+:root[data-theme="dark"] .reserve-usage-list {
+  background: #252a27;
+  border-color: #445048;
+}
+
+:root[data-theme="dark"] .reserve-usage-item {
+  border-color: #3c4540;
+}
+
+@media(max-width: 700px) {
+  .reserve-usage-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .requests-speed-dial {
+    right: 1rem;
+    bottom: 1rem;
+  }
+
+  .requests-speed-dial .p-speeddial-action {
+    width: 3rem;
+    height: 3rem;
+  }
+}
