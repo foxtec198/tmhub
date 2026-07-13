@@ -135,15 +135,6 @@
     background: transparent !important;
   }
 
-  /* Keep the action row on the card surface instead of painting a black rectangle around its buttons. */
-  :root[data-theme="dark"] .tm-responsive-table .p-datatable-tbody > tr > td:last-child,
-  :root[data-theme="dark"] .tm-responsive-table .p-datatable-tbody > tr > td:last-child .tm-table-cell,
-  :root[data-theme="dark"] .tm-responsive-table .p-datatable-tbody > tr > td:last-child .tm-table-card-value,
-  :root[data-theme="dark"] .tm-responsive-table .p-button-group {
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-
   .tm-table-card-value .text-truncate,
   .tm-table-card-value [class*="text-truncate-"] {
     max-width: 100%;

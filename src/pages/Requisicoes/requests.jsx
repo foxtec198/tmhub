@@ -10,6 +10,7 @@ import { Toast } from "primereact/toast";
 import { confirmDialog } from 'primereact/confirmdialog';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import { SpeedDial } from "primereact/speeddial";
+import { Tooltip } from "primereact/tooltip";
 import { Dialog } from "primereact/dialog";
 import { Calendar } from "primereact/calendar";
 import { InputNumber } from "primereact/inputnumber";
@@ -72,19 +73,6 @@ export function Requests() {
     const navigate = useNavigate();
     const toast = useRef(null);
 
-    // Blob downloads avoid navigating away from the operational queue.
-    const exportRequests = async () => {
-        try {
-            const { data } = await connect.get("/repo/request/export", { responseType: "blob" })
-            const url = URL.createObjectURL(data)
-            const anchor = document.createElement("a")
-            anchor.href = url
-            anchor.download = "requisicoes_abertas.xlsx"
-            anchor.click()
-            setTimeout(() => URL.revokeObjectURL(url), 0)
-        } catch (error) { showToast("error", "Exportação", error.response?.data || "Não foi possível exportar.") }
-    }
-
     // Query a single business day; the backend accounts for multi-day request overlaps.
     const loadReservationUsage = async (date = usageDate) => {
         const value = new Date(date)
@@ -97,7 +85,7 @@ export function Requests() {
 
     // Quarter-circle actions keep the mobile trigger accessible without covering the table.
     const speedDialItems = [
-        { label: "Nova página", icon: "pi pi-external-link", command: () => navigate("/reposicoes/requisicao") },
+        { label: "Abrir em um nova página", icon: "pi pi-external-link", command: () => navigate("/reposicoes/requisicao") },
         { label: "Lançamento rápido", icon: "pi pi-plus-circle", command: () => setQuickDialog(true) },
         { label: "Importar planilha", icon: "pi pi-upload", command: () => setImportDialog(true) },
         { label: "Uso diário das reservas", icon: "pi pi-calendar", command: () => { setUsageDialog(true); loadReservationUsage() } },
@@ -298,7 +286,7 @@ export function Requests() {
         {
             header: "Ações",
             body: (row) => {
-                return <ButtonGroup className="flex">
+                return <ButtonGroup className="request-actions-group flex">
                     <Button
                         icon="pi pi-times"
                         severity="help"
@@ -365,6 +353,7 @@ export function Requests() {
             <p className="mt-0 mb-3 text-secondary">Acompanhe as reposições abertas, atualize os dados e acesse rapidamente novos lançamentos e relatórios.</p>
 
             <div className="requests-speed-dial">
+                <Tooltip target=".requests-speed-dial .p-speeddial-action" position="left" showDelay={150} />
                 <SpeedDial model={speedDialItems} type="quarter-circle" direction="up-left" radius={132} showIcon="pi pi-plus" hideIcon="pi pi-times" aria-label="Ações de requisições" />
             </div>
 
