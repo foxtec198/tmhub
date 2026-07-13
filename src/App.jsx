@@ -20,6 +20,7 @@ import "./index.css"
 
 // Routes
 import { RequestReport } from "./pages/Dashboards/requests"
+import { DepartmentEmployeesDashboard } from "./pages/Dashboards/DepartmentEmployees"
 import { Requests } from "./pages/Requisicoes/requests"
 import { Request } from "./pages/Requisicoes/new.jsx"
 import { Frotas } from "./pages/Frotas"
@@ -112,6 +113,7 @@ export function AppRoutes() {
 
           {/* Estoque */}
           <Route path="/reports/reposicoes" element={<RequestReport />} />
+          <Route path="/reports/colaboradores-departamento" element={<DepartmentEmployeesDashboard />} />
           <Route path="/estoque/produtos" element={<Products />} />
           <Route path="/estoque/movimentacoes" element={<Movements />} />
 

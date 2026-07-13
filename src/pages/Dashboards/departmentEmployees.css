@@ -1,0 +1,276 @@
+.department-dashboard {
+    min-height: 100%;
+    padding: clamp(1rem, 2.5vw, 2rem);
+    color: var(--text-color, #26332a);
+    background: transparent;
+}
+
+.department-dashboard__heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.department-dashboard__heading h1 {
+    margin: .25rem 0;
+    color: var(--primary-color);
+    font: 800 clamp(1.45rem, 3vw, 2.15rem) "Space Grotesk", sans-serif;
+}
+
+.department-dashboard__heading p,
+.department-filter-panel__title span {
+    margin: 0;
+    color: var(--text-color-secondary, #68736b);
+}
+
+.department-dashboard__eyebrow {
+    color: var(--primary-color);
+    font-size: .75rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.department-filter-button {
+    flex: 0 0 auto;
+    border-radius: 999px;
+    box-shadow: 0 10px 24px rgba(0, 104, 56, .18);
+}
+
+.department-dashboard__summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .85rem;
+    margin-bottom: 1rem;
+}
+
+.department-dashboard__summary > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-width: 0;
+    padding: 1rem 1.15rem;
+    border: 1px solid #dfe9e2;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .92);
+    box-shadow: 0 7px 24px rgba(19, 70, 38, .06);
+}
+
+.department-dashboard__summary span { color: #67736a; font-weight: 600; }
+.department-dashboard__summary strong { color: var(--primary-color); font-size: 1.65rem; }
+
+.department-dashboard__content {
+    overflow: hidden;
+    border: 1px solid #d9e7dd;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 16px 42px rgba(19, 70, 38, .08);
+}
+
+.department-dashboard .p-accordion .p-accordion-header .p-accordion-header-link {
+    padding: 1rem 1.2rem;
+    border-color: #159452;
+    background: linear-gradient(90deg, #06763f, #08894a);
+    color: #fff;
+}
+
+.department-dashboard .p-accordion .p-accordion-content { padding: 0; border-color: #dfe8e1; }
+.department-dashboard .p-accordion .p-accordion-tab { margin: 0; }
+.department-dashboard .p-accordion-toggle-icon { color: #fff; }
+
+.department-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .8rem 1.35rem;
+    width: 100%;
+}
+
+.department-header strong { margin-right: auto; }
+.department-counter { display: inline-flex; align-items: center; gap: .35rem; font-size: .85rem; font-weight: 600; }
+.department-counter i { font-size: .55rem; }
+.department-counter--active i { color: #58e287; }
+.department-counter--dismissed i { color: #ff6c72; }
+
+.department-centers { display: grid; }
+.department-center + .department-center { border-top: 1px solid #dbe5dd; }
+
+.department-center__header {
+    display: grid;
+    grid-template-columns: auto minmax(12rem, 1fr) minmax(9rem, auto) minmax(7rem, auto);
+    align-items: center;
+    gap: .85rem;
+    padding: .85rem 1.2rem;
+    color: #536159;
+    background: #edf4ef;
+}
+
+.department-center__header i {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    color: #fff;
+    background: #087a42;
+}
+
+.department-center__header strong { color: #314239; }
+
+.department-employee {
+    display: grid;
+    grid-template-columns: auto minmax(14rem, 1fr) minmax(10rem, auto) minmax(8rem, auto);
+    align-items: center;
+    gap: 1rem;
+    min-height: 3.8rem;
+    padding: .7rem 1.2rem .7rem 2rem;
+    border-top: 1px solid #edf1ee;
+}
+
+.department-employee:nth-child(even) { background: #f7f9f7; }
+.department-employee > i { color: #159052; }
+.department-employee__identity { display: flex; min-width: 0; flex-direction: column; gap: .18rem; }
+.department-employee__identity strong { overflow-wrap: anywhere; }
+.department-employee__identity span,
+.department-employee__admission { color: #778078; font-size: .83rem; }
+
+.department-employee__status {
+    justify-self: end;
+    padding: .35rem .65rem;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 800;
+    text-align: center;
+}
+
+.department-employee__status.is-active { color: #08723d; background: #dff6e7; }
+.department-employee__status.is-dismissed { color: #ac2f38; background: #ffe3e5; }
+
+.department-dashboard__state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .65rem;
+    min-height: 14rem;
+    padding: 2rem;
+    color: #6c776f;
+    text-align: center;
+}
+
+.department-filter-panel { width: min(26rem, calc(100vw - 2rem)); }
+.department-filter-panel .p-overlaypanel-content { padding: 1.25rem; }
+.department-filter-panel__title { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.department-filter-panel__title > div { display: flex; flex-direction: column; gap: .2rem; }
+.department-filter-field { display: flex; flex-direction: column; gap: .45rem; margin-top: .9rem; font-weight: 700; }
+.department-filter-field > span { font-size: .85rem; }
+
+:root[data-theme="dark"] .department-dashboard {
+    color: #d8ddda;
+    background: transparent;
+}
+
+:root[data-theme="dark"] .department-dashboard__eyebrow {
+    color: #4fd47a;
+}
+
+:root[data-theme="dark"] .department-dashboard__heading h1 {
+    color: #63e58b;
+}
+
+:root[data-theme="dark"] .department-dashboard__heading p {
+    color: #b7c1bb;
+}
+
+:root[data-theme="dark"] .department-dashboard__content,
+:root[data-theme="dark"] .department-dashboard__summary > div {
+    background: #303538;
+    border-color: #4a534e;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .22);
+}
+
+:root[data-theme="dark"] .department-dashboard__summary span {
+    color: #d3d9d5;
+}
+
+:root[data-theme="dark"] .department-dashboard__summary strong {
+    color: #63e58b;
+}
+:root[data-theme="dark"] .department-center__header { color: #c3c9c5; background: #3a3f42; }
+:root[data-theme="dark"] .department-center__header strong { color: #dce1de; }
+:root[data-theme="dark"] .department-employee { color: #d2d7d4; border-color: #474c49; background: #2c3033; }
+:root[data-theme="dark"] .department-employee:nth-child(even) { background: #363a3d; }
+:root[data-theme="dark"] .department-employee__identity span,
+:root[data-theme="dark"] .department-employee__admission { color: #aeb6b1; }
+:root[data-theme="dark"] .department-dashboard__state { color: #b9c0bc; background: #2b2f32; }
+
+:root[data-theme="dark"] .department-filter-dropdown .p-multiselect-header {
+    background: #252a27;
+    border-color: #3e5145;
+}
+
+:root[data-theme="dark"] .department-filter-dropdown .p-multiselect-filter-container .p-inputtext {
+    color: #d6ddd8;
+    background: #181c19;
+    border-color: #4fd47a;
+    box-shadow: 0 0 0 1px rgba(79, 212, 122, .18);
+}
+
+:root[data-theme="dark"] .department-filter-dropdown .p-multiselect-filter-icon,
+:root[data-theme="dark"] .department-filter-dropdown .p-multiselect-close,
+:root[data-theme="dark"] .department-filter-dropdown .p-multiselect-close-icon {
+    color: #63e58b;
+}
+
+:root[data-theme="dark"] .department-filter-dropdown .p-checkbox .p-checkbox-box {
+    background: #202522;
+    border-color: #56bd76;
+}
+
+:root[data-theme="dark"] .department-filter-dropdown .p-checkbox:not(.p-disabled) .p-checkbox-box:hover {
+    border-color: #63e58b;
+    box-shadow: 0 0 0 .15rem rgba(99, 229, 139, .14);
+}
+
+:root[data-theme="dark"] .department-filter-dropdown .p-checkbox.p-highlight .p-checkbox-box,
+:root[data-theme="dark"] .department-filter-dropdown .p-checkbox .p-checkbox-box.p-highlight {
+    color: #122017;
+    background: #63e58b;
+    border-color: #63e58b;
+}
+
+:root[data-theme="dark"] .department-filter-dropdown .p-multiselect-item {
+    color: #d4dbd6;
+    background: #151815;
+}
+
+:root[data-theme="dark"] .department-filter-dropdown .p-multiselect-item:not(.p-highlight):not(.p-disabled):hover {
+    color: #e4f8e9;
+    background: #26352b;
+}
+
+:root[data-theme="dark"] .department-filter-dropdown .p-multiselect-item.p-highlight {
+    color: #78e99a;
+    background: #203527;
+}
+
+@media (max-width: 780px) {
+    .department-dashboard { padding: 1rem; }
+    .department-dashboard__heading { align-items: stretch; flex-direction: column; padding-right: 0; }
+    .department-filter-button { align-self: flex-end; }
+    .department-dashboard__summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .department-center__header { grid-template-columns: auto 1fr; }
+    .department-center__header span { grid-column: 2; }
+    .department-employee { grid-template-columns: auto 1fr; padding-left: 1.2rem; }
+    .department-employee__admission,
+    .department-employee__status { grid-column: 2; justify-self: start; }
+}
+
+@media (max-width: 420px) {
+    .department-dashboard__summary { grid-template-columns: 1fr; }
+    .department-dashboard__summary > div { padding: .75rem 1rem; }
+    .department-header strong { width: 100%; }
+    .department-counter { font-size: .78rem; }
+}

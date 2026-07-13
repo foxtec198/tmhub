@@ -43,10 +43,10 @@
      id="defs1"><linearGradient
        id="linearGradient1"
        inkscape:collect="always"><stop
-         style="stop-color:#01703e;stop-opacity:1;"
+         style="stop-color:#108c4c;stop-opacity:1;"
          offset="0"
          id="stop1" /><stop
-         style="stop-color:#03e17b;stop-opacity:1;"
+         style="stop-color:#63e58b;stop-opacity:1;"
          offset="1"
          id="stop2" /></linearGradient><style
        id="style1">
@@ -93,12 +93,12 @@
          id="path1-0"
          sodipodi:nodetypes="csccccscsssccccssccccccccccccccccccccccccccsssssccccccccccccccccccccccccccccccccccssccsssscccsscccccccsscscccsssscs" /><text
          xml:space="preserve"
-         style="font-weight:bold;font-size:11.5594px;font-family:Arial, 'Helvetica Neue', sans-serif;-inkscape-font-specification:'Arial, Helvetica Neue, sans-serif Bold';text-align:start;letter-spacing:1.95328px;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#333333;fill-opacity:1;stroke-width:0.963278"
+         style="font-weight:bold;font-size:11.5594px;font-family:Arial, 'Helvetica Neue', sans-serif;-inkscape-font-specification:'Arial, Helvetica Neue, sans-serif Bold';text-align:start;letter-spacing:1.95328px;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:url(#linearGradient432);fill-opacity:1;stroke-width:0.963278"
          x="77.325287"
          y="130.24933"
          id="text396-1-0"><tspan
            sodipodi:role="line"
            id="tspan395-8-6"
-           style="letter-spacing:1.95328px;fill:#333333;fill-opacity:1;stroke-width:0.963278"
+           style="letter-spacing:1.95328px;fill:url(#linearGradient432);fill-opacity:1;stroke-width:0.963278"
            x="77.325287"
            y="130.24933">PAINEL EXECUTIVO</tspan></text></g></g></svg>

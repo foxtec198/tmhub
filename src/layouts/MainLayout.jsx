@@ -40,6 +40,11 @@ export function MainLayout() {
           command: () => { navigateTo("/reports/reposicoes") }
         },
         {
+          label: 'Colaboradores por DPTO',
+          icon: 'pi pi-users',
+          command: () => { navigateTo("/reports/colaboradores-departamento") }
+        },
+        {
           label: 'Logística',
           icon: 'pi pi-truck',
           command: () => { navigateTo("/reports/logistica") }
@@ -175,7 +180,7 @@ export function MainLayout() {
             aria-label="Ir para a tela inicial"
             onClick={() => navigateTo("/init")}
           >
-            <img src="/brands/main_brand.svg" alt="TM Hub" />
+            <img className="layout-brand-logo" src="/brands/main_brand.svg" alt="TM Hub — Painel Executivo" />
           </button>
         </div>
 
