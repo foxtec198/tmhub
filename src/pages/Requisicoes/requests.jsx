@@ -19,7 +19,7 @@ import { RequestImportDialog } from "./RequestImportDialog";
 import "./requests.css";
 
 // Utils
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { socketio } from "../../utils/socketio";
 import { useToast } from "../../contexts/ToastContext";
 import { useLoading } from "../../contexts/LoadingContext";
@@ -35,6 +35,37 @@ const REQUEST_STATUS = {
     pending: { label: "PENDENTE", color: "var(--yellow-600)" },
     updated: { label: "ALTERADA", color: "var(--blue-600)" },
 };
+
+// Centralized thresholds keep cards and table visibility on the same operational rule.
+const REQUEST_TIME_LIMITS_HOURS = {
+    late: 4,
+    expired: 6,
+};
+
+const REQUEST_SITUATION = {
+    open: { label: "ABERTA", severity: "success" },
+    late: { label: "EM ATRASO", severity: "warning" },
+    expired: { label: "EXPIRADA", severity: "danger" },
+};
+
+function getRequestSituation(requestDateValue, currentTime = Date.now()) {
+    const requestDate = new Date(requestDateValue);
+    if (Number.isNaN(requestDate.getTime())) return "open";
+
+    const today = new Date(currentTime);
+    today.setHours(0, 0, 0, 0);
+
+    const requestDay = new Date(requestDate);
+    requestDay.setHours(0, 0, 0, 0);
+
+    // Future requests remain open until their scheduled calendar day begins.
+    if (requestDay.getTime() > today.getTime()) return "open";
+
+    const elapsedHours = (currentTime - requestDate.getTime()) / 3_600_000;
+    if (elapsedHours >= REQUEST_TIME_LIMITS_HOURS.expired) return "expired";
+    if (elapsedHours >= REQUEST_TIME_LIMITS_HOURS.late) return "late";
+    return "open";
+}
 
 function hasValidReplacement(row) {
     // Centraliza a regra de negócio usada nos botões e na representação do status.
@@ -55,12 +86,9 @@ function withCurrentTime(value) {
 
 export function Requests() {
     // Dados da fila, totais de resumo e estado de operações destrutivas.
-    const [requests, setRequests] = useState(null);
+    const [requests, setRequests] = useState([]);
     const [refresh, setRefresh] = useState(0);
-
-    const [abertas, setAbertas] = useState(0)
-    const [emAtraso] = useState(0)
-    const [expiradas] = useState(0)
+    const [currentTime, setCurrentTime] = useState(() => Date.now())
     const [deletingId, setDeletingId] = useState(null)
     const [quickDialog, setQuickDialog] = useState(false)
     const [importDialog, setImportDialog] = useState(false)
@@ -72,6 +100,12 @@ export function Requests() {
     const setLoading = useLoading();
     const navigate = useNavigate();
     const toast = useRef(null);
+
+    const requestSummary = useMemo(() => requests.reduce((summary, request) => {
+        const situation = getRequestSituation(request.data, currentTime);
+        summary[situation] += 1;
+        return summary;
+    }, { open: 0, late: 0, expired: 0 }), [requests, currentTime]);
 
     // Query a single business day; the backend accounts for multi-day request overlaps.
     const loadReservationUsage = async (date = usageDate) => {
@@ -184,6 +218,14 @@ export function Requests() {
                 };
 
                 return <Tag value={status.label} style={{ background: status.color }} rounded />;
+            }
+        },
+        {
+            field: "situacao",
+            header: "Situação",
+            body: (row) => {
+                const situation = REQUEST_SITUATION[getRequestSituation(row.data, currentTime)];
+                return <Tag value={situation.label} severity={situation.severity} rounded />;
             }
         },
         {
@@ -319,11 +361,15 @@ export function Requests() {
     useEffect(() => {
         async function get_requests() {
             const res = await connect.get("/repo/request?status=pending,updated")
-            setAbertas(res.data.length)
             setRequests(res.data)
-            console.log(res.data)
         }; get_requests();
     }, [refresh]);
+
+    // Re-evaluate elapsed time without requiring a socket event or manual page refresh.
+    useEffect(() => {
+        const timer = window.setInterval(() => setCurrentTime(Date.now()), 60_000);
+        return () => window.clearInterval(timer);
+    }, []);
 
     // Mantém os indicadores superiores sincronizados com a fila carregada.
     useEffect(() => {
@@ -365,7 +411,7 @@ export function Requests() {
                         background: 'var(--green-700)',
                         color: "#fff"
                     }}
-                    value={abertas}
+                    value={requestSummary.open}
                 />
                 <DashCard
                     title="Em Atraso"
@@ -374,7 +420,7 @@ export function Requests() {
                         background: 'var(--yellow-700)',
                         color: "#fff"
                     }}
-                    value={emAtraso}
+                    value={requestSummary.late}
                 />
                 <DashCard
                     title="Expiradas"
@@ -383,7 +429,7 @@ export function Requests() {
                         background: 'var(--red-700)',
                         color: "#fff"
                     }}
-                    value={expiradas}
+                    value={requestSummary.expired}
                 />
             </div>
             <div className="flex flex-column overflow-auto h-full">
@@ -404,7 +450,7 @@ export function Requests() {
             <QuickRequestDialog visible={quickDialog} onHide={() => setQuickDialog(false)} onCreated={() => setRefresh((value) => value + 1)} />
             <RequestImportDialog visible={importDialog} onHide={() => setImportDialog(false)} onImported={() => setRefresh((value) => value + 1)} />
             <Dialog header="Uso diário das reservas" visible={usageDialog} modal className="reserve-usage-dialog" onHide={() => setUsageDialog(false)}>
-                <Calendar value={usageDate} onChange={(e) => { if (e.value) { setUsageDate(e.value); loadReservationUsage(e.value) } }} dateFormat="dd/mm/yy" showIcon readOnlyInput />
+                <Calendar value={usageDate} onChange={(e) => { if (e.value) { setUsageDate(e.value); loadReservationUsage(e.value) } }} className="mt-4" dateFormat="dd/mm/yy" showIcon readOnlyInput />
                 <div className="reserve-usage-grid">
                     <section><h3>Usadas ({reservationUsage.usadas.length})</h3><div className="reserve-usage-list">{reservationUsage.usadas.length ? reservationUsage.usadas.map((item) => <div className="reserve-usage-item" key={item.id}><strong>{item.nome}</strong><span>{item.matricula}</span></div>) : <span className="reserve-usage-empty">Nenhuma reserva usada nesta data.</span>}</div></section>
                     <section><h3>Disponíveis ({reservationUsage.disponiveis.length})</h3><div className="reserve-usage-list">{reservationUsage.disponiveis.length ? reservationUsage.disponiveis.map((item) => <div className="reserve-usage-item" key={item.id}><strong>{item.nome}</strong><span>{item.matricula}</span></div>) : <span className="reserve-usage-empty">Nenhuma reserva disponível nesta data.</span>}</div></section>

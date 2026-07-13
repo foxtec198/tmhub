@@ -223,7 +223,7 @@ export function Products() {
         <main className="flex flex-column gap-3 products-page">
             <ConfirmDialog />
 
-            <div className="flex flex-wrap gap-2 align-items-center">
+            <div className="products-summary flex flex-wrap gap-2 align-items-center">
                 <DashCard
                     title="Total"
                     className="flex-grow-1 border-round-lg p-1 spaceg flex-grow-1"
@@ -243,15 +243,15 @@ export function Products() {
                     value={totals.esgotado}
                 />
             </div>
-                <div className="flex justify-content-end">
+                <div className="products-category-actions flex justify-content-end">
                     <Button icon="pi pi-tags" label="Categorias" outlined onClick={() => setCatDialogVisible(true)} />
                 </div>
 
-            <div className="flex flex-column overflow-auto h-full">
+            <div className="products-table-section flex flex-column overflow-auto h-full">
                 <Table
                     data={products}
-                    tableClassName="w-full h-full"
-                    style={{ width: '100%', height: '100dvh' }}
+                    tableClassName="products-table w-full h-full"
+                    style={{ width: '100%' }}
                     columns={table_itens}
                     search
                 />
