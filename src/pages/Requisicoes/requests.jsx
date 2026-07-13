@@ -10,7 +10,6 @@ import { Toast } from "primereact/toast";
 import { confirmDialog } from 'primereact/confirmdialog';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import { SpeedDial } from "primereact/speeddial";
-import { Tooltip } from "primereact/tooltip";
 import { Dialog } from "primereact/dialog";
 import { Calendar } from "primereact/calendar";
 import { InputNumber } from "primereact/inputnumber";
@@ -83,7 +82,6 @@ export function Requests() {
             anchor.download = "requisicoes_abertas.xlsx"
             anchor.click()
             setTimeout(() => URL.revokeObjectURL(url), 0)
-            showToast("success", "Exportação", "Planilha de requisições gerada com sucesso.")
         } catch (error) { showToast("error", "Exportação", error.response?.data || "Não foi possível exportar.") }
     }
 
@@ -94,17 +92,16 @@ export function Requests() {
         try {
             const { data } = await connect.get("/repo/reservas-uso", { params: { data: yyyyMmDd } })
             setReservationUsage(data)
-            showToast("success", "Uso das reservas", "Dados do dia carregados com sucesso.")
         } catch (error) { showToast("error", "Uso das reservas", error.response?.data || "Não foi possível consultar as reservas.") }
     }
 
     // Quarter-circle actions keep the mobile trigger accessible without covering the table.
     const speedDialItems = [
-        { label: "Abrir página de nova requisição", icon: "pi pi-external-link", command: () => { showToast("info", "Nova requisição", "Abrindo a página de lançamento."); navigate("/reposicoes/requisicao") } },
-        { label: "Criar requisição sem sair da tela", icon: "pi pi-plus-circle", command: () => { setQuickDialog(true); showToast("info", "Lançamento rápido", "Formulário aberto sem sair da fila.") } },
-        { label: "Importar requisições por planilha", icon: "pi pi-upload", command: () => { setImportDialog(true); showToast("info", "Importação", "Selecione a planilha padronizada para continuar.") } },
-        { label: "Exportar requisições abertas", icon: "pi pi-file-excel", command: exportRequests },
-        { label: "Consultar reservas usadas e disponíveis", icon: "pi pi-calendar", command: () => { setUsageDialog(true); loadReservationUsage() } },
+        { label: "Nova página", icon: "pi pi-external-link", command: () => navigate("/reposicoes/requisicao") },
+        { label: "Lançamento rápido", icon: "pi pi-plus-circle", command: () => setQuickDialog(true) },
+        { label: "Importar planilha", icon: "pi pi-upload", command: () => setImportDialog(true) },
+        { label: "Exportar planilha", icon: "pi pi-file-excel", command: exportRequests },
+        { label: "Uso diário das reservas", icon: "pi pi-calendar", command: () => { setUsageDialog(true); loadReservationUsage() } },
     ]
 
     const reasonColors = {
@@ -369,7 +366,6 @@ export function Requests() {
             <p className="mt-0 mb-3 text-secondary">Acompanhe as reposições abertas, atualize os dados e acesse rapidamente novos lançamentos e relatórios.</p>
 
             <div className="requests-speed-dial">
-                <Tooltip target=".requests-speed-dial .p-speeddial-action" position="left" showDelay={150} />
                 <SpeedDial model={speedDialItems} type="quarter-circle" direction="up-left" radius={132} showIcon="pi pi-plus" hideIcon="pi pi-times" aria-label="Ações de requisições" />
             </div>
 
