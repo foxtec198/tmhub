@@ -2,8 +2,8 @@
 import { MainLayout } from "./layouts/MainLayout"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { createRoot } from 'react-dom/client';
+import { useEffect } from "react";
 import { addLocale } from "primereact/api";
-import { useToast } from "./contexts/ToastContext";
 import connect from "./utils/request";
 
 // Providers
@@ -65,28 +65,25 @@ addLocale('pt-BR', {
 });
 
 export function AppRoutes() {
-  const { showToast } = useToast();
   const token = function () { return !!sessionStorage.getItem("token") };
 
-  connect.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      if (error.response?.status === 401) {
-        sessionStorage.removeItem("token");
-        window.location.href = "/login";
+  useEffect(() => {
+    // HMR and rerenders must never accumulate response interceptors.
+    connect.interceptors.response.clear();
+    const interceptor = connect.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        const isLoginRequest = String(error.config?.url || "").includes("/login");
+        if (error.response?.status === 401 && !isLoginRequest) {
+          sessionStorage.removeItem("token");
+          window.location.href = "/login";
+        }
+        return Promise.reject(error);
       }
+    );
 
-      if (error.code === 'ERR_NETWORK' || !error.response) {
-        showToast("warn", "Erro!", 'Não foi possível conectar ao servidor. Ele pode estar fora do ar!');
-      }
-
-      else if (error.response && error.response.status === 500) {
-        showToast("error", "Erro!", 'Internal Error: Erro no servidor, tente novamnte mais tarde.');
-      }
-
-      return Promise.reject(error);
-    }
-  );
+    return () => connect.interceptors.response.eject(interceptor);
+  }, []);
 
   return (
     <>

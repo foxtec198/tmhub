@@ -276,6 +276,16 @@ body, html, :root, #root {
 .p-toast {
   width: 90vw !important;
   max-width: 400px !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Only the message card is painted; the PrimeReact positioning container stays invisible. */
+:root[data-theme="dark"] .p-toast.p-component {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
 
 .p-paginator-icon{

@@ -6,7 +6,6 @@ import { Tag } from "primereact/tag";
 import { DashCard } from "../../components/DashCard";
 import { Inplace, InplaceDisplay, InplaceContent, } from 'primereact/inplace';
 import { DropdownWS } from "../../components/DropdownWithSearch";
-import { Toast } from "primereact/toast";
 import { confirmDialog } from 'primereact/confirmdialog';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import { SpeedDial } from "primereact/speeddial";
@@ -19,7 +18,7 @@ import { RequestImportDialog } from "./RequestImportDialog";
 import "./requests.css";
 
 // Utils
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { socketio } from "../../utils/socketio";
 import { useToast } from "../../contexts/ToastContext";
 import { useLoading } from "../../contexts/LoadingContext";
@@ -99,7 +98,6 @@ export function Requests() {
     const { showToast } = useToast();
     const setLoading = useLoading();
     const navigate = useNavigate();
-    const toast = useRef(null);
 
     const requestSummary = useMemo(() => requests.reduce((summary, request) => {
         const situation = getRequestSituation(request.data, currentTime);
@@ -389,7 +387,6 @@ export function Requests() {
     // Renderiza indicadores, tabela operacional e diálogos de confirmação.
     return (
         <main className="flex flex-column gap-1 p-2">
-            <Toast ref={toast} />
             <ConfirmDialog />
 
             <h2 className="inter flex align-items-center gap-2" style={{ color: "var(--green-600)", fontWeight: 900 }}>
