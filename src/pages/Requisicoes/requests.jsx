@@ -100,7 +100,6 @@ export function Requests() {
         { label: "Nova página", icon: "pi pi-external-link", command: () => navigate("/reposicoes/requisicao") },
         { label: "Lançamento rápido", icon: "pi pi-plus-circle", command: () => setQuickDialog(true) },
         { label: "Importar planilha", icon: "pi pi-upload", command: () => setImportDialog(true) },
-        { label: "Exportar planilha", icon: "pi pi-file-excel", command: exportRequests },
         { label: "Uso diário das reservas", icon: "pi pi-calendar", command: () => { setUsageDialog(true); loadReservationUsage() } },
     ]
 
