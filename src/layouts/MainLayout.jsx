@@ -45,6 +45,11 @@ export function MainLayout() {
           command: () => { navigateTo("/reports/colaboradores-departamento") }
         },
         {
+          label: 'Ponto 48 horas',
+          icon: 'pi pi-clock',
+          command: () => { navigateTo("/reports/ponto-48-horas") }
+        },
+        {
           label: 'Logística',
           icon: 'pi pi-truck',
           command: () => { navigateTo("/reports/logistica") }
