@@ -1,21 +1,22 @@
 import { useEffect, useState } from "react";
 import { Button } from "primereact/button";
+import { Calendar } from "primereact/calendar";
 import { Checkbox } from "primereact/checkbox";
 import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
 import { InputText } from "primereact/inputtext";
-import { SelectButton } from "primereact/selectbutton";
 import connect from "../../utils/request";
 import { useLoading } from "../../contexts/LoadingContext";
 import { useToast } from "../../contexts/ToastContext";
 
 const REASONS = ["AFASTAMENTO", "ATESTADO", "DECLARAÇÃO", "POSTO VAGO", "REMANEJAMENTO", "INJUSTIFICADA", "OUTROS"];
-const DATE_OPTIONS = [{ label: "Hoje", value: "today" }, { label: "Amanhã", value: "tomorrow" }];
+
+const initialForm = () => ({ supervisor: null, absent: null, reservation: null, center: null, reason: null, warning: null, obs: "", noCoverage: false, date: new Date(), days: 1 });
 
 export function QuickRequestDialog({ visible, onHide, onCreated }) {
   const [options, setOptions] = useState({ supervisors: [], employees: [], reservations: [], centers: [] });
-  const [form, setForm] = useState({ supervisor: null, absent: null, reservation: null, center: null, reason: null, warning: null, obs: "", noCoverage: false, date: "today", days: 1 });
+  const [form, setForm] = useState(initialForm);
   const setLoading = useLoading();
   const { showToast } = useToast();
 
@@ -38,8 +39,10 @@ export function QuickRequestDialog({ visible, onHide, onCreated }) {
     if (!form.supervisor || !form.absent || !form.center || !form.reason || (!form.noCoverage && !form.reservation)) {
       return showToast("warn", "Lançamento rápido", "Preencha os campos obrigatórios.");
     }
-    const date = new Date();
-    if (form.date === "tomorrow") date.setDate(date.getDate() + 1);
+    // Preserve the current clock time while allowing any absence date in quick creation.
+    const date = new Date(form.date);
+    const now = new Date();
+    date.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
 
     setLoading(true);
     try {
@@ -55,7 +58,7 @@ export function QuickRequestDialog({ visible, onHide, onCreated }) {
         quantidade_dias: ["ATESTADO", "AFASTAMENTO"].includes(form.reason) ? form.days : 1,
       });
       showToast("success", "Lançamento rápido", "Requisição criada com sucesso.");
-      setForm({ supervisor: null, absent: null, reservation: null, center: null, reason: null, warning: null, obs: "", noCoverage: false, date: "today", days: 1 });
+      setForm(initialForm());
       onHide();
       onCreated?.();
     } catch (error) {
@@ -73,7 +76,7 @@ export function QuickRequestDialog({ visible, onHide, onCreated }) {
       {form.reason === "INJUSTIFICADA" && <Dropdown value={form.warning} options={["Aplicado", "Não Aplicado"]} onChange={(e) => setForm({ ...form, warning: e.value })} placeholder="Advertência" />}
       {form.reason === "OUTROS" && <InputText value={form.obs} onChange={(e) => setForm({ ...form, obs: e.target.value })} placeholder="Observação" />}
       {["ATESTADO", "AFASTAMENTO"].includes(form.reason) && <InputNumber value={form.days} onValueChange={(e) => setForm({ ...form, days: e.value || 1 })} min={1} max={365} showButtons suffix=" dias" />}
-      <SelectButton value={form.date} options={DATE_OPTIONS} onChange={(e) => e.value && setForm({ ...form, date: e.value })} allowEmpty={false} />
+      <Calendar value={form.date} onChange={(e) => e.value && setForm({ ...form, date: e.value })} dateFormat="dd/mm/yy" placeholder="Data da ausência" showIcon readOnlyInput />
       <label className="flex align-items-center gap-2"><Checkbox checked={form.noCoverage} onChange={(e) => setForm({ ...form, noCoverage: e.checked, reservation: e.checked ? null : form.reservation })} />Sem cobertura</label>
       <div className="flex justify-content-end gap-2"><Button type="button" label="Cancelar" text onClick={onHide}/><Button type="submit" label="Criar requisição" icon="pi pi-check"/></div>
     </form>
