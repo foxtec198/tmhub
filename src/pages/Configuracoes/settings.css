@@ -38,6 +38,13 @@
     gap: 1rem
 }
 
+.settings-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0
+}
+
 .settings-card {
     background: #fff;
     border: 1px solid #e3e8e5;
@@ -115,14 +122,14 @@
     margin-top: .25rem
 }
 
-.password-card {
-    grid-column: 1/-1
-}
-
 .password-fields {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: .75rem
+}
+
+.password-fields > :first-child {
+    grid-column: 1/-1
 }
 
 .password-fields .p-password,
@@ -156,12 +163,12 @@
         grid-template-columns: 1fr
     }
 
-    .password-card {
-        grid-column: auto
-    }
-
     .password-fields {
         grid-template-columns: 1fr
+    }
+
+    .password-fields > :first-child {
+        grid-column: auto
     }
 
     .settings-inline {
