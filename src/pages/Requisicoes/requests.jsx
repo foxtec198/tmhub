@@ -82,6 +82,7 @@ export function Requests() {
             anchor.download = "requisicoes_abertas.xlsx"
             anchor.click()
             setTimeout(() => URL.revokeObjectURL(url), 0)
+            showToast("success", "Exportação", "Planilha de requisições gerada com sucesso.")
         } catch (error) { showToast("error", "Exportação", error.response?.data || "Não foi possível exportar.") }
     }
 
@@ -92,15 +93,15 @@ export function Requests() {
         try {
             const { data } = await connect.get("/repo/reservas-uso", { params: { data: yyyyMmDd } })
             setReservationUsage(data)
+            showToast("success", "Uso das reservas", "Dados do dia carregados com sucesso.")
         } catch (error) { showToast("error", "Uso das reservas", error.response?.data || "Não foi possível consultar as reservas.") }
     }
 
     // Quarter-circle actions keep the mobile trigger accessible without covering the table.
     const speedDialItems = [
-        { label: "Nova página", icon: "pi pi-external-link", command: () => navigate("/reposicoes/requisicao") },
-        { label: "Lançamento rápido", icon: "pi pi-plus-circle", command: () => setQuickDialog(true) },
-        { label: "Importar planilha", icon: "pi pi-upload", command: () => setImportDialog(true) },
-        { label: "Exportar planilha", icon: "pi pi-file-excel", command: exportRequests },
+        { label: "Nova página", icon: "pi pi-external-link", command: () => { showToast("info", "Nova requisição", "Abrindo a página de lançamento."); navigate("/reposicoes/requisicao") } },
+        { label: "Lançamento rápido", icon: "pi pi-plus-circle", command: () => { setQuickDialog(true); showToast("info", "Lançamento rápido", "Formulário aberto sem sair da fila.") } },
+        { label: "Importar planilha", icon: "pi pi-upload", command: () => { setImportDialog(true); showToast("info", "Importação", "Selecione a planilha padronizada para continuar.") } },
         { label: "Uso diário das reservas", icon: "pi pi-calendar", command: () => { setUsageDialog(true); loadReservationUsage() } },
     ]
 
@@ -185,7 +186,7 @@ export function Requests() {
             field: "data",
             header: "Data",
             class: "text-truncate",
-            body: (row) => <Inplace closable><InplaceDisplay>{new Date(row.data).toLocaleDateString("pt-br")}</InplaceDisplay><InplaceContent><Calendar value={new Date(row.data)} onChange={(e) => e.value && confirm("Data", { id: row.id, data: withCurrentTime(e.value) })} dateFormat="dd/mm/yy" showIcon /></InplaceContent></Inplace>
+            body: (row) => <Inplace closable><InplaceDisplay>{new Date(row.data).toLocaleDateString("pt-br")}</InplaceDisplay><InplaceContent><Calendar value={new Date(row.data)} onChange={(e) => e.value && confirm("Data", { id: row.id, data: withCurrentTime(e.value) })} dateFormat="dd/mm/yy" /></InplaceContent></Inplace>
         },
         {
             field: "status",

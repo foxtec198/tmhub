@@ -95,6 +95,21 @@
   border-color: #477653;
 }
 
+/* Inline editing must inherit the table surface instead of adding a black block in dark mode. */
+:root[data-theme="dark"] .tm-responsive-table .p-inplace,
+:root[data-theme="dark"] .tm-responsive-table .p-inplace-display,
+:root[data-theme="dark"] .tm-responsive-table .p-inplace-content {
+  color: inherit;
+  background: transparent !important;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] .tm-responsive-table .p-inplace-display:not(.p-disabled):hover {
+  color: #eaffef;
+  background: rgba(75, 214, 110, .1) !important;
+}
+
 .reserve-usage-dialog {
   width: min(52rem, calc(100vw - 2rem));
 }

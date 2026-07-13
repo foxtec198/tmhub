@@ -110,6 +110,7 @@ export function Settings() {
     <TabView className="settings-tabs">
       <TabPanel header="Minha conta" leftIcon="pi pi-user mr-2">
     <div className="settings-grid">
+      <div className="settings-column">
       <article className="settings-card profile-card">
         <div className="settings-card-title"><i className="pi pi-user"/><div><h2>Perfil</h2><p>Como você aparece no TM Hub</p></div></div>
         <div className="photo-row">
@@ -120,13 +121,15 @@ export function Settings() {
       </article>
 
       <article className="settings-card">
-        <div className="settings-card-title"><i className="pi pi-palette"/><div><h2>Aparência</h2><p>Escolha o tema da interface</p></div></div>
-        <div className="theme-option"><div><strong>Modo escuro</strong><span>Preto como base e verde como destaque</span></div><InputSwitch checked={dark} onChange={(e) => changeTheme(e.value)} /></div>
-      </article>
-
-      <article className="settings-card">
         <div className="settings-card-title"><i className="pi pi-envelope"/><div><h2>E-mail</h2><p>Atual: {profile.email || "Não informado"}</p></div></div>
         <label>Novo e-mail</label><div className="settings-inline"><InputText type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="voce@empresa.com"/><Button label="Verificar" icon="pi pi-send" onClick={requestCode}/></div>
+      </article>
+      </div>
+
+      <div className="settings-column">
+      <article className="settings-card">
+        <div className="settings-card-title"><i className="pi pi-palette"/><div><h2>Aparência</h2><p>Escolha o tema da interface</p></div></div>
+        <div className="theme-option"><div><strong>Modo escuro</strong><span>Preto como base e verde como destaque</span></div><InputSwitch checked={dark} onChange={(e) => changeTheme(e.value)} /></div>
       </article>
 
       <article className="settings-card password-card">
@@ -135,6 +138,7 @@ export function Settings() {
         <p className="password-hint"><i className="pi pi-info-circle"/> Mínimo de 8 caracteres, com maiúscula, minúscula, número e caractere especial.</p>
         <Button label="Atualizar senha" icon="pi pi-shield" onClick={changePassword}/>
       </article>
+      </div>
     </div>
       </TabPanel>
 
