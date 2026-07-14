@@ -296,11 +296,13 @@ export function History() {
         {
             header: "Ausente",
             field: "ausente",
+            sortable: true,
             body: (row) => <span className="text-truncate">{row.ausente}</span>,
         },
         {
             header: "Reserva",
             field: "reserva",
+            sortable: true,
             body: (row) => (
                 <span className="text-truncate" style={{ color: row.reserva === "SEM COBERTURA" ? "var(--red-700)" : null }}>
                     {row.reserva}
@@ -311,6 +313,32 @@ export function History() {
             header: "Local",
             field: "local",
             body: (row) => <span className="text-truncate-400">{row.local}</span>,
+        },
+        {
+            header: "Supervisor",
+            field: "supervisor",
+            body: (row) => <span className="text-truncate">{row.supervisor || "—"}</span>,
+        },
+        {
+            header: "Motivo",
+            field: "motivo",
+            body: (row) => <span className="text-truncate">{row.motivo || "—"}</span>,
+        },
+        {
+            header: "Dias",
+            field: "dias",
+            body: (row) => row.dias == null
+                ? <span>—</span>
+                : <span>{row.dias} {Number(row.dias) === 1 ? "dia" : "dias"}</span>,
+        },
+        {
+            header: "Observações",
+            field: "obs",
+            body: (row) => (
+                <span style={{ whiteSpace: "normal", overflowWrap: "anywhere" }}>
+                    {row.obs || "—"}
+                </span>
+            ),
         },
         {
             header: "Status",
