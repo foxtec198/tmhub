@@ -1,3 +1,5 @@
+import { Tag } from "primereact/tag";
+
 export function DashCard({
     title,
     icon,
@@ -5,7 +7,10 @@ export function DashCard({
     style,
     value,
     cont=0,
-    contStyle={}
+    contStyle={},
+    contSeverity,
+    contClassName="",
+    valueClassName="text-3xl"
 }) {
 
     return (
@@ -14,10 +19,20 @@ export function DashCard({
                 {icon ? <i className={icon}></i> : null} {title} 
             </span>
 
-            <div className="flex gap-2 justify-content-around inter align-items-end font-bold">
-                <span className="text-3xl">{value}</span>
+            <div className="flex gap-2 justify-content-center inter align-items-start font-bold px-2">
+                <span className={valueClassName}>{value}</span>
                 {cont?
-                    <span style={contStyle}>{cont}</span>
+                    <Tag
+                        value={cont}
+                        severity={contSeverity}
+                        rounded
+                        className={contClassName}
+                        style={{
+                            fontSize: "0.9rem",
+                            transform: "translateY(-0.2rem)",
+                            ...contStyle,
+                        }}
+                    />
                 :null}
             </div>
         </div>

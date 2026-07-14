@@ -73,6 +73,44 @@
     min-height: 5rem;
 }
 
+.dashboard-summary > .dashboard-financial-card {
+    flex: 1.25 1 17rem;
+    min-width: 17rem;
+}
+
+.request-metric-tag {
+    padding: 0.15rem 0.25rem !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.02em;
+}
+
+.request-metric-tag .p-tag-value {
+    color: inherit !important;
+}
+
+.request-metric-tag-total {
+    color: #149dcc !important;
+    text-shadow: 0 0 4px rgb(55, 114, 181), 0 0 10px rgba(20, 157, 204, 0.85);
+}
+
+.request-metric-tag-open {
+    color: #ffe83d !important;
+    text-shadow: 0 0 4px rgba(255, 232, 61, 1), 0 0 10px rgba(255, 232, 61, 0.85);
+}
+
+.request-metric-tag-covered {
+    color: #42ff88 !important;
+    text-shadow: 0 0 4px rgb(35, 153, 78), 0 0 10px rgba(66, 255, 136, 0.85);
+}
+
+.request-metric-tag-uncovered {
+    color: #c4072aaf !important;
+    text-shadow: 0 0 4px rgba(255, 145, 166, 1), 0 0 10px rgba(255, 145, 166, 0.85);
+}
+
 .dashboard-highlight{
     background: var(--gray-900) !important;
     color: #fff !important;
@@ -221,6 +259,11 @@
         min-width: 0;
         height: auto !important;
         min-height: 6.5rem;
+    }
+
+    .dashboard-summary > .dashboard-financial-card {
+        flex: 1 1 100%;
+        min-width: 0;
     }
 
     .dashboard-summary .text-xl {

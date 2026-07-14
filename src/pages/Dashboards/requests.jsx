@@ -26,6 +26,28 @@ import "./request.css"
 
 // MOCKS
 const totalOfReplaces = 19
+
+function getReferencePeriodDays(range) {
+    const firstReference = range?.[0] instanceof Date && !Number.isNaN(range[0].getTime())
+        ? range[0]
+        : new Date();
+    const lastReference = range?.[1] instanceof Date && !Number.isNaN(range[1].getTime())
+        ? range[1]
+        : firstReference;
+    const today = new Date();
+    const periodStart = new Date(firstReference.getFullYear(), firstReference.getMonth(), 1);
+    const includesCurrentMonth = lastReference.getFullYear() === today.getFullYear()
+        && lastReference.getMonth() === today.getMonth();
+    const periodEnd = includesCurrentMonth
+        ? today
+        : new Date(lastReference.getFullYear(), lastReference.getMonth() + 1, 0);
+
+    const startUtc = Date.UTC(periodStart.getFullYear(), periodStart.getMonth(), periodStart.getDate());
+    const endUtc = Date.UTC(periodEnd.getFullYear(), periodEnd.getMonth(), periodEnd.getDate());
+
+    return Math.max(Math.floor((endUtc - startUtc) / 86400000) + 1, 0);
+}
+
 // Dados de fallback mantidos apenas para desenvolvimento visual sem API.
 const MOCK = {
     res: {
@@ -156,6 +178,16 @@ export function RequestReport() {
     // Dados do Meter Group
     const [meterGroupValues, setMeterGroupValues] = useState([]);
 
+    const totalRequisicoes = realizadas + abertas;
+    const percentageOfTotal = (value) => {
+        if (!totalRequisicoes || !value) return 0;
+        return Math.max(1, Math.round((value / totalRequisicoes) * 100));
+    };
+    const referencePeriodDays = getReferencePeriodDays(filter);
+    const averageDailyCost = referencePeriodDays
+        ? totalDeMultas / referencePeriodDays
+        : 0;
+
     // Use Memo para setar 
     const hist = useMemo(() => {
         return histOriginal.filter(item => {
@@ -163,10 +195,11 @@ export function RequestReport() {
             if (filters.departamento && item.dpto !== filters.departamento) return false;
             if (filters.supervisor && item.supervisor !== filters.supervisor) return false;
             if (filters.colaborador && item.ausente !== filters.colaborador) return false;
+            if (filters.motivo && item.motivo !== filters.motivo) return false;
             if (filters.status && item.status !== filters.status) return false;
             return true;
         });
-    }, [histOriginal, filters.contrato, filters.departamento, filters.supervisor, filters.colaborador, filters.status]);
+    }, [histOriginal, filters.contrato, filters.departamento, filters.supervisor, filters.colaborador, filters.motivo, filters.status]);
 
     const clearFilters = () => {
         setFilters(() => ({ ...defaultFilters }));
@@ -535,14 +568,17 @@ export function RequestReport() {
                 <div className="dashboard-summary flex gap-2 p-2 w-full">
                     <DashCard
                         icon="pi pi-verified"
-                        title="Fechadas"
+                        title="Total"
                         className="border-round-lg flex-grow-1"
                         style={{
                             backgroundColor: 'var(--green-900)',
                             height: "5rem",
                             color: "#fff",
                         }}
-                        value={realizadas}
+                        value={totalRequisicoes}
+                        cont="100%"
+                        contSeverity="info"
+                        contClassName="request-metric-tag request-metric-tag-total"
                     />
                     <DashCard
                         icon="pi pi-folder-open "
@@ -554,6 +590,9 @@ export function RequestReport() {
                             color: "#fff",
                         }}
                         value={abertas}
+                        cont={`${percentageOfTotal(abertas)}%`}
+                        contSeverity="warning"
+                        contClassName="request-metric-tag request-metric-tag-open"
                     />
                     <DashCard
                         icon="pi pi-calendar "
@@ -565,6 +604,9 @@ export function RequestReport() {
                             color: "#fff",
                         }}
                         value={postosCobertos}
+                        cont={`${percentageOfTotal(postosCobertos)}%`}
+                        contSeverity="success"
+                        contClassName="request-metric-tag request-metric-tag-covered"
                     />
                     <DashCard
                         icon="pi pi-paperclip"
@@ -576,17 +618,33 @@ export function RequestReport() {
                             color: "#fff",
                         }}
                         value={postosDescobertos}
+                        cont={`${percentageOfTotal(postosDescobertos)}%`}
+                        contSeverity="danger"
+                        contClassName="request-metric-tag request-metric-tag-uncovered"
                     />
                     <DashCard
                         icon="pi pi-dollar"
-                        title="Custo Reservas"
-                        className="border-round-lg text-truncate flex-grow-1"
+                        title="Custo Total"
+                        className="dashboard-financial-card border-round-lg flex-grow-1"
                         style={{
                             backgroundColor: 'var(--gray-800)',
                             height: "5rem",
                             color: "#fff",
                         }}
                         value={to_real(totalDeMultas)}
+                        valueClassName="text-2xl"
+                    />
+                    <DashCard
+                        icon="pi pi-chart-line"
+                        title="Média por dia"
+                        className="dashboard-financial-card border-round-lg flex-grow-1"
+                        style={{
+                            backgroundColor: 'var(--teal-800)',
+                            height: "5rem",
+                            color: "#fff",
+                        }}
+                        value={to_real(averageDailyCost)}
+                        valueClassName="text-2xl"
                     />
                     <div
                         className="dashboard-highlight flex justify-content-center flex-grow-1 gap-2 align-items-center border-round-lg shadow-6 p-3"
