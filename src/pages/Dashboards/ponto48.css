@@ -32,6 +32,11 @@
 .ponto48-heading__actions { flex-wrap: wrap; justify-content: flex-end; }
 .ponto48-heading__actions .p-dropdown { min-width: 14rem; }
 
+.ponto48-tabs > .p-tabview-nav-container .p-tabview-nav,
+.ponto48-tabs > .p-tabview-panels { background: transparent; }
+.ponto48-tabs > .p-tabview-panels { padding: 1.2rem 0 0; }
+.ponto48-tabs .p-tabview-nav li .p-tabview-nav-link { background: transparent; }
+
 .ponto48-summary {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -86,6 +91,8 @@
 .ponto48-insight > div { display: flex; align-items: center; justify-content: space-between; padding: .8rem; border-radius: 12px; background: color-mix(in srgb, var(--primary-color) 8%, transparent); }
 .ponto48-insight > div strong { color: var(--primary-color); font-size: 1.5rem; }
 .ponto48-insight > div small { color: var(--text-color-secondary); }
+.ponto48-link-summary > span { display: flex; min-width: 0; flex-direction: column; align-items: flex-end; text-align: right; }
+.ponto48-link-summary em { margin-top: .15rem; color: var(--text-color-secondary); font-size: .68rem; font-style: normal; }
 
 .ponto48-table-heading { margin-bottom: 1rem; }
 .ponto48-table-heading .p-inputtext { width: min(22rem, 100%); }
@@ -123,6 +130,25 @@
 .ponto48-import-form p { margin: 0; color: var(--text-color-secondary); }
 .ponto48-import-form label { display: flex; flex-direction: column; gap: .4rem; font-weight: 700; }
 .ponto48-import-form input[type="file"] { padding: 1rem; color: inherit; border: 1px dashed var(--surface-border); border-radius: 10px; background: var(--surface-ground); }
+
+.ponto48-adjustment-dialog { width: min(50rem, calc(100vw - 2rem)); }
+.ponto48-adjustment-detail { display: grid; gap: 1rem; }
+.ponto48-adjustment-detail > section { padding: 1rem; border: 1px solid var(--surface-border); border-radius: 12px; background: var(--surface-card); }
+.ponto48-adjustment-detail > section > span { color: var(--text-color-secondary); font-size: .78rem; font-weight: 700; }
+.ponto48-adjustment-detail dl { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; margin: 0; }
+.ponto48-adjustment-detail dl > div { padding: .85rem; border-radius: 10px; background: var(--surface-ground); }
+.ponto48-adjustment-detail dt { color: var(--text-color-secondary); font-size: .75rem; }
+.ponto48-adjustment-detail dd { margin: .2rem 0 0; font-weight: 700; overflow-wrap: anywhere; }
+
+.ponto48-mirror-dialog { width: min(72rem, calc(100vw - 2rem)); }
+.ponto48-mirror-records { display: grid; gap: .7rem; max-height: 58vh; overflow: auto; }
+.ponto48-mirror-records article { padding: .9rem; border: 1px solid var(--surface-border); border-left: 4px solid #36b568; border-radius: 12px; background: var(--surface-card); }
+.ponto48-mirror-records article.is-irregular { border-left-color: #e5484d; }
+.ponto48-mirror-records article header,
+.ponto48-mirror-records article footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .55rem; }
+.ponto48-mirror-records article footer { margin-top: .7rem; color: var(--text-color-secondary); font-size: .78rem; }
+.ponto48-mirror-records article footer strong { color: #d4494f; }
+.ponto48-import-dialog .p-dialog-content { max-height: 72vh; overflow-y: auto; }
 
 :root[data-theme="dark"] .ponto48-card,
 :root[data-theme="dark"] .ponto48-panel,
@@ -167,6 +193,7 @@
 :root[data-theme="dark"] .ponto48-card em,
 :root[data-theme="dark"] .ponto48-insight p,
 :root[data-theme="dark"] .ponto48-insight > div small,
+:root[data-theme="dark"] .ponto48-link-summary em,
 :root[data-theme="dark"] .ponto48-detail-summary span,
 :root[data-theme="dark"] .ponto48-records article footer { color: #c8d2cc; }
 :root[data-theme="dark"] .ponto48-insight > div {
@@ -178,6 +205,14 @@
   background: #183c25;
   border: 1px solid #2d6941;
 }
+:root[data-theme="dark"] .ponto48-tabs .p-tabview-nav li .p-tabview-nav-link { color: #c8d2cc; }
+:root[data-theme="dark"] .ponto48-tabs .p-tabview-nav li.p-highlight .p-tabview-nav-link { color: var(--ponto48-dark-accent); }
+:root[data-theme="dark"] .ponto48-adjustment-detail > section,
+:root[data-theme="dark"] .ponto48-adjustment-detail dl > div,
+:root[data-theme="dark"] .ponto48-mirror-records article { background: #202923; border-color: #405047; }
+:root[data-theme="dark"] .ponto48-adjustment-detail dt,
+:root[data-theme="dark"] .ponto48-adjustment-detail > section > span { color: #c8d2cc; }
+:root[data-theme="dark"] .ponto48-mirror-records article footer { color: #c8d2cc; }
 
 @media (max-width: 1180px) {
   .ponto48-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -195,4 +230,6 @@
   .ponto48-detail-summary { grid-template-columns: 1fr 1fr; }
   .ponto48-punches { grid-template-columns: repeat(3, 1fr); }
   .ponto48-records article footer { align-items: flex-start; flex-direction: column; }
+  .ponto48-adjustment-detail dl { grid-template-columns: 1fr; }
+  .ponto48-mirror-records article footer { align-items: flex-start; flex-direction: column; }
 }

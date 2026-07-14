@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "primereact/button";
+import { Calendar } from "primereact/calendar";
 import { Chart } from "primereact/chart";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Dialog } from "primereact/dialog";
 import { Divider } from "primereact/divider";
 import { Dropdown } from "primereact/dropdown";
@@ -8,12 +10,15 @@ import { InputText } from "primereact/inputtext";
 import { MultiSelect } from "primereact/multiselect";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { Tag } from "primereact/tag";
+import { TabPanel, TabView } from "primereact/tabview";
 import { Table } from "../../components/tables/Table";
 import { useToast } from "../../contexts/ToastContext";
 import connect from "../../utils/request";
+import { Ponto48Adjustments } from "./Ponto48Adjustments";
+import { Ponto48Mirror } from "./Ponto48Mirror";
 import "./ponto48.css";
 
-const EMPTY_FILTERS = { departamentos: [], centros: [], supervisores: [], vinculos: [] };
+const EMPTY_FILTERS = { departamentos: [], centros: [], supervisores: [], vinculos: [], motivos: [], responsaveis: [] };
 const EMPTY_DATA = { importacoes: [], importacao: null, resumo: {}, colaboradores: [] };
 
 function formatMinutes(value) {
@@ -58,7 +63,15 @@ export function Ponto48Dashboard() {
   const [importVisible, setImportVisible] = useState(false);
   const [absenteeismFile, setAbsenteeismFile] = useState(null);
   const [overtimeFile, setOvertimeFile] = useState(null);
+  const [adjustmentsFile, setAdjustmentsFile] = useState(null);
+  const [mirrorFile, setMirrorFile] = useState(null);
   const [importing, setImporting] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
+  const [dateRange, setDateRange] = useState(null);
+  const [adjustmentRecords, setAdjustmentRecords] = useState([]);
+  const [adjustmentsRefreshKey, setAdjustmentsRefreshKey] = useState(0);
+  const [mirrorRefreshKey, setMirrorRefreshKey] = useState(0);
+  const [clearing, setClearing] = useState(false);
   const { showToast } = useToast();
   const isAdmin = String(localStorage.getItem("role") || "").toUpperCase() === "ADMIN";
   const isDarkMode = document.documentElement.dataset.theme === "dark";
@@ -93,16 +106,31 @@ export function Ponto48Dashboard() {
     return () => { active = false; };
   }, [showToast]);
 
-  const options = useMemo(() => ({
-    departamentos: uniqueOptions(data.colaboradores, "departamento"),
-    centros: uniqueOptions(data.colaboradores, "centro_id", "centro"),
-    supervisores: uniqueOptions(data.colaboradores, "supervisor_id", "supervisor"),
+  useEffect(() => {
+    let active = true;
+    connect.get("/dash/ponto-48h/ajustes")
+      .then((response) => {
+        if (active) setAdjustmentRecords(response.data?.ajustes || []);
+      })
+      .catch(() => { if (active) setAdjustmentRecords([]); });
+    return () => { active = false; };
+  }, [adjustmentsRefreshKey]);
+
+  const options = useMemo(() => {
+    const combinedRecords = [...data.colaboradores, ...adjustmentRecords];
+    return ({
+    departamentos: uniqueOptions(combinedRecords, "departamento"),
+    centros: uniqueOptions(combinedRecords, "centro_id", "centro"),
+    supervisores: uniqueOptions(combinedRecords, "supervisor_id", "supervisor"),
+    motivos: uniqueOptions(adjustmentRecords, "motivo"),
+    responsaveis: uniqueOptions(adjustmentRecords, "ajustado_por"),
     vinculos: [
       { value: "matched", label: "Vinculados" },
       { value: "unmatched", label: "Não encontrados" },
       { value: "ambiguous", label: "Nome duplicado" },
     ],
-  }), [data.colaboradores]);
+  });
+  }, [adjustmentRecords, data.colaboradores]);
 
   const filteredEmployees = useMemo(() => {
     const normalizedSearch = search.trim().toLocaleUpperCase("pt-BR");
@@ -117,7 +145,7 @@ export function Ponto48Dashboard() {
       const matchesView = (
         view === "all"
         || (view === "offenders" && employee.dias_problematicos > 0)
-        || (view === "correct" && employee.batidas_corretas > 0 && !employee.dias_problematicos)
+        || (view === "correct" && employee.batidas_corretas > 0)
         || (view === "overtime" && employee.horas_extras_minutos > 0)
         || (view === "absence" && employee.ausencia_minutos > 0)
       );
@@ -132,6 +160,13 @@ export function Ponto48Dashboard() {
     overtime: summary.overtime + employee.horas_extras_minutos,
     absence: summary.absence + employee.ausencia_minutos,
   }), { employees: 0, offenders: 0, correct: 0, overtime: 0, absence: 0 }), [filteredEmployees]);
+
+  // A missing link means the CSV name was not uniquely associated with an employee record.
+  // It is a registration/linkage warning and must not be presented as a punch inconsistency.
+  const linkSummary = useMemo(() => data.colaboradores.reduce((summary, employee) => ({
+    unmatched: summary.unmatched + Number(employee.match_status === "unmatched"),
+    ambiguous: summary.ambiguous + Number(employee.match_status === "ambiguous"),
+  }), { unmatched: 0, ambiguous: 0 }), [data.colaboradores]);
 
   const topOffenders = useMemo(() => [...filteredEmployees]
     .filter((employee) => employee.dias_problematicos > 0)
@@ -192,16 +227,23 @@ export function Ponto48Dashboard() {
         rounded
       />,
     },
-    { header: "Detalhes", body: (row) => <Button icon="pi pi-eye" rounded text aria-label={`Detalhar ${row.nome}`} onClick={() => setDetailEmployee(row)} /> },
+    { header: "Batidas", body: (row) => <Button label="Ver batidas" icon="pi pi-eye" outlined size="small" aria-label={`Ver batidas de ${row.nome}`} onClick={() => setDetailEmployee(row)} /> },
   ], []);
 
-  const activeFilterCount = Object.values(filters).filter((value) => value.length).length;
+  const activeFilterCount = Object.values(filters).filter((value) => value.length).length + Number(Boolean(dateRange?.[0]));
+
+  const clearFilters = () => {
+    setFilters(EMPTY_FILTERS);
+    setDateRange(null);
+  };
 
   const importReports = async () => {
-    if (!absenteeismFile || !overtimeFile) return showToast("warn", "Importação", "Selecione os dois relatórios CSV.");
+    if (!absenteeismFile || !overtimeFile || !adjustmentsFile || !mirrorFile) return showToast("warn", "Importação", "Selecione os quatro relatórios CSV.");
     const body = new FormData();
     body.append("absenteismo", absenteeismFile);
     body.append("horas_extras", overtimeFile);
+    body.append("ajustes", adjustmentsFile);
+    body.append("espelho", mirrorFile);
     try {
       setImporting(true);
       const response = await connect.post("/dash/ponto-48h/importar", body);
@@ -209,12 +251,46 @@ export function Ponto48Dashboard() {
       setImportVisible(false);
       setAbsenteeismFile(null);
       setOvertimeFile(null);
+      setAdjustmentsFile(null);
+      setMirrorFile(null);
       await loadDashboard(response.data?.importacao_id);
+      setAdjustmentsRefreshKey((current) => current + 1);
+      setMirrorRefreshKey((current) => current + 1);
     } catch (error) {
       showToast("error", "Falha na importação", error.response?.data || "Confira os arquivos enviados.");
     } finally {
       setImporting(false);
     }
+  };
+
+  const confirmClearImportedData = () => {
+    if (!selectedBatch) return;
+    confirmDialog({
+      header: "Limpar dados importados",
+      message: `Deseja remover absenteísmo, horas extras, ajustes e espelho da referência ${formatPeriod(data.importacao)}? Esta ação não pode ser desfeita.`,
+      icon: "pi pi-exclamation-triangle",
+      acceptLabel: "Sim, limpar dados",
+      rejectLabel: "Cancelar",
+      acceptClassName: "p-button-danger",
+      accept: async () => {
+        try {
+          setClearing(true);
+          const response = await connect.delete("/dash/ponto-48h/importar", {
+            data: { importacao_id: selectedBatch },
+          });
+          showToast("success", "Dados removidos", response.data?.message || "Referência removida.");
+          clearFilters();
+          setView("all");
+          await loadDashboard();
+          setAdjustmentsRefreshKey((current) => current + 1);
+          setMirrorRefreshKey((current) => current + 1);
+        } catch (error) {
+          showToast("error", "Falha ao limpar dados", error.response?.data || "Não foi possível remover a referência.");
+        } finally {
+          setClearing(false);
+        }
+      },
+    });
   };
 
   return (
@@ -224,10 +300,22 @@ export function Ponto48Dashboard() {
         <div className="ponto48-heading__actions">
           {data.importacoes.length ? <Dropdown value={selectedBatch} options={data.importacoes} optionValue="id" optionLabel="periodo_inicio" valueTemplate={() => formatPeriod(data.importacao)} itemTemplate={formatPeriod} onChange={(event) => loadDashboard(event.value)} /> : null}
           {isAdmin ? <Button icon="pi pi-upload" label="Importar CSVs" outlined onClick={() => setImportVisible(true)} /> : null}
+          {isAdmin && selectedBatch ? <Button icon="pi pi-trash" label="Limpar dados" severity="danger" outlined loading={clearing} onClick={confirmClearImportedData} /> : null}
           <Button icon="pi pi-filter-fill" label={activeFilterCount ? `Filtros (${activeFilterCount})` : "Filtros"} onClick={(event) => filterPanel.current?.toggle(event)} />
         </div>
       </header>
 
+      <OverlayPanel ref={filterPanel} className="ponto48-filter-panel">
+        <div className="ponto48-filter-title"><div><strong>Filtrar Ponto 48 horas</strong><span>Um único conjunto de filtros para as duas abas.</span></div><Button icon="pi pi-filter-slash" text rounded onClick={clearFilters} /></div>
+        <Divider />
+        <label className="ponto48-filter-field"><span>Data dos ajustes</span><Calendar value={dateRange} onChange={(event) => setDateRange(event.value)} selectionMode="range" readOnlyInput hideOnRangeSelection dateFormat="dd/mm/yy" placeholder="Um dia ou período" showButtonBar /></label>
+        {[["departamentos", "Departamentos"], ["centros", "Centros de custo"], ["supervisores", "Supervisores"], ["vinculos", "Vínculos por nome"], ["motivos", "Motivos dos ajustes"], ["responsaveis", "Responsáveis pelos ajustes"]].map(([name, label]) => (
+          <label className="ponto48-filter-field" key={name}><span>{label}</span><MultiSelect value={filters[name]} options={options[name]} optionLabel="label" optionValue="value" display="chip" filter className="w-full" onChange={(event) => setFilters((current) => ({ ...current, [name]: event.value || [] }))} /></label>
+        ))}
+      </OverlayPanel>
+
+      <TabView activeIndex={activeTab} onTabChange={(event) => setActiveTab(event.index)} className="ponto48-tabs">
+        <TabPanel header="Absenteísmo e HE" leftIcon="pi pi-chart-bar mr-2">
       <div className="ponto48-summary">
         <SummaryCard active={view === "all"} icon="pi pi-users" label="Colaboradores" value={filteredSummary.employees} detail="visão integrada" tone="neutral" onClick={() => setView("all")} />
         <SummaryCard active={view === "offenders"} icon="pi pi-exclamation-triangle" label="Ofensores" value={filteredSummary.offenders} detail="com batida irregular" tone="danger" onClick={() => setView("offenders")} />
@@ -236,21 +324,13 @@ export function Ponto48Dashboard() {
         <SummaryCard active={view === "absence"} icon="pi pi-calendar-times" label="Ausências" value={formatMinutes(filteredSummary.absence)} detail="no período" tone="violet" onClick={() => setView("absence")} />
       </div>
 
-      <OverlayPanel ref={filterPanel} className="ponto48-filter-panel">
-        <div className="ponto48-filter-title"><div><strong>Filtrar dashboard</strong><span>Os filtros abaixo são aplicados localmente.</span></div><Button icon="pi pi-filter-slash" text rounded onClick={() => setFilters(EMPTY_FILTERS)} /></div>
-        <Divider />
-        {[["departamentos", "Departamentos"], ["centros", "Centros de custo"], ["supervisores", "Supervisores"], ["vinculos", "Vínculos por nome"]].map(([name, label]) => (
-          <label className="ponto48-filter-field" key={name}><span>{label}</span><MultiSelect value={filters[name]} options={options[name]} optionLabel="label" optionValue="value" display="chip" filter className="w-full" onChange={(event) => setFilters((current) => ({ ...current, [name]: event.value || [] }))} /></label>
-        ))}
-      </OverlayPanel>
-
       {!data.importacao && !loading ? (
         <div className="ponto48-empty"><i className="pi pi-file-import" /><h2>Nenhum relatório importado</h2><p>Importe os CSVs de absenteísmo e horas extras para iniciar a análise.</p>{isAdmin ? <Button label="Importar relatórios" icon="pi pi-upload" onClick={() => setImportVisible(true)} /> : null}</div>
       ) : (
         <>
           <div className="ponto48-analysis">
             <article className="ponto48-panel ponto48-ranking"><header><div><span>Prioridade</span><h2>Maiores ofensores</h2></div><Tag value={formatPeriod(data.importacao)} severity="success" /></header><div className="ponto48-chart">{topOffenders.length ? <Chart type="bar" data={chartData} options={chartOptions} /> : <p>Nenhuma ocorrência para os filtros atuais.</p>}</div></article>
-            <article className="ponto48-panel ponto48-insight"><span>Leitura combinada</span><h2>{filteredSummary.offenders ? `${filteredSummary.offenders} colaborador(es) exigem atenção` : "Batidas regulares no recorte"}</h2><p>O ranking prioriza irregularidades e apresenta absenteísmo e HE na mesma linha para apoiar a investigação.</p><div><strong>{data.resumo?.batidas_impares || 0}</strong><small>batidas ímpares</small></div><div><strong>{data.resumo?.nao_vinculados || 0}</strong><small>nomes para revisar</small></div></article>
+            <article className="ponto48-panel ponto48-insight"><span>Leitura combinada</span><h2>{filteredSummary.offenders ? `${filteredSummary.offenders} colaborador(es) exigem atenção` : "Batidas regulares no recorte"}</h2><p>O ranking prioriza irregularidades e apresenta absenteísmo e HE na mesma linha para apoiar a investigação.</p><div><strong>{data.resumo?.batidas_impares || 0}</strong><small>batidas ímpares</small></div><div className="ponto48-link-summary" title="Nomes do CSV sem correspondência única na tabela de colaboradores. Isso não representa inconsistência nas batidas."><strong>{data.resumo?.nao_vinculados || 0}</strong><span><small>sem vínculo automático</small><em>{linkSummary.unmatched} não encontrados · {linkSummary.ambiguous} duplicados</em></span></div></article>
           </div>
 
           <div className="ponto48-table-panel">
@@ -259,13 +339,23 @@ export function Ponto48Dashboard() {
           </div>
         </>
       )}
+        </TabPanel>
+        <TabPanel header="Ajustes de ponto" leftIcon="pi pi-pencil mr-2">
+          <Ponto48Adjustments filters={filters} dateRange={dateRange} refreshKey={adjustmentsRefreshKey} referenceStart={data.importacao?.periodo_inicio} />
+        </TabPanel>
+        <TabPanel header="Espelho Ponto" leftIcon="pi pi-id-card mr-2">
+          <Ponto48Mirror filters={filters} dateRange={dateRange} refreshKey={mirrorRefreshKey} referenceStart={data.importacao?.periodo_inicio} />
+        </TabPanel>
+      </TabView>
 
       <Dialog header={detailEmployee?.nome || "Detalhes do colaborador"} visible={!!detailEmployee} modal className="ponto48-detail-dialog" onHide={() => setDetailEmployee(null)}>
         {detailEmployee ? <><div className="ponto48-detail-summary"><div><span>Absenteísmo</span><strong>{detailEmployee.abs_percentual}%</strong></div><div><span>Horas extras</span><strong>{formatMinutes(detailEmployee.horas_extras_minutos)}</strong></div><div><span>Irregulares</span><strong>{detailEmployee.batidas_irregulares}</strong></div><div><span>Corretas</span><strong>{detailEmployee.batidas_corretas}</strong></div></div><div className="ponto48-records">{detailEmployee.registros.length ? detailEmployee.registros.map((record) => <article key={record.id} className={record.batida_irregular ? "is-irregular" : "is-correct"}><header><strong>{new Date(`${record.data}T00:00:00`).toLocaleDateString("pt-BR")}</strong><Tag value={record.batida_irregular ? "Irregular" : "Correta"} severity={record.batida_irregular ? "danger" : "success"} /></header><div className="ponto48-punches">{record.batidas.map((punch, index) => <span key={`${record.id}-${index}`}>{punch || "—"}</span>)}</div><footer><span>HE: {formatMinutes(record.horas_extras_minutos)}</span>{record.irregularidade ? <strong>{record.irregularidade}</strong> : null}</footer></article>) : <p>Não há registros diários de HE para este colaborador.</p>}</div></> : null}
       </Dialog>
 
+      <ConfirmDialog />
+
       <Dialog header="Importar relatórios de ponto" visible={importVisible} modal className="ponto48-import-dialog" onHide={() => !importing && setImportVisible(false)}>
-        <div className="ponto48-import-form"><p>Os arquivos precisam representar o mesmo período.</p><label><span>Relatório de absenteísmo</span><input type="file" accept=".csv,text/csv" onChange={(event) => setAbsenteeismFile(event.target.files?.[0] || null)} /></label><label><span>Relatório de horas extras</span><input type="file" accept=".csv,text/csv" onChange={(event) => setOvertimeFile(event.target.files?.[0] || null)} /></label><Button label="Importar e processar" icon="pi pi-upload" loading={importing} onClick={importReports} /></div>
+        <div className="ponto48-import-form"><p>Os quatro relatórios serão validados e atualizados juntos. Se um falhar, nenhum dado será substituído.</p><label><span>Relatório de absenteísmo</span><input type="file" accept=".csv,text/csv" onChange={(event) => setAbsenteeismFile(event.target.files?.[0] || null)} /></label><label><span>Relatório de horas extras</span><input type="file" accept=".csv,text/csv" onChange={(event) => setOvertimeFile(event.target.files?.[0] || null)} /></label><label><span>Relatório de ajustes</span><input type="file" accept=".csv,text/csv" onChange={(event) => setAdjustmentsFile(event.target.files?.[0] || null)} /></label><label><span>Relatório de Jornada (Espelho Ponto)</span><input type="file" accept=".csv,text/csv" onChange={(event) => setMirrorFile(event.target.files?.[0] || null)} /></label><Button label="Importar os quatro relatórios" icon="pi pi-upload" loading={importing} onClick={importReports} /></div>
       </Dialog>
     </section>
   );
