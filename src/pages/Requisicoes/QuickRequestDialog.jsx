@@ -11,27 +11,72 @@ import { useLoading } from "../../contexts/LoadingContext";
 import { useToast } from "../../contexts/ToastContext";
 
 const REASONS = ["AFASTAMENTO", "ATESTADO", "DECLARAÇÃO", "POSTO VAGO", "REMANEJAMENTO", "INJUSTIFICADA", "OUTROS"];
+const EMPLOYEE_SEARCH_LIMIT = 50;
+const EMPLOYEE_SEARCH_DELAY = 350;
 
 const initialForm = () => ({ supervisor: null, absent: null, reservation: null, center: null, reason: null, warning: null, obs: "", noCoverage: false, date: new Date(), days: 1 });
 
 export function QuickRequestDialog({ visible, onHide, onCreated }) {
   const [options, setOptions] = useState({ supervisors: [], employees: [], reservations: [], centers: [] });
   const [form, setForm] = useState(initialForm);
+  const [employeeSearch, setEmployeeSearch] = useState("");
+  const [employeesLoading, setEmployeesLoading] = useState(false);
   const setLoading = useLoading();
   const { showToast } = useToast();
 
-  // Load selectors lazily and cache them while the quick-create dialog remains mounted.
+  // Carrega apenas os catálogos pequenos ao abrir o diálogo. Funcionários ficam fora
+  // deste lote porque a quantidade de registros tornava a abertura da tela muito lenta.
   useEffect(() => {
     if (!visible || options.supervisors.length) return;
-    Promise.all([connect.get("/supervisores"), connect.get("/funcionarios"), connect.get("/reservas"), connect.get("/centro")])
-      .then(([supervisors, employees, reservations, centers]) => setOptions({
+    Promise.all([connect.get("/supervisores"), connect.get("/reservas"), connect.get("/centro")])
+      .then(([supervisors, reservations, centers]) => setOptions((current) => ({
         supervisors: supervisors.data.map((item) => ({ label: item.nome, value: item.id })),
-        employees: employees.data.map((item) => ({ label: item.nome, value: item.id })),
+        employees: current.employees,
         reservations: reservations.data.map((item) => ({ label: item.nome, value: item.id })),
         centers: centers.data.map((item) => ({ label: `${item.id} - ${item.local} - ${item.departamento}`, value: item.id })),
-      }))
+      })))
       .catch(() => showToast("error", "Lançamento rápido", "Não foi possível carregar as opções."));
   }, [visible, options.supervisors.length, showToast]);
+
+  // A busca de funcionários é processada no banco após um pequeno debounce. O limite
+  // protege o navegador e o virtual scroller renderiza somente as opções visíveis.
+  useEffect(() => {
+    if (!visible) return;
+
+    // Impede que uma resposta antiga sobrescreva o resultado de uma busca mais recente.
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      setEmployeesLoading(true);
+      try {
+        const { data } = await connect.get("/funcionarios", {
+          params: {
+            search: employeeSearch.trim(),
+            situacao: 1,
+            limit: EMPLOYEE_SEARCH_LIMIT,
+          },
+        });
+
+        if (!cancelled) {
+          setOptions((current) => ({
+            ...current,
+            employees: data.map((item) => ({
+              label: `${item.matricula} - ${item.nome}`,
+              value: item.id,
+            })),
+          }));
+        }
+      } catch {
+        if (!cancelled) showToast("error", "Lançamento rápido", "Não foi possível buscar os colaboradores.");
+      } finally {
+        if (!cancelled) setEmployeesLoading(false);
+      }
+    }, EMPLOYEE_SEARCH_DELAY);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [employeeSearch, showToast, visible]);
 
   // Mirror the full-page request payload so both entry points follow the same API contract.
   const save = async (event) => {
@@ -59,6 +104,7 @@ export function QuickRequestDialog({ visible, onHide, onCreated }) {
       });
       showToast("success", "Lançamento rápido", "Requisição criada com sucesso.");
       setForm(initialForm());
+      setEmployeeSearch("");
       onHide();
       onCreated?.();
     } catch (error) {
@@ -69,7 +115,18 @@ export function QuickRequestDialog({ visible, onHide, onCreated }) {
   return <Dialog header="Lançamento rápido" visible={visible} modal className="quick-request-dialog" onHide={onHide}>
     <form className="quick-request-form" onSubmit={save}>
       <Dropdown value={form.supervisor} options={options.supervisors} onChange={(e) => setForm({ ...form, supervisor: e.value })} placeholder="Supervisor" filter />
-      <Dropdown value={form.absent} options={options.employees} onChange={(e) => setForm({ ...form, absent: e.value })} placeholder="Colaborador ausente" filter />
+      <Dropdown
+        value={form.absent}
+        options={options.employees}
+        onChange={(e) => setForm({ ...form, absent: e.value })}
+        onFilter={(e) => setEmployeeSearch(e.filter)}
+        placeholder="Colaborador ausente"
+        emptyFilterMessage="Nenhum colaborador encontrado"
+        emptyMessage="Digite para buscar colaboradores"
+        loading={employeesLoading}
+        virtualScrollerOptions={{ itemSize: 42 }}
+        filter
+      />
       <Dropdown value={form.center} options={options.centers} onChange={(e) => setForm({ ...form, center: e.value })} placeholder="Centro de custo" filter />
       {!form.noCoverage && <Dropdown value={form.reservation} options={options.reservations} onChange={(e) => setForm({ ...form, reservation: e.value })} placeholder="Reserva" filter />}
       <Dropdown value={form.reason} options={REASONS} onChange={(e) => setForm({ ...form, reason: e.value, days: ["ATESTADO", "AFASTAMENTO"].includes(e.value) ? form.days : 1 })} placeholder="Motivo" />

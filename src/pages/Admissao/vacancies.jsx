@@ -45,16 +45,37 @@ const orderOptions = [
     { label: 'Mais antigas', value: 'asc' },
 ];
 
-const emptyForm = {
+// Uma fábrica garante que cada abertura do diálogo receba a data atual,
+// em vez de reutilizar a data criada quando o módulo foi carregado.
+const createEmptyForm = () => ({
     matricula: '',
     colaborador: '',
+    colaborador_entrada: '',
+    data_aviso: new Date(),
     departamento: '',
     centro_custo: '',
     funcao: '',
     carga_horaria: '',
     horario_trabalho: '',
     motivo_saida: '',
-};
+});
+
+// Envia apenas o dia civil para que conversões de fuso não alterem a data escolhida.
+function toApiDate(value) {
+    const date = new Date(value);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+// Aceita tanto o formato ISO do banco quanto o formato HTTP serializado pelo Flask.
+function formatDateOnly(value) {
+    if (!value) return '-';
+
+    const isoDate = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoDate) return `${isoDate[3]}/${isoDate[2]}/${isoDate[1]}`;
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '-' : date.toLocaleDateString('pt-br');
+}
 
 function InfoField({ label, value }) {
     return (
@@ -69,8 +90,8 @@ function VagaHeader({ vaga }) {
     return (
         <div className="flex align-items-center justify-content-between w-full pr-2 flex-wrap gap-2">
             <div className="flex flex-column">
-                <span className="font-bold">{vaga.colaborador}</span>
-                <span className="text-500 text-sm">{vaga.departamento} • {vaga.centro_custo}</span>
+                <span className="font-bold">{vaga.colaborador_entrada || 'Novo colaborador não definido'}</span>
+                <span className="text-500 text-sm">Substitui {vaga.colaborador} • {vaga.departamento} • {vaga.centro_custo}</span>
             </div>
             <span className="text-500 text-sm">Saiu em {new Date(vaga.created_at).toLocaleDateString('pt-br')}</span>
         </div>
@@ -125,6 +146,8 @@ function VagaItem({ vaga, onUpdate, onDelete }) {
             <div className="vaga-info-grid">
                 <InfoField label="Matrícula" value={vaga.matricula} />
                 <InfoField label="Colaborador" value={vaga.colaborador} />
+                <InfoField label="Novo colaborador" value={vaga.colaborador_entrada} />
+                <InfoField label="Data do aviso/envio do currículo" value={formatDateOnly(vaga.data_aviso)} />
                 <InfoField label="Departamento" value={vaga.departamento} />
                 <InfoField label="Centro de Custo" value={vaga.centro_custo} />
                 <InfoField label="Função" value={vaga.funcao} />
@@ -220,7 +243,7 @@ export function Vacancies() {
     const [order, setOrder] = useState('desc');
 
     const [dialogVisible, setDialogVisible] = useState(false);
-    const [form, setForm] = useState(emptyForm);
+    const [form, setForm] = useState(createEmptyForm);
     const [suggestions, setSuggestions] = useState([]);
     const [debouncedTerm, setDebouncedTerm] = useState('');
     const skipNextSearch = useRef(false);
@@ -273,7 +296,7 @@ export function Vacancies() {
     }, [filtered]);
 
     const openCreate = () => {
-        setForm(emptyForm);
+        setForm(createEmptyForm());
         setSuggestions([]);
         setDebouncedTerm('');
         setDialogVisible(true);
@@ -336,10 +359,17 @@ export function Vacancies() {
             return;
         }
 
+        if (!form.data_aviso) {
+            showToast('warn', 'Atenção!', 'Selecione a data em que a vaga foi avisada ou o currículo foi enviado.');
+            return;
+        }
+
         setLoading(true);
         try {
             await connect.post(VACANCIES_ENDPOINT, {
                 matricula: form.matricula,
+                colaborador_entrada: form.colaborador_entrada.trim() || null,
+                data_aviso: toApiDate(form.data_aviso),
                 horario_trabalho: form.horario_trabalho,
                 motivo_saida: form.motivo_saida,
             });
@@ -512,7 +542,31 @@ export function Vacancies() {
 
                     <FloatLabel>
                         <InputText id="colaborador" className="w-full" value={form.colaborador} disabled />
-                        <label htmlFor="colaborador">Nome do colaborador</label>
+                        <label htmlFor="colaborador">Nome do colaborador que saiu</label>
+                    </FloatLabel>
+
+                    <FloatLabel>
+                        <InputText
+                            id="colaborador_entrada"
+                            className="w-full"
+                            value={form.colaborador_entrada}
+                            onChange={(e) => setForm({ ...form, colaborador_entrada: e.target.value })}
+                        />
+                        <label htmlFor="colaborador_entrada">Nome do colaborador que vai entrar (opcional)</label>
+                    </FloatLabel>
+
+                    <FloatLabel>
+                        <Calendar
+                            id="data_aviso"
+                            className="w-full"
+                            value={form.data_aviso}
+                            onChange={(e) => setForm({ ...form, data_aviso: e.value })}
+                            dateFormat="dd/mm/yy"
+                            locale="pt-BR"
+                            showIcon
+                            readOnlyInput
+                        />
+                        <label htmlFor="data_aviso">Data do aviso/envio do currículo</label>
                     </FloatLabel>
 
                     <div className="flex gap-3">

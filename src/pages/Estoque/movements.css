@@ -33,3 +33,12 @@
     flex: 1 1 0;
     border-radius: var(--border-radius, 6px) !important;
 }
+
+/* Mantém contraste suficiente quando Entrada ou Saída está selecionado. */
+.tipo-select-button .p-button.p-highlight,
+.tipo-select-button .p-button.p-highlight:hover,
+.tipo-select-button .p-button.p-highlight:focus {
+    color: #071009 !important;
+    background: var(--accent, #63e58b) !important;
+    border-color: var(--accent, #63e58b) !important;
+}

@@ -5,6 +5,12 @@
   margin-bottom: 1rem;
 }
 
+.floaters-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
 .floater-summary-card {
   min-width: 0;
   padding: .55rem .8rem 1rem;
@@ -29,6 +35,8 @@
 
 .floaters-splitter .p-splitter-gutter {
   background: #dfe6e1;
+  /* Separa visualmente os dois fluxos sem retirar a função de redimensionamento. */
+  flex-basis: .9rem !important;
 }
 
 .floaters-splitter .p-splitter-gutter-handle {
@@ -44,6 +52,46 @@
 
 .floater-card>div {
   min-width: 0;
+}
+
+/* O conteúdo possui rolagem própria para listas grandes não aumentarem o modal. */
+.floaters-usage-dialog {
+  width: min(52rem, calc(100vw - 2rem));
+}
+
+.floaters-usage-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.floaters-usage-list {
+  min-height: 12rem;
+  max-height: 24rem;
+  overflow: auto;
+  padding: 1rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+}
+
+.floaters-usage-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .7rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.floaters-usage-item:last-child {
+  border-bottom: 0;
+}
+
+.floaters-usage-empty {
+  display: block;
+  color: var(--text-color-secondary);
+  padding: .75rem;
+  text-align: center;
 }
 
 :root[data-theme="dark"] .floater-summary-card {
@@ -80,6 +128,15 @@
   background: #383d3a;
 }
 
+:root[data-theme="dark"] .floaters-usage-list {
+  background: #252a27;
+  border-color: #445048;
+}
+
+:root[data-theme="dark"] .floaters-usage-item {
+  border-color: #3c4540;
+}
+
 @media(max-width: 760px) {
   .floaters-splitter {
     height: calc(100dvh - 22rem);
@@ -97,6 +154,10 @@
 
   .floater-card .p-divider-vertical {
     display: none;
+  }
+
+  .floaters-usage-grid {
+    grid-template-columns: 1fr;
   }
 }
 

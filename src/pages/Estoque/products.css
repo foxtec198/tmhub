@@ -52,6 +52,13 @@
     border-radius: var(--border-radius);
 }
 
+/* Evita que o token claro do PrimeReact deixe as linhas brancas no dark mode. */
+:root[data-theme="dark"] .category-item {
+    color: var(--text-color);
+    background: #252a27;
+    border-color: #445048;
+}
+
 @media screen and (max-width: 768px) {
     /* The Outlet owns mobile scrolling so summary cards naturally leave the viewport. */
     .products-page {
