@@ -2,7 +2,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { PanelMenu } from "primereact/panelmenu";
 import { Avatar } from "primereact/avatar";
-import { capitalize, deny_roles, allow_roles } from "../utils/ui";
+import { capitalize, deny_roles } from "../utils/ui";
 import connect from "../utils/request";
 import { getInitials, storeProfile } from "../utils/profile";
 import './main.css'
@@ -19,7 +19,6 @@ export function MainLayout() {
   );
   const navigate = useNavigate();
   const deny = deny_roles.includes(role)
-  const allow = allow_roles.includes(role)
 
   const navigateTo = (path) => {
     navigate(path);
@@ -40,7 +39,7 @@ export function MainLayout() {
           command: () => { navigateTo("/reports/reposicoes") }
         },
         {
-          label: 'Colaboradores por DPTO',
+          label: 'Colab. por DPTO',
           icon: 'pi pi-users',
           command: () => { navigateTo("/reports/colaboradores-departamento") }
         },
@@ -50,15 +49,16 @@ export function MainLayout() {
           command: () => { navigateTo("/reports/ponto-48-horas") }
         },
         {
-          label: 'Logística',
-          icon: 'pi pi-truck',
-          command: () => { navigateTo("/reports/logistica") }
+          label: 'Admissões',
+          icon: 'pi pi-user-plus',
+          command: () => { navigateTo("/reports/admissoes") }
         },
         {
-          label: "Novo",
-          icon: "pi pi-plus",
-          className: !allow ? "hidden" : null
-        }
+          label: 'Logística',
+          disabled: true,
+          icon: 'pi pi-truck',
+          // command: () => { navigateTo("/reports/logistica") }
+        },
       ]
     },
     {
@@ -74,6 +74,8 @@ export function MainLayout() {
     },
     {
       label: "RPA Center",
+      disabled: true,
+
       icon: 'pi pi-verified',
       className: deny ? "hidden" : null,
       items: [
@@ -158,7 +160,7 @@ export function MainLayout() {
     };
     const listener = (event) => updateProfile(event.detail);
     window.addEventListener("tmhub:profile", listener);
-    connect.get("/usuarios/perfil").then(({ data }) => { storeProfile(data); updateProfile(data); }).catch(() => {});
+    connect.get("/usuarios/perfil").then(({ data }) => { storeProfile(data); updateProfile(data); }).catch(() => { });
     return () => window.removeEventListener("tmhub:profile", listener);
   }, []);
 

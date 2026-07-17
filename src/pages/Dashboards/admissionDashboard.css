@@ -1,0 +1,372 @@
+.admission-dashboard {
+    min-height: 100%;
+    padding: clamp(1rem, 2.5vw, 2rem);
+    color: var(--text-color, #26332a);
+}
+
+.admission-heading,
+.admission-heading__actions,
+.admission-panel > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.admission-heading {
+    align-items: flex-start;
+    margin-bottom: 1.2rem;
+}
+
+.admission-heading > div:first-child > span,
+.admission-panel header span,
+.admission-insight > span {
+    color: var(--primary-color);
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.admission-heading h1 {
+    margin: .25rem 0;
+    color: var(--primary-color);
+    font: 800 clamp(1.5rem, 3vw, 2.2rem) "Space Grotesk", sans-serif;
+}
+
+.admission-heading p,
+.admission-panel h2 {
+    margin: .2rem 0 0;
+}
+
+.admission-heading p {
+    color: var(--text-color-secondary);
+}
+
+.admission-heading__actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.admission-heading__actions .p-calendar {
+    min-width: 17rem;
+}
+
+/* Faixa superior de indicadores: cinco colunas no desktop e quebra progressiva em telas menores. */
+.admission-summary {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: .8rem;
+    margin-bottom: 1rem;
+}
+
+.admission-summary-card {
+    --card-accent: #268f50;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: .8rem;
+    min-width: 0;
+    padding: 1rem;
+    background: var(--surface-card, #fff);
+    border: 1px solid var(--surface-border, #dce7df);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(15, 63, 30, .07);
+}
+
+.admission-summary-card.is-success { --card-accent: #31b765; }
+.admission-summary-card.is-warning { --card-accent: #d59b19; }
+.admission-summary-card.is-danger { --card-accent: #e5484d; }
+.admission-summary-card.is-violet { --card-accent: #815ac0; }
+
+.admission-summary-card__icon {
+    display: grid;
+    width: 2.7rem;
+    height: 2.7rem;
+    place-items: center;
+    color: var(--card-accent);
+    background: color-mix(in srgb, var(--card-accent) 13%, transparent);
+    border-radius: 12px;
+    font-size: 1.15rem;
+}
+
+.admission-summary-card > span:last-child {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.admission-summary-card small {
+    color: var(--text-color-secondary);
+    font-weight: 700;
+}
+
+.admission-summary-card strong {
+    overflow-wrap: anywhere;
+    color: var(--card-accent);
+    font-size: clamp(1.25rem, 2vw, 1.75rem);
+}
+
+.admission-summary-card em {
+    overflow: hidden;
+    color: var(--text-color-secondary);
+    font-size: .72rem;
+    font-style: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* O gráfico recebe mais espaço que a leitura executiva para preservar a legibilidade mensal. */
+.admission-analysis {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(18rem, .8fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.admission-panel,
+.admission-table-panel {
+    min-width: 0;
+    padding: 1.2rem;
+    background: var(--surface-card, #fff);
+    border: 1px solid var(--surface-border, #dce7df);
+    border-radius: 16px;
+    box-shadow: 0 12px 34px rgba(15, 63, 30, .07);
+}
+
+.admission-chart {
+    height: 22rem;
+    margin-top: .75rem;
+}
+
+.admission-chart > .p-chart,
+.admission-chart > .p-chart > canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.admission-insight {
+    display: grid;
+    align-content: start;
+    gap: .8rem;
+    background: linear-gradient(155deg, color-mix(in srgb, var(--primary-color) 10%, var(--surface-card, #fff)), var(--surface-card, #fff));
+}
+
+.admission-insight p {
+    margin: 0;
+    color: var(--text-color-secondary);
+    line-height: 1.55;
+}
+
+.admission-insight > div:not(.admission-status-strip) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .8rem;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+}
+
+.admission-insight > div > span {
+    display: flex;
+    flex-direction: column;
+}
+
+.admission-insight small,
+.admission-insight em {
+    color: var(--text-color-secondary);
+    font-size: .72rem;
+    font-style: normal;
+}
+
+.admission-insight strong {
+    color: var(--primary-color);
+    font-size: 1.25rem;
+}
+
+/* Seis status ocupam sempre o cartão inteiro em uma grade 3x2. */
+.admission-status-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .5rem;
+    width: 100%;
+    margin-top: .2rem;
+}
+
+.admission-status-card {
+    --status-color: #5dca82;
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: .35rem;
+    padding: .65rem .7rem;
+    background: color-mix(in srgb, var(--status-color) 9%, var(--surface-card, #fff));
+    border: 1px solid color-mix(in srgb, var(--status-color) 28%, transparent);
+    border-radius: 10px;
+}
+
+.admission-status-card.is-entrevista { --status-color: #4da3ff; }
+.admission-status-card.is-certidao { --status-color: #a878e8; }
+.admission-status-card.is-aso { --status-color: #e3a72f; }
+.admission-status-card.is-unico { --status-color: #e47d55; }
+.admission-status-card.is-concluido { --status-color: #31b765; }
+
+.admission-status-card span {
+    overflow: hidden;
+    color: var(--text-color-secondary);
+    font-size: .66rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admission-status-card strong {
+    flex: 0 0 auto;
+    color: var(--status-color);
+    font-size: 1rem;
+}
+
+.admission-table-panel {
+    overflow: hidden;
+    padding: 0;
+}
+
+/* Navegação própria evita inconsistências de tema do TabView do PrimeReact. */
+.admission-table-tabs {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .75rem;
+    background: color-mix(in srgb, var(--primary-color) 4%, var(--surface-card, #fff));
+    border-bottom: 1px solid var(--surface-border, #dce7df);
+}
+
+.admission-table-tabs button {
+    display: inline-flex;
+    min-height: 2.6rem;
+    align-items: center;
+    gap: .55rem;
+    padding: 0 .9rem;
+    color: var(--text-color-secondary);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: .82rem;
+    font-weight: 700;
+    transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.admission-table-tabs button:hover {
+    color: var(--primary-color);
+    background: color-mix(in srgb, var(--primary-color) 7%, transparent);
+}
+
+.admission-table-tabs button.is-active {
+    color: var(--primary-color);
+    background: var(--surface-card, #fff);
+    border-color: color-mix(in srgb, var(--primary-color) 28%, var(--surface-border, #dce7df));
+    box-shadow: 0 3px 10px rgba(15, 63, 30, .08);
+}
+
+.admission-table-tabs em {
+    display: grid;
+    min-width: 1.35rem;
+    height: 1.35rem;
+    place-items: center;
+    color: #fff;
+    background: #d58a19;
+    border-radius: 999px;
+    font-size: .67rem;
+    font-style: normal;
+}
+
+.admission-table-content {
+    padding: 1rem 1.2rem 1.2rem;
+}
+
+.admission-table-panel .p-datatable {
+    box-shadow: none;
+}
+
+.admission-vacancy-cell {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+}
+
+.admission-vacancy-cell span {
+    overflow: hidden;
+    max-width: 28rem;
+    color: var(--text-color-secondary);
+    font-size: .75rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admission-overdue {
+    color: #d4494f;
+}
+
+:root[data-theme="dark"] .admission-summary-card,
+:root[data-theme="dark"] .admission-panel,
+:root[data-theme="dark"] .admission-table-panel {
+    background: #292e2b;
+    border-color: #465149;
+}
+
+:root[data-theme="dark"] .admission-dashboard {
+    --admission-dark-accent: #61e990;
+    color: #f2f6f3;
+}
+
+:root[data-theme="dark"] .admission-heading h1,
+:root[data-theme="dark"] .admission-heading > div:first-child > span,
+:root[data-theme="dark"] .admission-panel header span,
+:root[data-theme="dark"] .admission-insight > span,
+:root[data-theme="dark"] .admission-insight strong {
+    color: var(--admission-dark-accent);
+}
+
+:root[data-theme="dark"] .admission-insight {
+    background: linear-gradient(155deg, #1c3b27, #292e2b 68%);
+}
+
+:root[data-theme="dark"] .admission-status-card {
+    background: color-mix(in srgb, var(--status-color) 10%, #222724);
+}
+
+:root[data-theme="dark"] .admission-table-tabs {
+    background: #222724;
+    border-color: #465149;
+}
+
+:root[data-theme="dark"] .admission-table-tabs button.is-active {
+    color: #61e990;
+    background: #303733;
+    border-color: #4d6756;
+    box-shadow: none;
+}
+
+@media (max-width: 1180px) {
+    .admission-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+    .admission-heading { align-items: stretch; flex-direction: column; }
+    .admission-heading__actions { justify-content: flex-start; }
+    .admission-analysis { grid-template-columns: 1fr; }
+    .admission-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 540px) {
+    .admission-dashboard { padding: 1rem; }
+    .admission-summary { grid-template-columns: 1fr; }
+    .admission-heading__actions .p-calendar { min-width: 0; width: 100%; }
+    .admission-status-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .admission-table-tabs { align-items: stretch; flex-direction: column; }
+    .admission-table-tabs button { justify-content: flex-start; }
+}

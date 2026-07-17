@@ -22,6 +22,7 @@ import "./index.css"
 import { RequestReport } from "./pages/Dashboards/requests"
 import { DepartmentEmployeesDashboard } from "./pages/Dashboards/DepartmentEmployees"
 import { Ponto48Dashboard } from "./pages/Dashboards/Ponto48Dashboard"
+import { AdmissionDashboard } from "./pages/Dashboards/AdmissionDashboard.jsx"
 import { Requests } from "./pages/Requisicoes/requests"
 import { Request } from "./pages/Requisicoes/new.jsx"
 import { Frotas } from "./pages/Frotas"
@@ -94,7 +95,6 @@ export function AppRoutes() {
         <Route path="/login" element={<Auth />} />
         <Route path="/reposicoes/requisicao" element={<Request />} />
         <Route path="/estoque/movimentacao" element={<MobileMovement />} />
-
         <Route element={<MainLayout />}>
           {/* Init Page */}
           <Route path="/init" element={<Init />} />
@@ -113,6 +113,7 @@ export function AppRoutes() {
           <Route path="/reports/reposicoes" element={<RequestReport />} />
           <Route path="/reports/colaboradores-departamento" element={<DepartmentEmployeesDashboard />} />
           <Route path="/reports/ponto-48-horas" element={<Ponto48Dashboard />} />
+          <Route path="/reports/admissoes" element={<AdmissionDashboard />} />
           <Route path="/estoque/produtos" element={<Products />} />
           <Route path="/estoque/movimentacoes" element={<Movements />} />
 

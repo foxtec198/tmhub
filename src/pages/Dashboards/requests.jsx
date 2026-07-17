@@ -871,8 +871,8 @@ export function RequestReport() {
                             tableClassName="w-full"
                             columns={columns}
                             data={dadosTabelaFiltraveis}
-                            rowsPerPageOptions = {[3, 10, 50, 100]}
-                            rows={3}
+                            rowsPerPageOptions = {[3, 5, 10, 50, 100]}
+                            rows={5}
                             style={{
                                 fontSize: "10px"
                             }}

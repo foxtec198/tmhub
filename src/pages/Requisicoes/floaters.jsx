@@ -151,12 +151,56 @@ export function Floaters() {
                 />
             </div>
             <div className="floaters-summary">
-                <DashCard title="Reservas técnicas" icon="pi pi-shield" value={reservas.length} className="floater-summary-card" />
                 <DashCard title="Total de colaboradores" icon="pi pi-users" value={totalColaboradores} className="floater-summary-card" />
+                <DashCard title="Reservas técnicas" icon="pi pi-shield" value={reservas.length} className="floater-summary-card" />
             </div>
             {/* FRAME */}
             <Splitter className="floaters-splitter" layout={isMobile ? "vertical" : "horizontal"}>
-                {/* Reservas ficam à esquerda: o colaborador da direita é movido visualmente para cá. */}
+                {/* Colaboradores aparecem primeiro e podem ser promovidos para o painel seguinte. */}
+                <SplitterPanel size={50} minSize={25} className="flex flex-column gap-2 p-3 overflow-y-auto">
+                    <span className="spaceg mb-3">Colaboradores Ativos: </span>
+                    <FloatLabel className="w-full mb-2">
+                        <InputText
+                            id="active-employees-search"
+                            className="w-full"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                        <label htmlFor="active-employees-search">Buscar Colaboradores.</label>
+                    </FloatLabel>
+                    {colaboradores.map(colaborador => {
+                        const data = new Date(colaborador.data_admissao)
+                        return (
+                            <div
+                                key={colaborador.id}
+                                className="floater-card flex flex-grow-1 justify-content-between align-items-center border-round-lg p-2 shadow-5"
+                            >
+                                <div className="flex flex-column gap-2">
+                                    <div className="flex justify-content-center align-items-center">
+                                        <span className="inter font-bold text-truncate">{colaborador.matricula} - {colaborador.nome}</span>
+                                        <Divider className="h-1rem" layout="vertical" />
+                                        <span className="spaceg flex align-items-center gap-1">
+                                            <i className="pi pi-calendar-plus"></i>
+                                            {data.toLocaleDateString("pt-br", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                                        </span>
+                                    </div>
+                                    <div className="flex gap-2 align-items-center">
+                                        <Tag className="bg-primary" rounded> {colaborador.cargo} </Tag>
+                                        <Tag style={{ background: "var(--gray-700)" }} rounded> <span>{colaborador.situacao.toUpperCase()}</span> </Tag>
+                                    </div>
+                                </div>
+                                <Button
+                                    className="bg-primary"
+                                    icon={isMobile ? "pi pi-caret-down" : "pi pi-caret-right"}
+                                    aria-label={`Adicionar ${colaborador.nome} às reservas`}
+                                    onClick={() => setReserva(colaborador.id, colaborador.nome)}
+                                />
+                            </div>
+                        )
+                    })}
+                </SplitterPanel>
+
+                {/* Reservas técnicas aparecem depois dos colaboradores. */}
                 <SplitterPanel size={50} minSize={25} className="flex flex-column gap-2 p-3 overflow-y-auto">
                     <span className="spaceg mb-3">Reservas Selecionadas: </span>
                     <FloatLabel className="w-full mb-2">
@@ -198,50 +242,6 @@ export function Floaters() {
                         )
                     })}
                 </SplitterPanel>
-
-                {/* Colaboradores ficam à direita e a seta aponta para o painel de destino. */}
-                <SplitterPanel size={50} minSize={25} className="flex flex-column gap-2 p-3 overflow-y-auto">
-                    <span className="spaceg mb-3">Colaboradores Ativos: </span>
-                    <FloatLabel className="w-full mb-2">
-                        <InputText
-                            id="active-employees-search"
-                            className="w-full"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
-                        <label htmlFor="active-employees-search">Buscar Colaboradores.</label>
-                    </FloatLabel>
-                    {colaboradores.map(colaborador => {
-                        const data = new Date(colaborador.data_admissao)
-                        return (
-                            <div
-                                key={colaborador.id}
-                                className="floater-card flex flex-grow-1 justify-content-between align-items-center border-round-lg p-2 shadow-5"
-                            >
-                                <Button
-                                    className="bg-primary"
-                                    icon="pi pi-caret-left"
-                                    aria-label={`Adicionar ${colaborador.nome} às reservas`}
-                                    onClick={()=>{setReserva(colaborador.id, colaborador.nome)}}
-                                />
-                                <div className="flex flex-column gap-2">
-                                    <div className="flex justify-content-center align-items-center">
-                                        <span className="inter font-bold text-truncate">{colaborador.matricula} - {colaborador.nome}</span>
-                                        <Divider className="h-1rem" layout="vertical" />
-                                        <span className="spaceg flex align-items-center gap-1">
-                                            <i className="pi pi-calendar-plus"></i>
-                                            {data.toLocaleDateString("pt-br", { day: "2-digit", month: "2-digit", year: "numeric" })}
-                                        </span>
-                                    </div>
-                                    <div className="flex gap-2 align-items-center">
-                                        <Tag className="bg-primary" rounded> {colaborador.cargo} </Tag>
-                                        <Tag style={{ background: "var(--gray-700)" }} rounded> <span>{colaborador.situacao.toUpperCase()}</span> </Tag>
-                                    </div>
-                                </div>
-                            </div>
-                        )
-                    })}
-                </SplitterPanel>
             </Splitter>
             {/* A data pode ser alterada sem fechar o diálogo; cada troca refaz a consulta no backend. */}
             <Dialog header="Utilizadas x disponíveis" visible={usageDialog} modal className="floaters-usage-dialog" onHide={() => setUsageDialog(false)}>
@@ -263,7 +263,18 @@ export function Floaters() {
                         <h3>Utilizadas ({reservationUsage.usadas.length})</h3>
                         <div className="floaters-usage-list">
                             {reservationUsage.usadas.length
-                                ? reservationUsage.usadas.map((item) => <div className="floaters-usage-item" key={item.id}><strong>{item.nome}</strong><span>{item.matricula}</span></div>)
+                                ? reservationUsage.usadas.map((item) => (
+                                    <div className="floaters-usage-item" key={item.id}>
+                                        <div className="floaters-usage-person">
+                                            <strong>{item.nome}</strong>
+                                            {item.ultimo_contrato && <small><i className="pi pi-building" /> Último contrato: {item.ultimo_contrato}</small>}
+                                        </div>
+                                        <div className="floaters-usage-meta">
+                                            <Tag value={item.situacao || "Sem situação"} severity={["ATIVO", "TRABALHANDO"].includes(item.situacao?.toUpperCase()) ? "success" : "warning"} rounded />
+                                            <span>{item.matricula}</span>
+                                        </div>
+                                    </div>
+                                ))
                                 : <span className="floaters-usage-empty">Nenhuma reserva utilizada nesta data.</span>}
                         </div>
                     </section>
@@ -271,7 +282,15 @@ export function Floaters() {
                         <h3>Disponíveis ({reservationUsage.disponiveis.length})</h3>
                         <div className="floaters-usage-list">
                             {reservationUsage.disponiveis.length
-                                ? reservationUsage.disponiveis.map((item) => <div className="floaters-usage-item" key={item.id}><strong>{item.nome}</strong><span>{item.matricula}</span></div>)
+                                ? reservationUsage.disponiveis.map((item) => (
+                                    <div className="floaters-usage-item" key={item.id}>
+                                        <div className="floaters-usage-person"><strong>{item.nome}</strong></div>
+                                        <div className="floaters-usage-meta">
+                                            <Tag value={item.situacao || "Sem situação"} severity={["ATIVO", "TRABALHANDO"].includes(item.situacao?.toUpperCase()) ? "success" : "warning"} rounded />
+                                            <span>{item.matricula}</span>
+                                        </div>
+                                    </div>
+                                ))
                                 : <span className="floaters-usage-empty">Nenhuma reserva disponível nesta data.</span>}
                         </div>
                     </section>

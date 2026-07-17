@@ -8,6 +8,7 @@ import { Timeline } from "primereact/timeline";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Table } from "../../components/tables/Table";
 import { DropdownWS } from "../../components/DropdownWithSearch";
+import { CollaboratorDropdown } from "../../components/CollaboratorDropdown";
 import { useToast } from "../../contexts/ToastContext";
 import connect from "../../utils/request";
 import { socketio } from "../../utils/socketio";
@@ -417,9 +418,7 @@ export function History() {
                     <div className="flex flex-column gap-2">
                         <label className="font-bold">Ausente</label>
                         <small className="text-600">Atual: {selectedRequest?.ausente || "—"}</small>
-                        <DropdownWS
-                            uri="/funcionarios"
-                            fetchAll
+                        <CollaboratorDropdown
                             value={editForm.ausente_id}
                             onChange={(value) => setEditForm((current) => ({ ...current, ausente_id: value }))}
                             className="w-full"

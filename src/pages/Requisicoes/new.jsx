@@ -13,6 +13,7 @@ import { useToast } from "../../contexts/ToastContext";
 import { useLoading } from "../../contexts/LoadingContext";
 import connect from "../../utils/request";
 import { InputText } from "primereact/inputtext";
+import { CollaboratorDropdown } from "../../components/CollaboratorDropdown";
 import "./new.css";
 
 export function Request() {
@@ -30,7 +31,6 @@ export function Request() {
 
     // Opções remotas carregadas para os dropdowns do formulário.
     const [supsOtions, setSupsOptions] = useState(null)
-    const [allFuncsOptions, setAllFuncsOptions] = useState(null)
     const [replaces, setReplaces] = useState(null)
     const [centersOptions, setCenterOptions] = useState(null)
     const dateOptions = [{ label: "Hoje", value: "today" }, { label: "Amanhã", value: "tomorrow" }]
@@ -64,7 +64,7 @@ export function Request() {
                 const data = {
                     supervisor_id: user.id,
                     centro_id: local.id,
-                    ausente_id: absent.id,
+                    ausente_id: absent,
                     reserva_id: checked ? 0 : replace.id,
                     motivo: reason,
                     advertencia: warning,
@@ -92,13 +92,6 @@ export function Request() {
             setSupsOptions(sups)
         }
 
-        async function getFuncs() {
-            const res = await connect.get("/funcionarios");
-            const funcs = [];
-            res.data.map(item => funcs.push({ name: item.nome, id: item.id }));
-            setAllFuncsOptions(funcs)
-        }
-
         async function getReplaces() {
             const res = await connect.get("/reservas");
             const absents = [];
@@ -114,7 +107,7 @@ export function Request() {
             setCenterOptions(centers)
         }
 
-        getSups(); getFuncs(); getCenters(); getReplaces();
+        getSups(); getCenters(); getReplaces();
     }, [])
 
     // Formulário público e responsivo de abertura de reposição.
@@ -169,17 +162,15 @@ export function Request() {
                                 flexGrow: 1,
                                 width: "90dvw"
                             }}>
-                                <Dropdown
+                                <CollaboratorDropdown
                                     appendTo="self"
                                     panelStyle={{ width: '100%' }}
                                     className="w-full mb-3"
-                                    virtualScrollerOptions={{ itemSize: 38 }}
                                     value={absent}
-                                    onChange={(e) => selectedAbsent(e.value)}
-                                    options={allFuncsOptions}
+                                    onChange={selectedAbsent}
                                     placeholder="Quem faltou?"
-                                    optionLabel="name"
-                                    filter
+                                    showClear={false}
+                                    onError={() => showToast("error", "Erro na busca", "Não foi possível buscar os colaboradores.")}
                                 />
                                 <Dropdown
                                     appendTo="self"

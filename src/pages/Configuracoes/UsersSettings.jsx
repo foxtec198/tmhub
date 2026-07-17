@@ -142,7 +142,7 @@ export function UsersSettings() {
   return <div className="users-settings-layout">
     <article className="settings-card users-table-card">
       <div className="settings-card-title"><i className="pi pi-users" /><div><h2>Usuários cadastrados</h2><p>Contas com acesso ao TM Hub</p></div></div>
-      <Table data={users} columns={columns} search rows={3} rowsPerPageOptions={[3, 10, 50, 100]} />
+      <Table data={users} columns={columns} search rows={5} rowsPerPageOptions={[3, 5, 10, 50, 100]} />
     </article>
 
     <aside className="settings-card users-actions-card">

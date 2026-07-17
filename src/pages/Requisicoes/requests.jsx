@@ -6,6 +6,7 @@ import { Tag } from "primereact/tag";
 import { DashCard } from "../../components/DashCard";
 import { Inplace, InplaceDisplay, InplaceContent, } from 'primereact/inplace';
 import { DropdownWS } from "../../components/DropdownWithSearch";
+import { CollaboratorDropdown } from "../../components/CollaboratorDropdown";
 import { confirmDialog } from 'primereact/confirmdialog';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import { SpeedDial } from "primereact/speeddial";
@@ -237,12 +238,9 @@ export function Requests() {
                             <InplaceDisplay>{row.ausencia}</InplaceDisplay>
 
                             <InplaceContent>
-                                <DropdownWS
-                                    uri="/funcionarios"
+                                <CollaboratorDropdown
                                     className="w-10rem text-truncate"
-                                    optionLabel="nome"
                                     onChange={(value) => { confirm("Ausente", { id: row.id, ausente_id: value }) }}
-                                    fetchAll
                                 />
                             </InplaceContent>
                         </Inplace>
@@ -449,8 +447,37 @@ export function Requests() {
             <Dialog header="Uso diário das reservas" visible={usageDialog} modal className="reserve-usage-dialog" onHide={() => setUsageDialog(false)}>
                 <Calendar value={usageDate} onChange={(e) => { if (e.value) { setUsageDate(e.value); loadReservationUsage(e.value) } }} className="mt-4" dateFormat="dd/mm/yy" showIcon readOnlyInput />
                 <div className="reserve-usage-grid">
-                    <section><h3>Usadas ({reservationUsage.usadas.length})</h3><div className="reserve-usage-list">{reservationUsage.usadas.length ? reservationUsage.usadas.map((item) => <div className="reserve-usage-item" key={item.id}><strong>{item.nome}</strong><span>{item.matricula}</span></div>) : <span className="reserve-usage-empty">Nenhuma reserva usada nesta data.</span>}</div></section>
-                    <section><h3>Disponíveis ({reservationUsage.disponiveis.length})</h3><div className="reserve-usage-list">{reservationUsage.disponiveis.length ? reservationUsage.disponiveis.map((item) => <div className="reserve-usage-item" key={item.id}><strong>{item.nome}</strong><span>{item.matricula}</span></div>) : <span className="reserve-usage-empty">Nenhuma reserva disponível nesta data.</span>}</div></section>
+                    <section>
+                        <h3>Usadas ({reservationUsage.usadas.length})</h3>
+                        <div className="reserve-usage-list">
+                            {reservationUsage.usadas.length ? reservationUsage.usadas.map((item) => (
+                                <div className="reserve-usage-item" key={item.id}>
+                                    <div className="reserve-usage-person">
+                                        <strong>{item.nome}</strong>
+                                        {item.ultimo_contrato && <small><i className="pi pi-building" /> Último contrato: {item.ultimo_contrato}</small>}
+                                    </div>
+                                    <div className="reserve-usage-meta">
+                                        <Tag value={item.situacao || "Sem situação"} severity={["ATIVO", "TRABALHANDO"].includes(item.situacao?.toUpperCase()) ? "success" : "warning"} rounded />
+                                        <span>{item.matricula}</span>
+                                    </div>
+                                </div>
+                            )) : <span className="reserve-usage-empty">Nenhuma reserva usada nesta data.</span>}
+                        </div>
+                    </section>
+                    <section>
+                        <h3>Disponíveis ({reservationUsage.disponiveis.length})</h3>
+                        <div className="reserve-usage-list">
+                            {reservationUsage.disponiveis.length ? reservationUsage.disponiveis.map((item) => (
+                                <div className="reserve-usage-item" key={item.id}>
+                                    <div className="reserve-usage-person"><strong>{item.nome}</strong></div>
+                                    <div className="reserve-usage-meta">
+                                        <Tag value={item.situacao || "Sem situação"} severity={["ATIVO", "TRABALHANDO"].includes(item.situacao?.toUpperCase()) ? "success" : "warning"} rounded />
+                                        <span>{item.matricula}</span>
+                                    </div>
+                                </div>
+                            )) : <span className="reserve-usage-empty">Nenhuma reserva disponível nesta data.</span>}
+                        </div>
+                    </section>
                 </div>
             </Dialog>
         </main>

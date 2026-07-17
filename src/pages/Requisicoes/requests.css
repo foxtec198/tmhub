@@ -120,7 +120,7 @@
 }
 
 .reserve-usage-dialog {
-  width: min(52rem, calc(100vw - 2rem));
+  width: min(80rem, calc(100vw - 2rem));
 }
 
 .reserve-usage-grid {
@@ -132,7 +132,7 @@
 
 .reserve-usage-list {
   min-height: 12rem;
-  max-height: 24rem;
+  max-height: 32rem;
   overflow: auto;
   padding: 1rem;
   border: 1px solid var(--surface-border);
@@ -140,11 +140,34 @@
 }
 
 .reserve-usage-item {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: .7rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.25rem;
+  padding: .85rem .7rem;
   border-bottom: 1px solid var(--surface-border);
+}
+
+.reserve-usage-person,
+.reserve-usage-meta {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+}
+
+.reserve-usage-person strong {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.reserve-usage-person small {
+  color: var(--text-color-secondary);
+  line-height: 1.35;
+}
+
+.reserve-usage-meta {
+  align-items: flex-end;
+  min-width: 7.5rem;
 }
 
 .reserve-usage-item:last-child {
@@ -170,6 +193,14 @@
 @media(max-width: 700px) {
   .reserve-usage-grid {
     grid-template-columns: 1fr;
+  }
+
+  .reserve-usage-item {
+    grid-template-columns: 1fr;
+  }
+
+  .reserve-usage-meta {
+    align-items: flex-start;
   }
 
   .requests-speed-dial {
