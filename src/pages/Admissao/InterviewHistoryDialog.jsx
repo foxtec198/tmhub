@@ -109,6 +109,7 @@ export function InterviewHistoryDialog({ visible, onHide }) {
                 <Column header="Contrato" body={(row) => `${row.centro_custo_id} - ${row.contrato}`} style={{ minWidth: '20rem' }} />
                 <Column field="substituicao" header="Registro original da substituição" style={{ minWidth: '24rem' }} />
                 <Column field="supervisor" header="Supervisor" style={{ minWidth: '10rem' }} />
+                <Column field="responsavel" header="Responsável TMHub" style={{ minWidth: '12rem' }} />
                 <Column field="observacoes" header="Observações" style={{ minWidth: '24rem' }} />
                 <Column field="origem_aba" header="Origem" style={{ minWidth: '9rem' }} />
             </DataTable>

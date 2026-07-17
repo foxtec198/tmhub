@@ -179,6 +179,7 @@ export function AdmissionDashboard() {
                         <Column header="Vaga" body={(row) => <div className="admission-vacancy-cell"><strong>{row.candidato || row.colaborador_saida || 'Sem candidato'}</strong><span>{row.contrato}</span></div>} style={{ minWidth: '18rem' }} />
                         <Column header="Aviso" body={(row) => formatDateTime(row.aviso_em)} sortable sortField="aviso_em" />
                         <Column header="Responsável" field="responsavel" />
+                        <Column header="Tentativas" field="tentativas" />
                         <Column header="Primeira ação" body={(row) => formatHours(row.sla_acao_horas ?? row.sla_acao_decorrido_horas)} />
                         <Column header="Status" body={(row) => <Tag value={STATUS_LABELS[row.status] || row.status} severity={row.status === 'concluido' ? 'success' : 'info'} rounded />} />
                     </DataTable>}
@@ -187,6 +188,7 @@ export function AdmissionDashboard() {
                         <Column header="Colaborador que saiu" field="colaborador_saida" />
                         <Column header="Contrato" field="contrato" style={{ minWidth: '18rem' }} />
                         <Column header="Responsável" field="responsavel" />
+                        <Column header="Tentativas" field="tentativas" />
                         <Column header="Tempo decorrido" body={(row) => <strong className={row.sla_estourado ? 'admission-overdue' : ''}>{formatHours(row.sla_acao_decorrido_horas)}</strong>} />
                         <Column header="Status" body={(row) => <Tag value={STATUS_LABELS[row.status] || row.status} severity={row.sla_estourado ? 'danger' : 'warning'} rounded />} />
                     </DataTable>}

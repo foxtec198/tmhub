@@ -49,10 +49,24 @@ const orderOptions = [
     { label: 'Mais antigas', value: 'asc' },
 ];
 
+const CANDIDATE_RESULT_OPTIONS = [
+    { label: 'DESISTIU', value: 'desistiu' },
+    { label: 'REPROVADO', value: 'reprovado' },
+    { label: 'OUTRO', value: 'outro' },
+];
+
+const CANDIDATE_RESULT_LABELS = {
+    desistiu: 'DESISTIU',
+    reprovado: 'REPROVADO',
+    aprovado: 'APROVADO',
+    outro: 'OUTRO',
+};
+
 // Uma fábrica garante que cada abertura do diálogo receba a data atual,
 // em vez de reutilizar a data criada quando o módulo foi carregado.
 const createEmptyForm = () => ({
     colaborador_id: null,
+    supervisor_id: null,
     matricula: '',
     colaborador: '',
     colaborador_entrada: '',
@@ -113,7 +127,7 @@ function VagaHeader({ vaga }) {
     );
 }
 
-function VagaItem({ vaga, onUpdate, onDelete }) {
+function VagaItem({ vaga, supervisors, onUpdate, onCandidateResult, onDelete }) {
     // Dados estruturados de conclusão ficam separados dos campos livres usados durante o processo.
     const [entrevistador, setEntrevistador] = useState(vaga.entrevistador || '');
     const [entrevistaDia, setEntrevistaDia] = useState(vaga.entrevista_data ? new Date(vaga.entrevista_data) : null);
@@ -126,6 +140,11 @@ function VagaItem({ vaga, onUpdate, onDelete }) {
     const [completionObservation, setCompletionObservation] = useState(vaga.observacao_conclusao || '');
     const [candidateName, setCandidateName] = useState(vaga.colaborador_entrada || '');
     const [candidatePhone, setCandidatePhone] = useState(vaga.telefone_colaborador_entrada || '');
+    const [supervisorId, setSupervisorId] = useState(vaga.supervisor_id || null);
+    const [candidateResultVisible, setCandidateResultVisible] = useState(false);
+    const [candidateHistoryVisible, setCandidateHistoryVisible] = useState(false);
+    const [candidateResult, setCandidateResult] = useState(null);
+    const [candidateJustification, setCandidateJustification] = useState('');
     const { showToast } = useToast();
 
     async function handleStatusSelect(newStatus) {
@@ -200,11 +219,48 @@ function VagaItem({ vaga, onUpdate, onDelete }) {
         });
     }
 
+    async function saveSupervisor() {
+        const updated = await onUpdate(vaga.id, { supervisor_id: supervisorId });
+        if (!updated) setSupervisorId(vaga.supervisor_id || null);
+    }
+
+    async function registerCandidateResult() {
+        if (!candidateName.trim()) {
+            showToast('warn', 'Atenção!', 'Informe o nome do candidato antes de registrar o resultado.');
+            return;
+        }
+        if (!candidateResult) {
+            showToast('warn', 'Atenção!', 'Selecione o resultado do candidato.');
+            return;
+        }
+        if (!candidateJustification.trim()) {
+            showToast('warn', 'Atenção!', 'Informe a justificativa para manter o histórico completo.');
+            return;
+        }
+
+        const updated = await onCandidateResult({
+            vaga_id: vaga.id,
+            candidato_nome: candidateName.trim(),
+            telefone: candidatePhone.trim() || null,
+            resultado: candidateResult,
+            observacao: candidateJustification.trim(),
+        });
+        if (updated) {
+            setCandidateName('');
+            setCandidatePhone('');
+            setCandidateResult(null);
+            setCandidateJustification('');
+            setCandidateResultVisible(false);
+        }
+    }
+
     return (
         <div className="flex flex-column gap-3 p-2">
             <div className="vaga-info-grid">
                 <InfoField label="Matrícula" value={vaga.matricula} />
                 <InfoField label="Colaborador" value={vaga.colaborador} />
+                <InfoField label="Responsável TMHub" value={vaga.responsavel} />
+                <InfoField label="Supervisor da vaga" value={vaga.supervisor} />
                 <InfoField label="Novo colaborador" value={vaga.colaborador_entrada} />
                 {vaga.telefone_colaborador_entrada && <InfoField label="Telefone do candidato" value={vaga.telefone_colaborador_entrada} />}
                 <InfoField
@@ -252,9 +308,19 @@ function VagaItem({ vaga, onUpdate, onDelete }) {
                             <label htmlFor={`candidate-phone-${vaga.id}`}>Telefone (opcional)</label>
                         </FloatLabel>
                         <Button type="submit" label="Salvar candidato" icon="pi pi-save" outlined />
+                        <Button type="button" label="Registrar resultado" icon="pi pi-flag" severity="warning" outlined onClick={() => setCandidateResultVisible(true)} />
                     </div>
                 </form>
             )}
+
+            <Button
+                className="align-self-start"
+                type="button"
+                label={`Histórico de candidatos (${vaga.historico_candidatos?.length || 0})`}
+                icon="pi pi-history"
+                text
+                onClick={() => setCandidateHistoryVisible(true)}
+            />
 
             <div className="flex gap-3 align-items-center flex-wrap mt-5">
                 <FloatLabel>
@@ -269,6 +335,29 @@ function VagaItem({ vaga, onUpdate, onDelete }) {
                     />
                     <label htmlFor={`status-${vaga.id}`}>Status da vaga</label>
                 </FloatLabel>
+
+                <FloatLabel>
+                    <Dropdown
+                        id={`supervisor-${vaga.id}`}
+                        className="w-18rem"
+                        value={supervisorId}
+                        onChange={(event) => setSupervisorId(event.value)}
+                        options={supervisors}
+                        optionLabel="label"
+                        optionValue="value"
+                        filter
+                    />
+                    <label htmlFor={`supervisor-${vaga.id}`}>Supervisor da vaga</label>
+                </FloatLabel>
+
+                <Button
+                    icon="pi pi-save"
+                    outlined
+                    aria-label="Salvar supervisor"
+                    tooltip="Salvar supervisor"
+                    disabled={!supervisorId || supervisorId === vaga.supervisor_id}
+                    onClick={saveSupervisor}
+                />
 
                 <Button icon="pi pi-trash" text rounded severity="danger" tooltip="Excluir vaga" onClick={() => onDelete(vaga)} />
             </div>
@@ -401,6 +490,58 @@ function VagaItem({ vaga, onUpdate, onDelete }) {
                     </div>
                 </form>
             </Dialog>
+
+            <Dialog
+                header="Registrar resultado do candidato"
+                visible={candidateResultVisible}
+                modal
+                style={{ width: 'min(34rem, calc(100vw - 2rem))' }}
+                onHide={() => setCandidateResultVisible(false)}
+            >
+                <form className="flex flex-column gap-4 pt-3" onSubmit={(event) => { event.preventDefault(); registerCandidateResult(); }}>
+                    <div className="candidate-result-person">
+                        <i className="pi pi-user" />
+                        <span><strong>{candidateName || 'Candidato não informado'}</strong>{candidatePhone && <small>{candidatePhone}</small>}</span>
+                    </div>
+                    <FloatLabel>
+                        <Dropdown id={`candidate-result-${vaga.id}`} className="w-full" value={candidateResult} options={CANDIDATE_RESULT_OPTIONS} onChange={(event) => setCandidateResult(event.value)} />
+                        <label htmlFor={`candidate-result-${vaga.id}`}>Resultado *</label>
+                    </FloatLabel>
+                    <FloatLabel>
+                        <InputTextarea id={`candidate-justification-${vaga.id}`} className="w-full" value={candidateJustification} onChange={(event) => setCandidateJustification(event.target.value)} rows={4} autoResize />
+                        <label htmlFor={`candidate-justification-${vaga.id}`}>Justificativa *</label>
+                    </FloatLabel>
+                    <small>Ao confirmar, o candidato será preservado no histórico e os campos ficarão livres para a próxima pessoa.</small>
+                    <div className="flex justify-content-end gap-2">
+                        <Button type="button" label="Cancelar" severity="secondary" text onClick={() => setCandidateResultVisible(false)} />
+                        <Button type="submit" label="Registrar e liberar vaga" icon="pi pi-check" severity="warning" />
+                    </div>
+                </form>
+            </Dialog>
+
+            <Dialog
+                header="Histórico de candidatos da vaga"
+                visible={candidateHistoryVisible}
+                modal
+                style={{ width: 'min(46rem, calc(100vw - 2rem))' }}
+                onHide={() => setCandidateHistoryVisible(false)}
+            >
+                <div className="candidate-history-list">
+                    {vaga.historico_candidatos?.length ? vaga.historico_candidatos.map((item) => (
+                        <article className="candidate-history-item" key={item.id}>
+                            <div className="candidate-history-item__heading">
+                                <div><strong>{item.candidato_nome}</strong>{item.telefone && <small>{item.telefone}</small>}</div>
+                                <Tag value={CANDIDATE_RESULT_LABELS[item.resultado] || item.resultado} severity={item.resultado === 'aprovado' ? 'success' : item.resultado === 'reprovado' ? 'danger' : 'warning'} rounded />
+                            </div>
+                            {item.observacao && <p>{item.observacao}</p>}
+                            <footer>
+                                <span><i className="pi pi-user-edit" /> {item.registrado_por || 'Usuário não identificado'}</span>
+                                <span><i className="pi pi-clock" /> {item.ocorrido_em ? new Date(item.ocorrido_em).toLocaleString('pt-br') : '-'}</span>
+                            </footer>
+                        </article>
+                    )) : <span className="empty-status">Nenhum candidato finalizado nesta vaga.</span>}
+                </div>
+            </Dialog>
         </div>
     );
 }
@@ -416,6 +557,7 @@ export function Vacancies() {
     const [historyVisible, setHistoryVisible] = useState(false);
     const [form, setForm] = useState(createEmptyForm);
     const [scheduleSuggestions, setScheduleSuggestions] = useState([]);
+    const [supervisors, setSupervisors] = useState([]);
 
     const setLoading = useLoading();
     const { showToast } = useToast();
@@ -435,6 +577,13 @@ export function Vacancies() {
         }
         getVacancies();
     }, [refresh, setLoading, showToast]);
+
+    useEffect(() => {
+        // Supervisores alimentam tanto o cadastro quanto a edição rápida de cada vaga.
+        connect.get('/supervisores')
+            .then(({ data }) => setSupervisors((data ?? []).map((item) => ({ label: item.nome, value: item.id }))))
+            .catch(() => showToast('error', 'Erro!', 'Não foi possível carregar os supervisores.'));
+    }, [showToast]);
 
     const departamentoOptions = useMemo(() => {
         const set = new Set(vacancies.map((v) => v.departamento).filter(Boolean));
@@ -477,6 +626,11 @@ export function Vacancies() {
             return;
         }
 
+        if (!form.supervisor_id) {
+            showToast('warn', 'Atenção!', 'Selecione o supervisor responsável pela vaga.');
+            return;
+        }
+
         if (!form.horario_trabalho) {
             showToast('warn', 'Atenção!', 'Informe o horário de trabalho da vaga.');
             return;
@@ -496,6 +650,7 @@ export function Vacancies() {
         try {
             await connect.post(VACANCIES_ENDPOINT, {
                 colaborador_id: form.colaborador_id,
+                supervisor_id: form.supervisor_id,
                 colaborador_entrada: form.colaborador_entrada.trim() || null,
                 telefone_colaborador_entrada: form.telefone_colaborador_entrada.trim() || null,
                 aviso_em: toApiDateTime(form.data_aviso),
@@ -535,6 +690,22 @@ export function Vacancies() {
         } catch (err) {
             console.warn(err);
             showToast('error', 'Erro!', err.response?.data ?? 'Não foi possível atualizar a vaga.');
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCandidateResult = async (payload) => {
+        setLoading(true);
+        try {
+            await connect.post(`${VACANCIES_ENDPOINT}/candidatos-historico`, payload);
+            showToast('success', 'Histórico atualizado!', 'O resultado foi registrado e a vaga está pronta para outro candidato.');
+            setRefresh((prev) => !prev);
+            return true;
+        } catch (err) {
+            console.warn(err);
+            showToast('error', 'Erro!', err.response?.data ?? 'Não foi possível registrar o resultado do candidato.');
             return false;
         } finally {
             setLoading(false);
@@ -638,7 +809,7 @@ export function Vacancies() {
                                     <Accordion multiple className="vaga-accordion">
                                         {grouped[status.value].map((vaga) => (
                                             <AccordionTab key={vaga.id} header={<VagaHeader vaga={vaga} />}>
-                                                <VagaItem vaga={vaga} onUpdate={handleUpdateVaga} onDelete={confirmDelete} />
+                                                <VagaItem vaga={vaga} supervisors={supervisors} onUpdate={handleUpdateVaga} onCandidateResult={handleCandidateResult} onDelete={confirmDelete} />
                                             </AccordionTab>
                                         ))}
                                     </Accordion>
@@ -673,6 +844,20 @@ export function Vacancies() {
                         })}
                         onError={() => showToast('error', 'Erro!', 'Não foi possível buscar os colaboradores.')}
                     />
+
+                    <FloatLabel>
+                        <Dropdown
+                            id="supervisor_id"
+                            className="w-full"
+                            value={form.supervisor_id}
+                            onChange={(event) => setForm({ ...form, supervisor_id: event.value })}
+                            options={supervisors}
+                            optionLabel="label"
+                            optionValue="value"
+                            filter
+                        />
+                        <label htmlFor="supervisor_id">Supervisor da vaga *</label>
+                    </FloatLabel>
 
                     <FloatLabel className='mt-3'>
                         <InputText

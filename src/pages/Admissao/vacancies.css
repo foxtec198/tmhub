@@ -338,6 +338,86 @@
     background: var(--surface-50);
 }
 
+/* Linha do tempo dos candidatos que passaram pela mesma vaga. */
+.candidate-history-list {
+    display: flex;
+    max-height: 62vh;
+    flex-direction: column;
+    gap: .75rem;
+    overflow-y: auto;
+}
+
+.candidate-history-item {
+    padding: 1rem;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+}
+
+.candidate-history-item__heading,
+.candidate-history-item footer,
+.candidate-result-person {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+}
+
+.candidate-history-item__heading > div,
+.candidate-result-person span {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+}
+
+.candidate-history-item small,
+.candidate-history-item footer,
+.candidate-result-person small {
+    color: var(--text-color-secondary);
+    font-size: .76rem;
+}
+
+.candidate-history-item p {
+    margin: .8rem 0;
+    color: var(--text-color-secondary);
+    line-height: 1.5;
+}
+
+.candidate-history-item footer {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    padding-top: .7rem;
+    border-top: 1px solid var(--surface-border);
+}
+
+.candidate-result-person {
+    justify-content: flex-start;
+    padding: .85rem 1rem;
+    color: var(--text-color);
+    background: var(--surface-50);
+    border: 1px solid var(--surface-border);
+    border-radius: 10px;
+}
+
+.candidate-result-person > .pi {
+    color: var(--primary-color);
+}
+
+:root[data-theme="dark"] .candidate-history-item,
+:root[data-theme="dark"] .candidate-result-person {
+    color: #e5ebe7;
+    background: #202722;
+    border-color: #405048;
+}
+
+:root[data-theme="dark"] .candidate-history-item footer {
+    border-color: #405048;
+}
+
+:root[data-theme="dark"] .candidate-result-person > .pi {
+    color: #72e392;
+}
+
 :root[data-theme="dark"] .completion-dialog .p-dialog-header,
 :root[data-theme="dark"] .completion-dialog .p-dialog-content {
     color: #e5ebe7;
