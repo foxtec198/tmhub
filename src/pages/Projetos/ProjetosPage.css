@@ -68,15 +68,6 @@
   background: rgba(75, 214, 110, .12);
 }
 
-:root[data-theme="dark"] .p-dialog .p-button.p-button-outlined {
-  border-color: #4bd66e;
-  color: #70e38d;
-}
-
-:root[data-theme="dark"] .p-dialog .p-button.p-button-text {
-  color: #70e38d;
-}
-
 .projetos-page {
   position: relative;
   display: flex;

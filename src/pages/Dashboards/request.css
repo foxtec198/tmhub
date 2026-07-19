@@ -40,12 +40,6 @@
     background: #2b3d31;
 }
 
-:root[data-theme="dark"] .dashboard-filter-button {
-    color: #102016 !important;
-    background: #63e58b !important;
-    border-color: #63e58b !important;
-}
-
 .request-dashboard {
     min-width: 0;
 }

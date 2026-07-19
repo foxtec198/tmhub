@@ -118,7 +118,7 @@ export function Auth() {
                         alt="Logo"
                         style={{
                             maxHeight: "20dvh",
-                            maxWidth: "90%"
+                            maxWidth: "70%"
 
                         }}
                     />
@@ -133,7 +133,7 @@ export function Auth() {
                         <label>Email ou CPF</label>
                     </FloatLabel>
 
-                    <FloatLabel className="mt-3 w-full">
+                    <FloatLabel className="mt-5 w-full">
                         <Password
                             className="w-full"
                             inputClassName="w-full"

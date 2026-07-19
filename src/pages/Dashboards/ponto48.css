@@ -200,11 +200,6 @@
   background: rgba(97, 233, 144, .09);
   border: 1px solid rgba(97, 233, 144, .16);
 }
-:root[data-theme="dark"] .ponto48-panel .p-tag-success {
-  color: #83f3aa;
-  background: #183c25;
-  border: 1px solid #2d6941;
-}
 :root[data-theme="dark"] .ponto48-tabs .p-tabview-nav li .p-tabview-nav-link { color: #c8d2cc; }
 :root[data-theme="dark"] .ponto48-tabs .p-tabview-nav li.p-highlight .p-tabview-nav-link { color: var(--ponto48-dark-accent); }
 :root[data-theme="dark"] .ponto48-adjustment-detail > section,

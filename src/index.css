@@ -41,7 +41,7 @@ body, html, :root, #root {
 :root[data-theme="dark"] .app-layout,
 :root[data-theme="dark"] .layout-outlet { background:var(--dark-black);color:var(--text-primary); }
 :root[data-theme="dark"] .layout-header,
-:root[data-theme="dark"] .p-component,
+:root[data-theme="dark"] .p-component:not(.p-button):not(.p-tag):not(.p-badge),
 :root[data-theme="dark"] .p-dialog,
 :root[data-theme="dark"] .p-dialog-header,
 :root[data-theme="dark"] .p-dialog-content,
@@ -135,10 +135,6 @@ body, html, :root, #root {
 :root[data-theme="dark"] .p-menuitem-link .p-menuitem-text,
 :root[data-theme="dark"] .p-menuitem-link .p-menuitem-icon,
 :root[data-theme="dark"] .text-700 { color:#c5cdc8!important; }
-:root[data-theme="dark"] .p-button { background:var(--accent);border-color:var(--accent);color:#071009; }
-:root[data-theme="dark"] .p-button.p-button-outlined,
-:root[data-theme="dark"] .p-button.p-button-text { background:transparent;color:var(--accent); }
-:root[data-theme="dark"] .p-button:not(.p-button-text):not(.p-button-outlined):hover { background:#62e080;border-color:#62e080;box-shadow:0 0 0 .15rem rgba(75,214,110,.12); }
 :root[data-theme="dark"] .settings-page { background:radial-gradient(circle at 92% 0%,rgba(21,92,39,.28),transparent 34%),#050505; }
 :root[data-theme="dark"] .settings-card { box-shadow:0 14px 36px rgba(0,0,0,.32),inset 0 1px rgba(75,214,110,.04); }
 :root[data-theme="dark"] .settings-card-title>i { background:#203d29;color:#70e38d; }

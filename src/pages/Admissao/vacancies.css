@@ -159,12 +159,6 @@
     color: #72e392;
 }
 
-:root[data-theme="dark"] .admissao-page .candidate-text-editor__tag {
-    color: #bdebc9;
-    background: #344a3a;
-    border: 1px solid #496b53;
-}
-
 :root[data-theme="dark"] .admissao-page .candidate-text-editor .p-inputtext {
     color: #e5ebe7;
     background: #1d2320;
