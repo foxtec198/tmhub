@@ -339,8 +339,8 @@ export function RequestReport() {
 
         const locaisLabels = betters.map(([local]) =>
             local.replaceAll(/\d+/g, "")
-            .replaceAll("-", "")
-            .trim()
+                .replaceAll("-", "")
+                .trim()
         );
 
         const locaisValues = betters.map(([, quantidade]) => quantidade);
@@ -458,8 +458,8 @@ export function RequestReport() {
             tension: 0.4,
             label: 'Reposições',
             borderWidth: 2,
-            borderColor: rootStyle.getPropertyValue("--blue-700").trim(),
-            pointBackgroundColor: rootStyle.getPropertyValue("--blue-700").trim(),
+            borderColor: rootStyle.getPropertyValue("--teal-800").trim(),
+            pointBackgroundColor: rootStyle.getPropertyValue("--teal-800").trim(),
             data: dadosReposicoes,
             borderWidth: 3,
             pointRadius: 5,
@@ -507,7 +507,7 @@ export function RequestReport() {
 
     const dadosTabelaFiltraveis = dadosTabela.map(row => ({
         ...row,
-        cobertura_search: `${row.ausente ?? ""} ${!row.reserva?"SEM COBERTURA":row.reserva}`
+        cobertura_search: `${row.ausente ?? ""} ${!row.reserva ? "SEM COBERTURA" : row.reserva}`
     }));
 
     // Contrato declarativo consumido pelo componente Table reutilizável.
@@ -526,14 +526,20 @@ export function RequestReport() {
             body: (row) => new Date(row.created_at).toLocaleDateString("pt-BR",)
         },
         {
-            header: "Coberturas",
+            // header: "Coberturas",
+            header:
+                <div className="flex justify-content-between gap-4">
+                    <span className="text-truncate inter">Ausencias</span>
+                    <i className="pi pi-arrow-right"></i>
+                    <span className="font-bold text-truncate"> Coberturas</span>
+                </div>,
             style: { maxWidth: "20rem" },
             field: "cobertura_search",
             body: (row) => {
                 return <div className="flex justify-content-between gap-2">
                     <span className="text-truncate inter">{row.ausente.split(" ")[0]} {row.ausente.split(" ").at(-1)}</span>
-                    <i className="pi pi-arrow-right" style={{ color: `var(--${!row.reserva || row.reserva == "SEM COBERTURA"? "red-500" : "green-500"})` }}></i>
-                    <span className="font-bold text-truncate">{row.reserva? row.reserva.split(" ")[0]:"SEM"}  { row.reserva?row.reserva.split(" ").at(-1):"COBERTURA"}
+                    <i className="pi pi-arrow-right" style={{ color: `var(--${!row.reserva || row.reserva == "SEM COBERTURA" ? "red-500" : "green-500"})` }}></i>
+                    <span className="font-bold text-truncate">{row.reserva ? row.reserva.split(" ")[0] : "SEM"}  {row.reserva ? row.reserva.split(" ").at(-1) : "COBERTURA"}
                     </span>
                 </div>
             }
@@ -545,6 +551,10 @@ export function RequestReport() {
         {
             header: "Motivo",
             field: "motivo"
+        },
+        {
+            header: "Observação",
+            field: "obs"
         }
     ];
 
@@ -871,7 +881,7 @@ export function RequestReport() {
                             tableClassName="w-full"
                             columns={columns}
                             data={dadosTabelaFiltraveis}
-                            rowsPerPageOptions = {[3, 5, 10, 50, 100]}
+                            rowsPerPageOptions={[3, 5, 10, 50, 100]}
                             rows={5}
                             style={{
                                 fontSize: "10px"
