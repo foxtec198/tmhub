@@ -118,6 +118,11 @@ export function MainLayout() {
           command: () => { navigateTo("/estoque/produtos") }
         },
         {
+          label: 'Gerar Códigos',
+          icon: 'pi pi-qrcode',
+          command: () => { navigateTo("/estoque/codigos-de-barras") }
+        },
+        {
           label: 'Movimentações',
           icon: 'pi pi-arrow-right-arrow-left',
           command: () => { navigateTo("/estoque/movimentacoes") }

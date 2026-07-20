@@ -42,3 +42,67 @@
     background: var(--accent, #63e58b) !important;
     border-color: var(--accent, #63e58b) !important;
 }
+
+.movement-scan-fab {
+    position: absolute;
+    z-index: 5;
+    right: 88px;
+    bottom: 20px;
+    min-height: 52px;
+    background: #0b7442;
+    border-color: #0b7442;
+    box-shadow: 0 8px 22px rgba(11, 116, 66, .24);
+}
+
+.movement-add-fab {
+    position: absolute;
+    z-index: 5;
+    right: 20px;
+    bottom: 20px;
+    width: 52px;
+    height: 52px;
+    padding: 0 !important;
+    box-shadow: 0 8px 22px rgba(11, 116, 66, .24);
+}
+
+.movement-type-hint {
+    display: block;
+    margin-top: -.55rem;
+    color: var(--primary-color);
+    text-align: center;
+    font-weight: 600;
+}
+
+@media (max-width: 560px) {
+    .movement-add-fab {
+        bottom: max(20px, env(safe-area-inset-bottom));
+        width: 52px;
+        min-width: 52px;
+        height: 52px;
+        min-height: 52px;
+        padding: 0 !important;
+        border-radius: 50% !important;
+    }
+    .movement-scan-fab {
+        right: 84px;
+        bottom: max(20px, env(safe-area-inset-bottom));
+        width: auto;
+        min-width: 132px;
+        height: 52px;
+        min-height: 52px;
+        padding: 0 1.1rem !important;
+        border-radius: 999px !important;
+    }
+    .movement-scan-fab .p-button-label {
+        display: inline-block;
+        white-space: nowrap;
+    }
+    .movement-scan-fab .p-button-icon {
+        margin-right: .55rem !important;
+        font-size: 1.1rem;
+    }
+    .movement-add-fab .p-button-icon {
+        margin: 0 !important;
+        font-size: 1.2rem;
+    }
+}

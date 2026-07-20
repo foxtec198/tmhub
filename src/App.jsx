@@ -32,6 +32,7 @@ import { History } from "./pages/Requisicoes/history";
 import { Products } from "./pages/Estoque/products";
 import { Movements } from "./pages/Estoque/movements";
 import { MobileMovement } from "./pages/Estoque/mobile_movement.jsx"
+import { BarcodeGenerator } from "./pages/Estoque/barcode_generator.jsx";
 import { Floaters } from "./pages/Requisicoes/floaters";
 import ProjetosPage from "./pages/Projetos/ProjetosPage";
 import { Vacancies } from "./pages/Admissao/vacancies.jsx"
@@ -115,6 +116,7 @@ export function AppRoutes() {
           <Route path="/reports/ponto-48-horas" element={<Ponto48Dashboard />} />
           <Route path="/reports/admissoes" element={<AdmissionDashboard />} />
           <Route path="/estoque/produtos" element={<Products />} />
+          <Route path="/estoque/codigos-de-barras" element={<BarcodeGenerator />} />
           <Route path="/estoque/movimentacoes" element={<Movements />} />
 
           {/* Frotas */}

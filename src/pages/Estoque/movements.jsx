@@ -15,6 +15,7 @@ import connect from '../../utils/request';
 import { useLoading } from '../../contexts/LoadingContext';
 import { useToast } from '../../contexts/ToastContext';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { BarcodeScanner } from './BarcodeScanner';
 
 const MOVEMENTS_ENDPOINT = '/estoque/movimentos';
 const PRODUCTS_ENDPOINT = '/estoque/produtos';
@@ -38,6 +39,8 @@ export function Movements() {
 
     const [dialogVisible, setDialogVisible] = useState(false);
     const [form, setForm] = useState(emptyForm);
+    const [scannerVisible, setScannerVisible] = useState(false);
+    const [quickScan, setQuickScan] = useState(false);
 
     const setLoading = useLoading();
     const { showToast } = useToast();
@@ -136,6 +139,22 @@ export function Movements() {
         setDialogVisible(true);
     };
 
+    const openQuickScanner = () => {
+        setForm({ ...emptyForm, tipo: null });
+        setQuickScan(true);
+        setScannerVisible(true);
+    };
+
+    const handleScannedProduct = (product) => {
+        setForm((current) => ({ ...current, item_id: product.id }));
+        setScannerVisible(false);
+        if (quickScan) {
+            setDialogVisible(true);
+            setQuickScan(false);
+        }
+        showToast('success', 'Produto identificado', `${product.nome} selecionado.`);
+    };
+
     const handleSave = async () => {
         if (!form.item_id || !form.tipo || !form.quantidade) {
             showToast('warn', 'Atenção!', 'Selecione o produto, o tipo e a quantidade.');
@@ -166,15 +185,35 @@ export function Movements() {
             <Button
                 icon="pi pi-plus"
                 size="large"
-                className="p-4"
+                className="movement-add-fab"
                 rounded
                 onClick={openCreate}
-                style={{ position: 'absolute', right: '20px', bottom: '20px' }}
+                aria-label="Nova movimentação"
+                tooltip="Nova movimentação"
+            />
+
+            <Button
+                icon="pi pi-barcode"
+                label="Ler código"
+                size="large"
+                className="movement-scan-fab"
+                rounded
+                onClick={openQuickScanner}
+                aria-label="Ler código e lançar movimentação"
+                tooltip="Ler código e lançar movimentação"
             />
 
             <Dialog header="Nova Movimentação" visible={dialogVisible} style={{ width: '28rem' }} onHide={() => setDialogVisible(false)}>
                 <form className="flex flex-column gap-4 pt-3" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
                     <SelectButton value={form.tipo} onChange={(e) => e.value && setForm({ ...form, tipo: e.value })} options={tipoOptions} className="tipo-select-button w-full" />
+                    {!form.tipo && <small className="movement-type-hint">Agora escolha se o produto está entrando ou saindo do estoque.</small>}
+                    <Button
+                        type="button"
+                        label="Ler código de barras"
+                        icon="pi pi-camera"
+                        outlined
+                        onClick={() => { setQuickScan(false); setScannerVisible(true); }}
+                    />
                     <FloatLabel>
                         <Dropdown
                             id="produto"
@@ -202,6 +241,13 @@ export function Movements() {
                     <Button type="submit" label="Registrar movimentação" icon="pi pi-check" />
                 </form>
             </Dialog>
+
+            <BarcodeScanner
+                visible={scannerVisible}
+                products={products}
+                onHide={() => { setScannerVisible(false); setQuickScan(false); }}
+                onProduct={handleScannedProduct}
+            />
         </main>
     );
 }

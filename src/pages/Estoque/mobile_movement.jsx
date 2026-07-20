@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import { useToast } from "../../contexts/ToastContext";
 import { useLoading } from "../../contexts/LoadingContext";
 import connect from "../../utils/request";
+import { BarcodeScanner } from "./BarcodeScanner";
 
 // CSS
 import "../Auth/main.css";
@@ -41,6 +42,7 @@ export function MobileMovement() {
     const [tipo, setTipo] = useState("entrada");
     const [quantidade, setQuantidade] = useState(1);
     const [observacao, setObservacao] = useState("");
+    const [scannerVisible, setScannerVisible] = useState(false);
 
     const setLoading = useLoading();
     const { showToast } = useToast();
@@ -311,6 +313,15 @@ export function MobileMovement() {
                             allowEmpty={false}
                         />
 
+                        <Button
+                            type="button"
+                            label="Ler código de barras"
+                            icon="pi pi-camera"
+                            outlined
+                            className="w-full"
+                            onClick={() => setScannerVisible(true)}
+                        />
+
                         <Dropdown
                             className="w-full"
                             value={productId}
@@ -372,6 +383,17 @@ export function MobileMovement() {
                     </form>
                 </div>
             )}
+
+            <BarcodeScanner
+                visible={scannerVisible}
+                products={products}
+                onHide={() => setScannerVisible(false)}
+                onProduct={(product) => {
+                    setProductId(product.id);
+                    setScannerVisible(false);
+                    showToast("success", "Produto identificado", `${product.nome} selecionado.`);
+                }}
+            />
         </div>
     );
 };

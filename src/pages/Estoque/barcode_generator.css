@@ -1,0 +1,111 @@
+.barcode-generator-page {
+    min-height: 100%;
+    padding: clamp(2rem, 5vw, 4.5rem);
+    background: var(--surface-ground, #fafafa);
+    color: var(--text-primary);
+}
+
+.barcode-generator-header { max-width: 900px; }
+.barcode-generator-header > span { color: #08733f; font-size: 1.05rem; font-weight: 700; }
+.barcode-generator-header h1 {
+    margin: .25rem 0 0;
+    color: #08733f;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: clamp(2.15rem, 4vw, 3.55rem);
+    line-height: 1.02;
+}
+.barcode-generator-header p { margin: .45rem 0 0; color: #777; font-size: clamp(1.05rem, 2vw, 1.45rem); }
+
+.barcode-generator-body {
+    display: grid;
+    grid-template-columns: minmax(360px, 1fr) minmax(380px, .9fr);
+    align-items: center;
+    gap: clamp(3rem, 8vw, 9rem);
+    min-height: 620px;
+}
+
+.barcode-illustration-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+}
+.barcode-illustration-stage {
+    position: relative;
+    isolation: isolate;
+    width: min(100%, 610px);
+    aspect-ratio: 1;
+}
+.barcode-illustration-svg {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 22px 28px rgba(8, 69, 37, .12));
+}
+.barcode-illustration-svg svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+.barcode-illustration-svg svg [style*="fill:#92E3A9"] {
+    fill: #2fbd62 !important;
+}
+.barcode-illustration-glow {
+    position: absolute;
+    z-index: 1;
+    inset: 22% 12% 8% 14%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(75, 214, 110, .22), rgba(75, 214, 110, 0) 68%);
+    animation: barcode-glow-pulse 4s ease-in-out infinite;
+}
+.barcode-illustration-credit {
+    margin-top: -.75rem;
+    color: #6b7f70;
+    font-size: .72rem;
+    text-decoration: none;
+}
+.barcode-illustration-credit:hover { color: #08733f; text-decoration: underline; }
+
+@keyframes barcode-glow-pulse {
+    0%, 100% { opacity: .55; transform: scale(.96); }
+    50% { opacity: 1; transform: scale(1.04); }
+}
+
+.barcode-generator-form { display: flex; flex-direction: column; gap: 1.25rem; width: 100%; max-width: 600px; }
+.barcode-generator-form > label, .barcode-form-row label { display: block; margin-bottom: .45rem; color: #164b2a; font-weight: 700; }
+.barcode-form-row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(180px, .7fr); gap: 1rem; }
+.barcode-generator-form .p-multiselect, .barcode-generator-form .p-dropdown, .barcode-generator-form .p-inputnumber-input { border-color: #9bdcaf; }
+.barcode-selection-summary { display: flex; align-items: center; gap: .65rem; min-height: 48px; padding: .75rem 1rem; border-radius: 10px; background: #effaf2; color: #376343; }
+.barcode-generate-button { width: 100%; min-height: 50px; margin-top: 1.5rem; background: #08733f; border-color: #08733f; }
+
+:root[data-theme="dark"] .barcode-generator-page { background: #050505; }
+:root[data-theme="dark"] .barcode-selection-summary { background: #17311f; color: #bfe7ca; }
+:root[data-theme="dark"] .barcode-illustration-svg { filter: drop-shadow(0 22px 30px rgba(75, 214, 110, .1)); }
+:root[data-theme="dark"] .barcode-illustration-svg svg [style*="fill:#92E3A9"] { fill: #37c96b !important; }
+:root[data-theme="dark"] .barcode-illustration-svg svg [style*="fill:#263238"] { fill: #42534a !important; }
+:root[data-theme="dark"] .barcode-illustration-svg svg [style*="stroke:#263238"] { stroke: #8da096 !important; }
+:root[data-theme="dark"] .barcode-illustration-svg svg #Character [style*="fill:#263238"] { fill: #35453d !important; }
+:root[data-theme="dark"] .barcode-illustration-svg svg #Character [style*="stroke:#263238"] { stroke: #9bada3 !important; }
+:root[data-theme="dark"] .barcode-illustration-svg svg #Barcode [style*="fill:#263238"] { fill: #91a49a !important; }
+:root[data-theme="dark"] .barcode-illustration-svg svg #Window [style*="stroke:#263238"],
+:root[data-theme="dark"] .barcode-illustration-svg svg #Floor [style*="stroke:#263238"] { stroke: #60746a !important; }
+:root[data-theme="dark"] .barcode-illustration-svg svg [style*="stroke:#fff"] { stroke: #dce7e1 !important; }
+:root[data-theme="dark"] .barcode-illustration-credit { color: #84968b; }
+:root[data-theme="dark"] .barcode-illustration-credit:hover { color: #70e38d; }
+
+@media (max-width: 1000px) {
+    .barcode-generator-body { grid-template-columns: 1fr; gap: 3rem; padding-top: 3rem; }
+    .barcode-generator-form { max-width: none; }
+}
+@media (max-width: 560px) {
+    .barcode-generator-page { padding: 1.5rem 1rem 3rem; }
+    .barcode-illustration-stage { width: min(100%, 440px); }
+    .barcode-form-row { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .barcode-illustration-glow { animation: none; }
+}

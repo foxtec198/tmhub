@@ -1,0 +1,248 @@
+import { useEffect, useMemo, useState } from 'react';
+import { MultiSelect } from 'primereact/multiselect';
+import { Dropdown } from 'primereact/dropdown';
+import { InputNumber } from 'primereact/inputnumber';
+import { Button } from 'primereact/button';
+import connect from '../../utils/request';
+import { useLoading } from '../../contexts/LoadingContext';
+import { useToast } from '../../contexts/ToastContext';
+import { buildProductBarcode } from './barcode';
+import { AnimatedBarcodeIllustration } from './AnimatedBarcodeIllustration';
+import './barcode_generator.css';
+
+const PRODUCTS_ENDPOINT = '/estoque/produtos';
+const fileTypes = [
+    { label: 'PDF para impressão', value: 'pdf' },
+    { label: 'Imagem PNG', value: 'png' },
+];
+
+function truncate(value, max) {
+    const text = String(value || '');
+    return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+}
+
+function loadImage(src) {
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+        image.src = src;
+    });
+}
+
+function drawLabel(page, product, x, y, width, height, bwipjs, assets) {
+    const radius = height * .105;
+    page.save();
+    page.strokeStyle = '#111';
+    page.lineWidth = Math.max(3, height * .008);
+    page.beginPath();
+    page.roundRect(x, y, width, height, radius);
+    page.stroke();
+
+    page.imageSmoothingEnabled = true;
+    page.imageSmoothingQuality = 'high';
+    page.drawImage(assets.fav, x + width * .045, y + height * .055, width * .09, height * .17);
+
+    page.textAlign = 'right';
+    page.fillStyle = '#111';
+    page.font = `900 ${height * .095}px Arial`;
+    const productName = truncate(product.nome, 24);
+    const titleX = x + width * .94;
+    const titleY = y + height * .145;
+    page.fillText(productName, titleX, titleY);
+    const titleWidth = page.measureText(productName).width;
+    page.lineWidth = Math.max(2, height * .008);
+    page.beginPath();
+    page.moveTo(titleX - titleWidth, titleY + height * .012);
+    page.lineTo(titleX, titleY + height * .012);
+    page.stroke();
+
+    page.font = `600 ${height * .072}px Arial`;
+    page.fillStyle = '#6b6b6b';
+    page.fillText(truncate(product.local_estoque || 'Sem localização', 25), titleX, y + height * .255);
+
+    const barcode = document.createElement('canvas');
+    bwipjs.toCanvas(barcode, {
+        bcid: 'code128',
+        text: buildProductBarcode(product),
+        scale: 2,
+        height: 16,
+        includetext: false,
+        padding: 0,
+    });
+    page.imageSmoothingEnabled = false;
+    page.drawImage(barcode, x + width * .035, y + height * .36, width * .91, height * .36);
+
+    page.textAlign = 'right';
+    page.fillStyle = '#777';
+    page.font = `${height * .045}px Arial`;
+    page.fillText('Gerado com', x + width * .47, y + height * .895);
+    page.filter = 'brightness(0)';
+    page.imageSmoothingEnabled = true;
+    page.drawImage(assets.logo, x + width * .5, y + height * .81, width * .285, height * .085);
+    page.filter = 'none';
+    page.restore();
+}
+
+function renderSheet(items, bwipjs, assets) {
+    const page = document.createElement('canvas');
+    page.width = 3508;
+    page.height = 2480;
+    const context = page.getContext('2d');
+    context.fillStyle = '#fff';
+    context.fillRect(0, 0, page.width, page.height);
+
+    const columns = 4;
+    const rows = 5;
+    const marginX = 154;
+    const marginY = 80;
+    const gapX = 56;
+    const gapY = 34;
+    const labelWidth = (page.width - marginX * 2 - gapX * (columns - 1)) / columns;
+    const labelHeight = (page.height - marginY * 2 - gapY * (rows - 1)) / rows;
+
+    items.slice(0, columns * rows).forEach((product, index) => {
+        const col = index % columns;
+        const row = Math.floor(index / columns);
+        drawLabel(
+            context,
+            product,
+            marginX + col * (labelWidth + gapX),
+            marginY + row * (labelHeight + gapY),
+            labelWidth,
+            labelHeight,
+            bwipjs,
+            assets,
+        );
+    });
+    return page;
+}
+
+export function BarcodeGenerator() {
+    const [products, setProducts] = useState([]);
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [fileType, setFileType] = useState('pdf');
+    const [copies, setCopies] = useState(1);
+    const setLoading = useLoading();
+    const { showToast } = useToast();
+
+    useEffect(() => {
+        setLoading(true);
+        connect.get(PRODUCTS_ENDPOINT)
+            .then(({ data }) => setProducts(data ?? []))
+            .catch(() => showToast('error', 'Erro!', 'Não foi possível carregar os produtos.'))
+            .finally(() => setLoading(false));
+    }, [setLoading, showToast]);
+
+    const selectedProducts = useMemo(
+        () => selectedIds.map((id) => products.find((product) => product.id === id)).filter(Boolean),
+        [products, selectedIds],
+    );
+
+    const labels = useMemo(
+        () => selectedProducts.flatMap((product) => Array.from({ length: copies }, () => product)),
+        [selectedProducts, copies],
+    );
+
+    const generate = async () => {
+        if (!labels.length) {
+            showToast('warn', 'Atenção!', 'Selecione ao menos um produto.');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const [{ default: bwipjs }, { jsPDF }] = await Promise.all([
+                import('bwip-js'),
+                import('jspdf'),
+            ]);
+            const [fav, logo] = await Promise.all([
+                loadImage('/static/assets/brands/black_fav.png'),
+                loadImage('/static/assets/brands/no_slogan_brand.svg'),
+            ]);
+            const assets = { fav, logo };
+            const pages = [];
+            for (let index = 0; index < labels.length; index += 20) {
+                pages.push(renderSheet(labels.slice(index, index + 20), bwipjs, assets));
+            }
+
+            if (fileType === 'png') {
+                pages.forEach((page, index) => {
+                    const link = document.createElement('a');
+                    link.download = `etiquetas-tmhub${pages.length > 1 ? `-${index + 1}` : ''}.png`;
+                    link.href = page.toDataURL('image/png');
+                    link.click();
+                });
+            } else {
+                const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+                pages.forEach((page, index) => {
+                    if (index) pdf.addPage('a4', 'landscape');
+                    pdf.addImage(page.toDataURL('image/png'), 'PNG', 0, 0, 297, 210, undefined, 'FAST');
+                });
+                pdf.save('etiquetas-tmhub.pdf');
+            }
+            showToast('success', 'Arquivo gerado!', `${labels.length} etiqueta(s) pronta(s) para uso.`);
+        } catch (error) {
+            console.warn(error);
+            showToast('error', 'Erro!', 'Não foi possível gerar as etiquetas.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <main className="barcode-generator-page">
+            <header className="barcode-generator-header">
+                <span>Estoque</span>
+                <h1>Gerador de Código de Barras</h1>
+                <p>Selecione os produtos conforme a necessidade de geração.</p>
+            </header>
+
+            <section className="barcode-generator-body">
+                <div className="barcode-illustration-area">
+                    <div className="barcode-illustration-stage">
+                        <span className="barcode-illustration-glow" aria-hidden="true" />
+                        <AnimatedBarcodeIllustration />
+                    </div>
+                    <a className="barcode-illustration-credit" href="https://storyset.com/illustration/barcode/bro" target="_blank" rel="noreferrer">Ilustração por Storyset</a>
+                </div>
+
+                <div className="barcode-generator-form">
+                    <label htmlFor="barcode-products">Produtos</label>
+                    <MultiSelect
+                        id="barcode-products"
+                        value={selectedIds}
+                        onChange={(event) => setSelectedIds(event.value)}
+                        options={products}
+                        optionLabel="nome"
+                        optionValue="id"
+                        filter
+                        display="chip"
+                        maxSelectedLabels={3}
+                        selectedItemsLabel="{0} produtos selecionados"
+                        placeholder="Selecione ao menos um produto"
+                        className="w-full"
+                    />
+
+                    <div className="barcode-form-row">
+                        <div>
+                            <label htmlFor="barcode-file-type">Tipo de arquivo</label>
+                            <Dropdown id="barcode-file-type" value={fileType} onChange={(event) => setFileType(event.value)} options={fileTypes} className="w-full" />
+                        </div>
+                        <div>
+                            <label htmlFor="barcode-copies">Etiquetas por produto</label>
+                            <InputNumber id="barcode-copies" value={copies} onValueChange={(event) => setCopies(event.value ?? 1)} min={1} max={100} showButtons className="w-full" />
+                        </div>
+                    </div>
+
+                    <div className="barcode-selection-summary">
+                        <i className="pi pi-info-circle" />
+                        <span>{labels.length ? `${labels.length} etiqueta(s) em ${Math.ceil(labels.length / 20)} página(s)` : 'Cada código inclui nome, ID e localização do produto.'}</span>
+                    </div>
+
+                    <Button label="Gerar Código de Barras" icon="pi pi-download" onClick={generate} className="barcode-generate-button" />
+                </div>
+            </section>
+        </main>
+    );
+}
