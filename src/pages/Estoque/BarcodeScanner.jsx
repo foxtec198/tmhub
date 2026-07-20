@@ -1,19 +1,34 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { productIdFromBarcode } from './barcode';
 import './barcode-scanner.css';
 
+function cameraErrorMessage(error) {
+    if (!window.isSecureContext) return 'A câmera exige uma conexão segura (HTTPS ou localhost).';
+    if (!navigator.mediaDevices?.getUserMedia) return 'Este navegador não oferece acesso à câmera.';
+    if (error?.name === 'NotAllowedError' || error?.name === 'SecurityError') {
+        return 'O acesso à câmera foi bloqueado. Libere a permissão do site e tente novamente.';
+    }
+    if (error?.name === 'NotReadableError' || error?.name === 'AbortError') {
+        return 'A câmera está ocupada por outro aplicativo. Feche-o e tente novamente.';
+    }
+    if (error?.name === 'NotFoundError' || error?.name === 'DevicesNotFoundError') {
+        return 'Nenhuma câmera disponível foi encontrada neste dispositivo.';
+    }
+    return `Não foi possível iniciar o leitor${error?.name ? ` (${error.name})` : ''}.`;
+}
+
 export function BarcodeScanner({ visible, products, onHide, onProduct }) {
-    const reactId = useId();
-    const readerId = `barcode-reader-${reactId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
-    const scannerRef = useRef(null);
+    const scannerTargetRef = useRef(null);
     const handledRef = useRef(false);
     const productsRef = useRef(products);
     const onProductRef = useRef(onProduct);
     const [manualCode, setManualCode] = useState('');
     const [status, setStatus] = useState('Preparando a câmera…');
+    const [cameraMounted, setCameraMounted] = useState(false);
+    const [cameraLive, setCameraLive] = useState(false);
 
     useEffect(() => {
         productsRef.current = products;
@@ -26,58 +41,113 @@ export function BarcodeScanner({ visible, products, onHide, onProduct }) {
         const product = productsRef.current.find((item) => String(item.id) === String(id));
 
         if (!product) {
-            setStatus('Código não reconhecido ou produto não encontrado.');
+            setStatus('Código reconhecido, mas o produto não foi encontrado.');
             return;
         }
 
         handledRef.current = true;
         setManualCode('');
+        setCameraLive(false);
+        setCameraMounted(false);
         onProductRef.current(product);
     }, []);
 
     useEffect(() => {
-        if (!visible) return undefined;
+        if (!visible || !cameraMounted || !scannerTargetRef.current) return undefined;
 
-        handledRef.current = false;
+        const scannerTarget = scannerTargetRef.current;
         let cancelled = false;
+        let quagga;
+        handledRef.current = false;
+        setStatus('Preparando a câmera…');
 
-        import('html5-qrcode').then(({ Html5Qrcode }) => {
-            if (cancelled) return undefined;
-            const scanner = new Html5Qrcode(readerId, { verbose: false });
-            scannerRef.current = scanner;
+        const handleDetected = (result) => {
+            const code = result?.codeResult?.code;
+            if (code) resolveProduct(code);
+        };
 
-            return scanner.start(
-                { facingMode: 'environment' },
-                { fps: 10, qrbox: { width: 280, height: 130 }, aspectRatio: 1.6 },
-                resolveProduct,
-                () => undefined,
-            ).then(() => {
-                if (cancelled) return scanner.stop();
-                setStatus('Aponte a câmera para o código de barras.');
-                return undefined;
+        import('@ericblade/quagga2').then(async (module) => {
+            quagga = module.default;
+            await quagga.init({
+                inputStream: {
+                    type: 'LiveStream',
+                    target: scannerTarget,
+                    willReadFrequently: true,
+                    constraints: {
+                        facingMode: { ideal: 'environment' },
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                    },
+                    area: {
+                        top: '18%',
+                        right: '5%',
+                        bottom: '18%',
+                        left: '5%',
+                    },
+                },
+                locate: true,
+                frequency: 12,
+                numOfWorkers: Math.max(1, Math.min(4, navigator.hardwareConcurrency || 2)),
+                decoder: {
+                    readers: ['code_128_reader'],
+                    multiple: false,
+                },
+                locator: {
+                    halfSample: false,
+                    patchSize: 'medium',
+                },
+                canvas: { createOverlay: false },
             });
-        }).catch(() => {
-            if (!cancelled) setStatus('Não foi possível acessar a câmera. Digite ou use um leitor USB abaixo.');
+
+            if (cancelled) {
+                await quagga.stop();
+                return;
+            }
+
+            quagga.onDetected(handleDetected);
+            quagga.start();
+            setCameraLive(true);
+            setStatus('Leitor Code 128 ativo. Centralize as barras na faixa verde.');
+        }).catch((error) => {
+            if (!cancelled) {
+                setStatus(`${cameraErrorMessage(error)} Você também pode digitar ou usar um leitor USB abaixo.`);
+            }
         });
 
         return () => {
             cancelled = true;
-            const current = scannerRef.current;
-            scannerRef.current = null;
-            if (current?.isScanning) current.stop().catch(() => undefined);
+            setCameraLive(false);
+            if (quagga) {
+                quagga.offDetected(handleDetected);
+                Promise.resolve(quagga.stop()).catch(() => undefined);
+            }
+            scannerTarget.replaceChildren();
         };
-    }, [readerId, resolveProduct, visible]);
+    }, [cameraMounted, resolveProduct, visible]);
+
+    const hideScanner = () => {
+        setCameraLive(false);
+        setCameraMounted(false);
+        onHide();
+    };
 
     return (
         <Dialog
             header="Ler código de barras"
             visible={visible}
-            onHide={onHide}
+            onShow={() => {
+                setCameraLive(false);
+                setCameraMounted(true);
+            }}
+            onHide={hideScanner}
             style={{ width: 'min(34rem, 94vw)' }}
             className="barcode-scanner-dialog"
         >
             <div className="barcode-scanner-content">
-                <div id={readerId} className="barcode-camera" />
+                <div className={`barcode-camera${cameraLive ? ' is-live' : ''}`}>
+                    <div ref={scannerTargetRef} className="barcode-camera-target" />
+                    {cameraLive && <span className="barcode-camera-guide" aria-hidden="true" />}
+                </div>
                 <p className="barcode-scanner-status" role="status">{status}</p>
                 <div className="barcode-manual-row">
                     <InputText

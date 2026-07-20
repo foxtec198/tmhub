@@ -10,12 +10,13 @@ import { FloatLabel } from 'primereact/floatlabel';
 import { Tag } from 'primereact/tag';
 import { SelectButton } from 'primereact/selectbutton';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import connect from '../../utils/request';
 import { useLoading } from '../../contexts/LoadingContext';
 import { useToast } from '../../contexts/ToastContext';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { BarcodeScanner } from './BarcodeScanner';
+import { isProductBarcode, productIdFromBarcode } from './barcode';
 
 const MOVEMENTS_ENDPOINT = '/estoque/movimentos';
 const PRODUCTS_ENDPOINT = '/estoque/produtos';
@@ -40,7 +41,8 @@ export function Movements() {
     const [dialogVisible, setDialogVisible] = useState(false);
     const [form, setForm] = useState(emptyForm);
     const [scannerVisible, setScannerVisible] = useState(false);
-    const [quickScan, setQuickScan] = useState(false);
+    const scanBufferRef = useRef('');
+    const lastScanKeyRef = useRef(0);
 
     const setLoading = useLoading();
     const { showToast } = useToast();
@@ -141,19 +143,68 @@ export function Movements() {
 
     const openQuickScanner = () => {
         setForm({ ...emptyForm, tipo: null });
-        setQuickScan(true);
         setScannerVisible(true);
     };
 
-    const handleScannedProduct = (product) => {
-        setForm((current) => ({ ...current, item_id: product.id }));
+    const handleScannedProduct = useCallback((product) => {
+        setForm((current) => ({
+            ...current,
+            item_id: product.id,
+            tipo: dialogVisible ? current.tipo : null,
+        }));
         setScannerVisible(false);
-        if (quickScan) {
-            setDialogVisible(true);
-            setQuickScan(false);
-        }
+        setDialogVisible(true);
         showToast('success', 'Produto identificado', `${product.nome} selecionado.`);
-    };
+    }, [dialogVisible, showToast]);
+
+    const handleBarcodeValue = useCallback((value) => {
+        if (!isProductBarcode(value)) return false;
+        const id = productIdFromBarcode(value);
+        if (id === null) return false;
+
+        const product = products.find((item) => String(item.id) === String(id));
+        if (!product) {
+            showToast('warn', 'Código não reconhecido', 'O produto deste código não foi encontrado.');
+            return false;
+        }
+
+        handleScannedProduct(product);
+        return true;
+    }, [handleScannedProduct, products, showToast]);
+
+    useEffect(() => {
+        if (scannerVisible) return undefined;
+
+        const handleKeyDown = (event) => {
+            if (event.ctrlKey || event.altKey || event.metaKey) return;
+
+            const now = performance.now();
+            if (event.key === 'Enter' || event.key === 'Tab') {
+                const value = scanBufferRef.current;
+                scanBufferRef.current = '';
+                lastScanKeyRef.current = 0;
+                if (value && handleBarcodeValue(value)) event.preventDefault();
+                return;
+            }
+
+            if (event.key.length !== 1) return;
+            if (now - lastScanKeyRef.current > 80) scanBufferRef.current = '';
+            scanBufferRef.current += event.key;
+            lastScanKeyRef.current = now;
+        };
+
+        const handlePaste = (event) => {
+            const value = event.clipboardData?.getData('text')?.trim();
+            if (value && handleBarcodeValue(value)) event.preventDefault();
+        };
+
+        window.addEventListener('keydown', handleKeyDown, true);
+        window.addEventListener('paste', handlePaste, true);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown, true);
+            window.removeEventListener('paste', handlePaste, true);
+        };
+    }, [handleBarcodeValue, scannerVisible]);
 
     const handleSave = async () => {
         if (!form.item_id || !form.tipo || !form.quantidade) {
@@ -212,7 +263,7 @@ export function Movements() {
                         label="Ler código de barras"
                         icon="pi pi-camera"
                         outlined
-                        onClick={() => { setQuickScan(false); setScannerVisible(true); }}
+                        onClick={() => setScannerVisible(true)}
                     />
                     <FloatLabel>
                         <Dropdown
@@ -245,7 +296,7 @@ export function Movements() {
             <BarcodeScanner
                 visible={scannerVisible}
                 products={products}
-                onHide={() => { setScannerVisible(false); setQuickScan(false); }}
+                onHide={() => setScannerVisible(false)}
                 onProduct={handleScannedProduct}
             />
         </main>

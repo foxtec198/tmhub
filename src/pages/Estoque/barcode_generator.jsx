@@ -65,13 +65,23 @@ function drawLabel(page, product, x, y, width, height, bwipjs, assets) {
     bwipjs.toCanvas(barcode, {
         bcid: 'code128',
         text: buildProductBarcode(product),
-        scale: 2,
-        height: 16,
+        scale: 3,
+        height: 20,
         includetext: false,
-        padding: 0,
+        // Margem técnica necessária para o localizador identificar o início e o fim do Code 128.
+        paddingwidth: 12,
+        paddingheight: 4,
     });
     page.imageSmoothingEnabled = false;
-    page.drawImage(barcode, x + width * .035, y + height * .36, width * .91, height * .36);
+    const barcodeMaxWidth = width * .91;
+    const barcodeWidth = Math.min(barcode.width, barcodeMaxWidth);
+    page.drawImage(
+        barcode,
+        x + (width - barcodeWidth) / 2,
+        y + height * .36,
+        barcodeWidth,
+        height * .36,
+    );
 
     page.textAlign = 'right';
     page.fillStyle = '#777';
@@ -204,7 +214,7 @@ export function BarcodeGenerator() {
                         <span className="barcode-illustration-glow" aria-hidden="true" />
                         <AnimatedBarcodeIllustration />
                     </div>
-                    <a className="barcode-illustration-credit" href="https://storyset.com/illustration/barcode/bro" target="_blank" rel="noreferrer">Ilustração por Storyset</a>
+                    {/* <a className="barcode-illustration-credit" href="https://storyset.com/illustration/barcode/bro" target="_blank" rel="noreferrer">Ilustração por Storyset</a> */}
                 </div>
 
                 <div className="barcode-generator-form">
