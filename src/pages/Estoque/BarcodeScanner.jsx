@@ -85,7 +85,9 @@ export function BarcodeScanner({ visible, products, onHide, onProduct }) {
                         left: '5%',
                     },
                 },
-                locate: true,
+                // O código contém apenas um ID curto e já é alinhado pela faixa da interface.
+                // A leitura direta é mais confiável que o localizador para Code 128 pequeno.
+                locate: false,
                 frequency: 12,
                 numOfWorkers: Math.max(1, Math.min(4, navigator.hardwareConcurrency || 2)),
                 decoder: {

@@ -74,7 +74,8 @@ function drawLabel(page, product, x, y, width, height, bwipjs, assets) {
     });
     page.imageSmoothingEnabled = false;
     const barcodeMaxWidth = width * .91;
-    const barcodeWidth = Math.min(barcode.width, barcodeMaxWidth);
+    // IDs curtos geram poucas barras; ampliar até a largura útil melhora a leitura à distância.
+    const barcodeWidth = barcodeMaxWidth;
     page.drawImage(
         barcode,
         x + (width - barcodeWidth) / 2,
