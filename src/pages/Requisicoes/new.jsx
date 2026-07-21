@@ -6,6 +6,7 @@ import { StepperPanel } from 'primereact/stepperpanel';
 import { Checkbox } from "primereact/checkbox";
 import { SelectButton } from "primereact/selectbutton";
 import { InputNumber } from "primereact/inputnumber";
+import { Message } from "primereact/message";
 
 // Utils ------------------------------------------------
 import { useState, useRef, useEffect } from "react";
@@ -31,8 +32,8 @@ export function Request() {
 
     // Opções remotas carregadas para os dropdowns do formulário.
     const [supsOtions, setSupsOptions] = useState(null)
-    const [replaces, setReplaces] = useState(null)
-    const [centersOptions, setCenterOptions] = useState(null)
+    const [replaces, setReplaces] = useState([])
+    const [loadingReplaces, setLoadingReplaces] = useState(false)
     const dateOptions = [{ label: "Hoje", value: "today" }, { label: "Amanhã", value: "tomorrow" }]
 
     const reasonOptions = [
@@ -54,6 +55,22 @@ export function Request() {
         const now = new Date();
         if (dateChoice === "tomorrow") now.setDate(now.getDate() + 1);
         return now;
+    }
+
+    function selectedRequestDateKey() {
+        const selectedDate = selectedRequestDate();
+        const year = selectedDate.getFullYear();
+        const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+        const day = String(selectedDate.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    }
+
+    function handleAbsentChange(employeeId, employee) {
+        selectedAbsent(employeeId);
+        selectedLocal(employee?.centro_id ? {
+            id: employee.centro_id,
+            name: `${employee.centro_id} - ${employee.centro_local || "Local não informado"}${employee.departamento != null ? ` - ${employee.departamento}` : ""}`,
+        } : null);
     }
 
     // Valida os campos obrigatórios e envia a nova requisição ao backend.
@@ -83,7 +100,7 @@ export function Request() {
 
     }
 
-    // Pré-carrega supervisores, colaboradores e centros usados pelo formulário.
+    // Pré-carrega os supervisores usados no primeiro passo do formulário.
     useEffect(() => {
         async function getSups() {
             const res = await connect.get("/supervisores");
@@ -92,23 +109,42 @@ export function Request() {
             setSupsOptions(sups)
         }
 
-        async function getReplaces() {
-            const res = await connect.get("/reservas");
-            const absents = [];
-            res.data.map(item => absents.push({ name: item.nome, id: item.id }));
-            setReplaces(absents)
-        }
-
-        async function getCenters() {
-            const res = await connect.get("/centro")
-            console.log(res)
-            const centers = []
-            res.data.map(item => centers.push({ name: `${item.id} - ${item.local} - ${item.departamento}`, id: item.id }))
-            setCenterOptions(centers)
-        }
-
-        getSups(); getCenters(); getReplaces();
+        getSups();
     }, [])
+
+    // A disponibilidade acompanha a data e todo o período que bloqueará a reserva.
+    useEffect(() => {
+        let active = true;
+
+        async function getReplaces() {
+            setLoadingReplaces(true);
+            try {
+                const requestedDays = ["ATESTADO", "AFASTAMENTO"].includes(reason) ? durationDays : 1;
+                const { data } = await connect.get("/repo/reservas-uso", {
+                    params: { data: selectedRequestDateKey(), quantidade_dias: requestedDays },
+                });
+                if (!active) return;
+                const available = data.disponiveis.map((item) => ({ ...item, name: item.nome, disabled: false }));
+                const unavailable = data.usadas.map((item) => ({ ...item, name: item.nome, disabled: true }));
+                const options = [...available, ...unavailable].sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+                setReplaces(options);
+                if (replace && options.find((item) => item.id === replace.id)?.disabled) selectedReplace(null);
+            } catch (error) {
+                if (active) {
+                    setReplaces([]);
+                    selectedReplace(null);
+                    showToast("error", "Reservas", error.response?.data || "Não foi possível consultar a disponibilidade.");
+                }
+            } finally {
+                if (active) setLoadingReplaces(false);
+            }
+        }
+
+        getReplaces();
+        return () => { active = false; };
+        // replace não dispara uma nova consulta; ele é apenas invalidado quando o período muda.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dateChoice, durationDays, reason])
 
     // Formulário público e responsivo de abertura de reposição.
     return (
@@ -167,7 +203,7 @@ export function Request() {
                                     panelStyle={{ width: '100%' }}
                                     className="w-full mb-3"
                                     value={absent}
-                                    onChange={selectedAbsent}
+                                    onChange={handleAbsentChange}
                                     placeholder="Quem faltou?"
                                     showClear={false}
                                     onError={() => showToast("error", "Erro na busca", "Não foi possível buscar os colaboradores.")}
@@ -177,11 +213,10 @@ export function Request() {
                                     panelStyle={{ width: '100%' }}
                                     className="w-full mb-3"
                                     value={local}
-                                    onChange={(e) => selectedLocal(e.value)}
-                                    options={centersOptions}
-                                    placeholder="Qual contrato?"
+                                    options={local ? [local] : []}
+                                    placeholder="O local será definido pela pessoa que faltou"
                                     optionLabel="name"
-                                    filter
+                                    disabled
                                 />
                                 <Dropdown
                                     appendTo="self"
@@ -193,6 +228,16 @@ export function Request() {
                                     options={replaces}
                                     placeholder="Quem vai repor?"
                                     optionLabel="name"
+                                    optionDisabled="disabled"
+                                    loading={loadingReplaces}
+                                    itemTemplate={(option) => (
+                                        <div className="request-reserve-option">
+                                            <span>{option.name}</span>
+                                            <small className={option.disabled ? "request-reserve-unavailable" : "request-reserve-available"}>
+                                                {option.disabled ? "Indisponível no período" : "Disponível"}
+                                            </small>
+                                        </div>
+                                    )}
                                     filter
                                 />
 
@@ -227,8 +272,12 @@ export function Request() {
                                 
                                 {["ATESTADO", "AFASTAMENTO"].includes(reason) && (
                                     <div className="flex flex-column gap-2 mb-3">
-                                        <label htmlFor="duration-days">Quantidade de dias</label>
+                                        <label htmlFor="duration-days">Quantidade de dias do afastamento</label>
                                         <InputNumber inputId="duration-days" value={durationDays} onValueChange={(e) => setDurationDays(e.value || 1)} min={1} max={365} showButtons />
+                                        <Message
+                                            severity="info"
+                                            text="Informe a quantidade total e correta de dias que a pessoa já está ou ficará afastada, contando a partir da data da ausência selecionada. Faça apenas uma requisição: a reserva ficará bloqueada durante todo esse período."
+                                        />
                                     </div>
                                 )}
 

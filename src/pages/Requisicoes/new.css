@@ -22,6 +22,35 @@
   box-shadow: 0 18px 44px rgba(16, 69, 29, .1);
 }
 
+.request-reserve-option {
+  display: flex;
+  width: 100%;
+  gap: .75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.request-reserve-option small {
+  white-space: nowrap;
+}
+
+.request-reserve-available {
+  color: #238636;
+}
+
+.request-reserve-unavailable {
+  color: #b42318;
+}
+
+.request-stepper-shell .p-message {
+  margin: 0;
+}
+
+.request-stepper-shell .p-message .p-message-wrapper {
+  padding: .7rem .85rem;
+  align-items: flex-start;
+}
+
 :root[data-theme="dark"] .request-create-page {
   color: #edf7f0;
   background: radial-gradient(circle at 50% -8%, rgba(75, 214, 110, .22), transparent 38%), linear-gradient(180deg, #07130b 0%, #050705 60%, #020302 100%);
@@ -69,6 +98,14 @@
 :root[data-theme="dark"] .request-stepper-shell .p-dropdown-trigger,
 :root[data-theme="dark"] .request-stepper-shell .p-dropdown-filter-icon {
   color: #63e58b;
+}
+
+:root[data-theme="dark"] .request-reserve-available {
+  color: #63e58b;
+}
+
+:root[data-theme="dark"] .request-reserve-unavailable {
+  color: #ff8a80;
 }
 
 :root[data-theme="dark"] .request-stepper-shell .p-selectbutton {
