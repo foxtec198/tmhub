@@ -7,6 +7,8 @@ import KanbanColumn from '../pages/Projetos/KanbanColumn';
 export default function KanbanBoard({ projeto, todosUsuarios, onUpdateProjeto, onOpenCard }) {
   // Estados transitórios de drag-and-drop e criação de coluna.
   const [draggingCardId, setDraggingCardId] = useState(null);
+  const [draggingColumnId, setDraggingColumnId] = useState(null);
+  const [columnDropTarget, setColumnDropTarget] = useState(null);
   const [novaColunaAberta, setNovaColunaAberta] = useState(false);
   const [novaColunaTitulo, setNovaColunaTitulo] = useState('');
 
@@ -24,6 +26,49 @@ export default function KanbanBoard({ projeto, todosUsuarios, onUpdateProjeto, o
 
   function handleDragEnd() {
     setDraggingCardId(null);
+  }
+
+  function handleColumnDragStart(e, columnId) {
+    e.stopPropagation();
+    setDraggingColumnId(columnId);
+    setDraggingCardId(null);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', `column:${columnId}`);
+  }
+
+  function handleColumnDragOver(e, columnId) {
+    if (!draggingColumnId || draggingColumnId === columnId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const bounds = e.currentTarget.getBoundingClientRect();
+    const position = e.clientX < bounds.left + bounds.width / 2 ? 'before' : 'after';
+    setColumnDropTarget({ id: columnId, position });
+  }
+
+  function handleColumnDrop(e, columnId) {
+    if (!draggingColumnId || draggingColumnId === columnId) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const columns = [...projeto.columns];
+    const sourceIndex = columns.findIndex((column) => column.id === draggingColumnId);
+    if (sourceIndex === -1) return;
+    const [movedColumn] = columns.splice(sourceIndex, 1);
+    let targetIndex = columns.findIndex((column) => column.id === columnId);
+    if (targetIndex === -1) return;
+    const bounds = e.currentTarget.getBoundingClientRect();
+    const position = e.clientX < bounds.left + bounds.width / 2 ? 'before' : 'after';
+    if (position === 'after') targetIndex += 1;
+    columns.splice(targetIndex, 0, movedColumn);
+
+    setDraggingColumnId(null);
+    setColumnDropTarget(null);
+    onUpdateProjeto({ ...projeto, columns });
+  }
+
+  function handleColumnDragEnd() {
+    setDraggingColumnId(null);
+    setColumnDropTarget(null);
   }
 
   // Move o card arrastado para a coluna/posição alvo
@@ -111,6 +156,12 @@ export default function KanbanBoard({ projeto, todosUsuarios, onUpdateProjeto, o
           onDropCard={handleDropCard}
           onDropOnColumnEnd={handleDropOnColumnEnd}
           draggingCardId={draggingCardId}
+          draggingColumnId={draggingColumnId}
+          columnDropTarget={columnDropTarget}
+          onColumnDragStart={handleColumnDragStart}
+          onColumnDragOver={handleColumnDragOver}
+          onColumnDrop={handleColumnDrop}
+          onColumnDragEnd={handleColumnDragEnd}
           onCardClick={onOpenCard}
           onRenameColumn={renomearColuna}
           onAddCard={adicionarCard}

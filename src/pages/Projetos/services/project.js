@@ -35,7 +35,7 @@ export async function deleteProject(id) {
 }
 
 export async function getUsers(){
-    const { data }  = await connect.get("/usuarios")
+    const { data }  = await connect.get("/usuarios", { params: { include_photo: 1 } })
     const colors = ["#7c5cff", "#22a3a3", "#e0763a", "#c14b6b", "#3d78c9", "#2f9e44"];
 
     return data.map((user, index) => {

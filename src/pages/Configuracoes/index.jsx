@@ -19,7 +19,7 @@ const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).{8,}
 
 export function Settings() {
   // Perfil, preferência visual e estados dos fluxos de senha/e-mail.
-  const [profile, setProfile] = useState({ nome: "", email: "", foto_perfil: null });
+  const [profile, setProfile] = useState({ nome: "", email: "", foto_perfil: null, tema: "light" });
   const [dark, setDark] = useState(() => localStorage.getItem("theme") === "dark");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -35,6 +35,7 @@ export function Settings() {
   useEffect(() => {
     connect.get("/usuarios/perfil").then(({ data }) => {
       setProfile(data);
+      setDark(data.tema === "dark");
       storeProfile(data);
     }).catch(() => {});
   }, []);
@@ -55,10 +56,18 @@ export function Settings() {
   };
 
   // O atributo no elemento raiz ativa os seletores globais sem recarregar a página.
-  const changeTheme = (enabled) => {
+  const applyTheme = (enabled) => {
     setDark(enabled);
     localStorage.setItem("theme", enabled ? "dark" : "light");
     document.documentElement.dataset.theme = enabled ? "dark" : "light";
+  };
+
+  const changeTheme = async (enabled) => {
+    const previous = dark;
+    applyTheme(enabled);
+    if (!(await save({ tema: enabled ? "dark" : "light" }, "Tema atualizado."))) {
+      applyTheme(previous);
+    }
   };
 
   // Valida tipo/tamanho antes de converter a imagem para a representação persistida.

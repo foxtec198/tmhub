@@ -4,7 +4,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { MultiSelect } from 'primereact/multiselect';
 import { Button } from 'primereact/button';
-import { Avatar } from 'primereact/avatar';
+import ProjectMemberAvatar from './ProjectMemberAvatar';
 
 const CORES = ['#7c5cff', '#22a3a3', '#e0763a', '#c14b6b', '#3d78c9', '#2f9e44'];
 
@@ -75,7 +75,7 @@ export default function NewProjectDialog({ visible, todosUsuarios, currentUserId
             placeholder="Selecione quem participa"
             itemTemplate={(m) => (
               <div className="flex align-items-center gap-2">
-                <Avatar label={m.iniciais} shape="circle" size="normal" style={{ backgroundColor: m.avatarColor, color: '#fff' }} />
+                <ProjectMemberAvatar member={m} size="normal" />
                 <span>{m.nome}</span>
               </div>
             )}

@@ -5,7 +5,7 @@ import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { MultiSelect } from 'primereact/multiselect';
 import { Button } from 'primereact/button';
-import { Avatar } from 'primereact/avatar';
+import ProjectMemberAvatar from './ProjectMemberAvatar';
 
 export default function CardDetailDialog({ visible, card, membrosDoProjeto, onHide, onSave, onDelete }) {
   // O formulário usa cópias locais para não alterar o card antes de Salvar.
@@ -88,7 +88,7 @@ export default function CardDetailDialog({ visible, card, membrosDoProjeto, onHi
             placeholder="Selecione os membros"
             itemTemplate={(m) => (
               <div className="flex align-items-center gap-2">
-                <Avatar label={m.iniciais} shape="circle" size="normal" style={{ backgroundColor: m.avatarColor, color: '#fff' }} />
+                <ProjectMemberAvatar member={m} size="normal" />
                 <span>{m.nome}</span>
               </div>
             )}

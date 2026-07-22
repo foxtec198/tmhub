@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { AvatarGroup } from 'primereact/avatargroup';
-import { Avatar } from 'primereact/avatar';
+import ProjectMemberAvatar from './ProjectMemberAvatar';
 
 function ProjectRow({ projeto, ativo, todosUsuarios, currentUserId, onSelect, onRename, onOpenMembers }) {
   const [editando, setEditando] = useState(false);
@@ -57,13 +57,11 @@ function ProjectRow({ projeto, ativo, todosUsuarios, currentUserId, onSelect, on
       <div className="projeto-item__rodape" onClick={() => onSelect(projeto.id)}>
         <AvatarGroup>
           {membros.slice(0, 4).map((m) => (
-            <Avatar
+            <ProjectMemberAvatar
               key={m.id}
-              label={m.iniciais}
-              shape="circle"
+              member={m}
               size="normal"
-              style={{ backgroundColor: m.avatarColor, color: '#fff', fontSize: '0.7rem' }}
-              title={m.nome}
+              style={{ fontSize: '0.7rem' }}
             />
           ))}
         </AvatarGroup>

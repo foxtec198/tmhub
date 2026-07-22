@@ -13,6 +13,12 @@ export default function KanbanColumn({
   onDropCard,
   onDropOnColumnEnd,
   draggingCardId,
+  draggingColumnId,
+  columnDropTarget,
+  onColumnDragStart,
+  onColumnDragOver,
+  onColumnDrop,
+  onColumnDragEnd,
   onCardClick,
   onRenameColumn,
   onAddCard,
@@ -44,12 +50,14 @@ export default function KanbanColumn({
   }
 
   function handleDragOverCard(e, index) {
+    if (draggingColumnId) return;
     e.preventDefault();
     e.stopPropagation();
     setOverIndex(index);
   }
 
   function handleDropAtIndex(e, index) {
+    if (draggingColumnId) return;
     e.preventDefault();
     e.stopPropagation();
     onDropCard(coluna.id, index);
@@ -58,15 +66,33 @@ export default function KanbanColumn({
 
   return (
     <div
-      className="kanban-column"
-      onDragOver={(e) => e.preventDefault()}
+      className={`kanban-column ${draggingColumnId === coluna.id ? 'kanban-column--dragging' : ''} ${columnDropTarget?.id === coluna.id ? `kanban-column--drop-${columnDropTarget.position}` : ''}`}
+      onDragOver={(e) => {
+        if (draggingColumnId) onColumnDragOver(e, coluna.id);
+        else e.preventDefault();
+      }}
       onDrop={(e) => {
+        if (draggingColumnId) {
+          onColumnDrop(e, coluna.id);
+          return;
+        }
         e.preventDefault();
         onDropOnColumnEnd(coluna.id);
         setOverIndex(null);
       }}
     >
       <div className="kanban-column__header">
+        <button
+          type="button"
+          className="kanban-column__drag-handle"
+          draggable
+          onDragStart={(e) => onColumnDragStart(e, coluna.id)}
+          onDragEnd={onColumnDragEnd}
+          aria-label={`Mover coluna ${coluna.titulo}`}
+          title="Arraste para reordenar a coluna"
+        >
+          <i className="pi pi-bars" aria-hidden="true" />
+        </button>
         {editandoTitulo ? (
           <InputText
             autoFocus

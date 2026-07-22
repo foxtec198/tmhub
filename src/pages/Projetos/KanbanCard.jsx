@@ -1,8 +1,8 @@
 // components/KanbanCard.jsx
 import React from 'react';
-import { Avatar } from 'primereact/avatar';
 import { AvatarGroup } from 'primereact/avatargroup';
 import { Tag } from 'primereact/tag';
+import ProjectMemberAvatar from '../../components/ProjectMemberAvatar';
 
 export default function KanbanCard({ card, membros, onDragStart, onDragEnd, onClick, isDragging }) {
   return (
@@ -27,13 +27,11 @@ export default function KanbanCard({ card, membros, onDragStart, onDragEnd, onCl
         <div className="kanban-card__rodape">
           <AvatarGroup>
             {membros.map((m) => (
-              <Avatar
+              <ProjectMemberAvatar
                 key={m.id}
-                label={m.iniciais}
-                shape="circle"
+                member={m}
                 size="normal"
-                style={{ backgroundColor: m.avatarColor, color: '#fff', fontSize: '0.75rem' }}
-                title={m.nome}
+                style={{ fontSize: '0.75rem' }}
               />
             ))}
           </AvatarGroup>

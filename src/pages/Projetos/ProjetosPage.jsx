@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from 'primereact/button';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
-import { Avatar } from 'primereact/avatar';
 import { AvatarGroup } from 'primereact/avatargroup';
 import { createProject, deleteProject, getProjects, getUsers, renameProject, updateProject } from './services/project';
 import { deleteCard, updateCard } from './services/card';
@@ -10,6 +9,7 @@ import KanbanBoard from '../../components/KanbanBoard';
 import CardDetailDialog from '../../components/CardDetailDialog';
 import MembersDialog from '../../components/MembersDialog';
 import NewProjectDialog from '../../components/NewProjectDialog';
+import ProjectMemberAvatar from '../../components/ProjectMemberAvatar';
 import { useToast } from '../../contexts/ToastContext';
 import './ProjetosPage.css';
 
@@ -206,12 +206,9 @@ export default function ProjetosPage() {
             {projetoAtivo && (
               <AvatarGroup>
                 {membrosDoProjetoAtivo.map((m) => (
-                  <Avatar
+                  <ProjectMemberAvatar
                     key={m.id}
-                    label={m.iniciais}
-                    shape="circle"
-                    style={{ backgroundColor: m.avatarColor, color: '#fff' }}
-                    title={m.nome}
+                    member={m}
                   />
                 ))}
               </AvatarGroup>

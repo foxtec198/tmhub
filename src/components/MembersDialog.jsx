@@ -1,9 +1,9 @@
 // components/MembersDialog.jsx
 import React from 'react';
 import { Dialog } from 'primereact/dialog';
-import { Avatar } from 'primereact/avatar';
 import { Button } from 'primereact/button';
 import { Checkbox } from 'primereact/checkbox';
+import ProjectMemberAvatar from './ProjectMemberAvatar';
 
 // Como todo mundo já é do mesmo sistema, "adicionar membro" é só marcar o checkbox:
 // o projeto passa a aparecer automaticamente na timeline de projetos daquela pessoa.
@@ -25,11 +25,7 @@ export default function MembersDialog({ visible, projeto, todosUsuarios, onHide,
           return (
             <div key={usuario.id} className="flex align-items-center justify-content-between p-2 border-round surface-100">
               <div className="flex align-items-center gap-2">
-                <Avatar
-                  label={usuario.iniciais}
-                  shape="circle"
-                  style={{ backgroundColor: usuario.avatarColor, color: '#fff' }}
-                />
+                <ProjectMemberAvatar member={usuario} />
                 <div>
                   <div className="font-medium">{usuario.nome}</div>
                   {isDono && <div className="text-xs text-color-secondary">Dono do projeto</div>}
