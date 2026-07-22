@@ -16,6 +16,7 @@ export function CollaboratorDropdown({
     queryParams = {},
     limit = DEFAULT_LIMIT,
     debounce = DEFAULT_DEBOUNCE,
+    minSearch = 0,
     className = "",
     placeholder = "Selecione um colaborador",
     emptyMessage = "Nenhum colaborador encontrado",
@@ -34,11 +35,16 @@ export function CollaboratorDropdown({
 
     useEffect(() => {
         const requestId = ++requestIdRef.current;
+        const normalizedFilter = filter.trim();
+        if (normalizedFilter.length < minSearch) {
+            return () => { requestIdRef.current += 1; };
+        }
+
         const timer = window.setTimeout(async () => {
             setLoading(true);
             try {
                 const { data } = await connect.get("/funcionarios", {
-                    params: { ...queryParams, search: filter.trim(), limit },
+                    params: { ...queryParams, search: normalizedFilter, limit },
                 });
                 if (requestId !== requestIdRef.current) return;
 
@@ -66,7 +72,7 @@ export function CollaboratorDropdown({
         };
         // serializedParams representa as propriedades individuais de queryParams.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [debounce, filter, limit, serializedParams]);
+    }, [debounce, filter, limit, minSearch, serializedParams]);
 
     function handleChange(event) {
         // O primeiro argumento mantém compatibilidade com formulários que armazenam somente o ID.
@@ -76,6 +82,16 @@ export function CollaboratorDropdown({
         onChange?.(event.value, selectedOptionRef.current);
     }
 
+    function handleFilter(event) {
+        const nextFilter = event.filter || "";
+        setFilter(nextFilter);
+        if (nextFilter.trim().length < minSearch) {
+            requestIdRef.current += 1;
+            setLoading(false);
+            setOptions(selectedOptionRef.current ? [selectedOptionRef.current] : []);
+        }
+    }
+
     return (
         <Dropdown
             value={value}
@@ -83,15 +99,15 @@ export function CollaboratorDropdown({
             optionLabel="label"
             optionValue="id"
             onChange={handleChange}
-            onFilter={(event) => setFilter(event.filter || "")}
+            onFilter={handleFilter}
             filter
             resetFilterOnHide
             loading={loading}
             virtualScrollerOptions={{ itemSize: 42 }} // Renderiza somente as opções visíveis do painel.
             className={className}
             placeholder={placeholder}
-            emptyMessage={emptyMessage}
-            emptyFilterMessage={emptyMessage}
+            emptyMessage={filter.trim().length < minSearch ? `Digite pelo menos ${minSearch} caracteres para buscar` : emptyMessage}
+            emptyFilterMessage={filter.trim().length < minSearch ? `Digite pelo menos ${minSearch} caracteres para buscar` : emptyMessage}
             showClear={showClear}
             disabled={disabled}
             appendTo={appendTo}

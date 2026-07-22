@@ -328,9 +328,7 @@ export function History() {
         {
             header: "Dias",
             field: "dias",
-            body: (row) => row.dias == null
-                ? <span>—</span>
-                : <span>{row.dias} {Number(row.dias) === 1 ? "dia" : "dias"}</span>,
+            body: (row) => <span>{row.dias || 1}</span>,
         },
         {
             header: "Observações",

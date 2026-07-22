@@ -30,6 +30,46 @@ function loadImage(src) {
     });
 }
 
+function trimTransparentImage(image) {
+    const source = document.createElement('canvas');
+    source.width = image.naturalWidth;
+    source.height = image.naturalHeight;
+    const context = source.getContext('2d', { willReadFrequently: true });
+    context.drawImage(image, 0, 0);
+
+    const { data } = context.getImageData(0, 0, source.width, source.height);
+    let left = source.width;
+    let top = source.height;
+    let right = -1;
+    let bottom = -1;
+    for (let y = 0; y < source.height; y += 1) {
+        for (let x = 0; x < source.width; x += 1) {
+            if (data[(y * source.width + x) * 4 + 3] === 0) continue;
+            left = Math.min(left, x);
+            top = Math.min(top, y);
+            right = Math.max(right, x);
+            bottom = Math.max(bottom, y);
+        }
+    }
+
+    if (right < left || bottom < top) return image;
+    const trimmed = document.createElement('canvas');
+    trimmed.width = right - left + 1;
+    trimmed.height = bottom - top + 1;
+    trimmed.getContext('2d').drawImage(
+        source,
+        left,
+        top,
+        trimmed.width,
+        trimmed.height,
+        0,
+        0,
+        trimmed.width,
+        trimmed.height,
+    );
+    return trimmed;
+}
+
 function drawLabel(page, product, x, y, width, height, bwipjs, assets) {
     const radius = height * .105;
     page.save();
@@ -84,13 +124,20 @@ function drawLabel(page, product, x, y, width, height, bwipjs, assets) {
         height * .36,
     );
 
-    page.textAlign = 'right';
-    page.fillStyle = '#777';
-    page.font = `${height * .045}px Arial`;
-    page.fillText('Gerado com', x + width * .47, y + height * .895);
+    const footerY = y + height * .81;
+    page.imageSmoothingEnabled = true;
+    page.drawImage(assets.terceirizeLogo, x + width * .21, footerY, width * .29, height * .1);
+
+    page.strokeStyle = '#444';
+    page.lineWidth = Math.max(2, height * .006);
+    page.beginPath();
+    page.moveTo(x + width * .515, footerY - height * .005);
+    page.lineTo(x + width * .515, footerY + height * .11);
+    page.stroke();
+
     page.filter = 'brightness(0)';
     page.imageSmoothingEnabled = true;
-    page.drawImage(assets.logo, x + width * .5, y + height * .81, width * .285, height * .085);
+    page.drawImage(assets.tmhubLogo, x + width * .54, footerY + height * .005, width * .27, height * .085);
     page.filter = 'none';
     page.restore();
 }
@@ -167,11 +214,12 @@ export function BarcodeGenerator() {
                 import('bwip-js'),
                 import('jspdf'),
             ]);
-            const [fav, logo] = await Promise.all([
-                loadImage('/static/assets/brands/black_fav.png'),
-                loadImage('/static/assets/brands/no_slogan_brand.svg'),
+            const [fav, terceirizeLogo, tmhubLogo] = await Promise.all([
+                loadImage('/brands/black_fav.png'),
+                loadImage('/logo.png').then(trimTransparentImage),
+                loadImage('/brands/no_slogan_brand.svg'),
             ]);
-            const assets = { fav, logo };
+            const assets = { fav, terceirizeLogo, tmhubLogo };
             const pages = [];
             for (let index = 0; index < labels.length; index += 20) {
                 pages.push(renderSheet(labels.slice(index, index + 20), bwipjs, assets));

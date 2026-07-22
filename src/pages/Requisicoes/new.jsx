@@ -5,8 +5,6 @@ import { Stepper } from 'primereact/stepper';
 import { StepperPanel } from 'primereact/stepperpanel';
 import { Checkbox } from "primereact/checkbox";
 import { SelectButton } from "primereact/selectbutton";
-import { InputNumber } from "primereact/inputnumber";
-import { Message } from "primereact/message";
 
 // Utils ------------------------------------------------
 import { useState, useRef, useEffect } from "react";
@@ -17,18 +15,48 @@ import { InputText } from "primereact/inputtext";
 import { CollaboratorDropdown } from "../../components/CollaboratorDropdown";
 import "./new.css";
 
+function SelectedCollaborator({ title, collaborator, icon }) {
+    if (!collaborator) return null;
+
+    const placeName = collaborator.centro_local || collaborator.lugar || collaborator.local || collaborator.posto;
+    const place = [collaborator.centro_id, placeName, collaborator.departamento]
+        .filter((part, index, parts) => part != null && part !== "" && parts.indexOf(part) === index)
+        .join(" - ") || "Não informado";
+    return (
+        <section className="request-collaborator-summary" aria-label={`${title} selecionado`}>
+            <div className="request-collaborator-summary__heading">
+                <i className={icon} aria-hidden="true" />
+                <span>{title}</span>
+            </div>
+            <dl>
+                <div>
+                    <dt>Nome</dt>
+                    <dd>{collaborator.nome || collaborator.name || "Não informado"}</dd>
+                </div>
+                <div>
+                    <dt>Matrícula</dt>
+                    <dd>{collaborator.matricula || "Não informada"}</dd>
+                </div>
+                <div>
+                    <dt>Lugar</dt>
+                    <dd>{place}</dd>
+                </div>
+            </dl>
+        </section>
+    );
+}
+
 export function Request() {
     // Campos do formulário e seleções relacionadas ao colaborador ausente.
     const [user, selectedUser] = useState(null)
     const [replace, selectedReplace] = useState(null)
-    const [local, selectedLocal] = useState(null)
     const [absent, selectedAbsent] = useState(null)
+    const [absentDetails, setAbsentDetails] = useState(null)
     const [warning, selectedWarning] = useState(null)
     const [reason, selectedReason] = useState(null)
     const [obs, setObs] = useState("")
     const [checked, setChecked] = useState(false)
     const [dateChoice, setDateChoice] = useState("today")
-    const [durationDays, setDurationDays] = useState(1)
 
     // Opções remotas carregadas para os dropdowns do formulário.
     const [supsOtions, setSupsOptions] = useState(null)
@@ -65,33 +93,23 @@ export function Request() {
         return `${year}-${month}-${day}`;
     }
 
-    function handleAbsentChange(employeeId, employee) {
-        selectedAbsent(employeeId);
-        selectedLocal(employee?.centro_id ? {
-            id: employee.centro_id,
-            name: `${employee.centro_id} - ${employee.centro_local || "Local não informado"}${employee.departamento != null ? ` - ${employee.departamento}` : ""}`,
-        } : null);
-    }
-
     // Valida os campos obrigatórios e envia a nova requisição ao backend.
     async function createRequest() {
         setLoading(true);
         try {
-            if(user && absent && local && reason && (checked || replace)){
+            if(user && absent && reason && (checked || replace)){
                 const data = {
                     supervisor_id: user.id,
-                    centro_id: local.id,
                     ausente_id: absent,
                     reserva_id: checked ? 0 : replace.id,
                     motivo: reason,
                     advertencia: warning,
                     data: selectedRequestDate(),
-                    quantidade_dias: ["ATESTADO", "AFASTAMENTO"].includes(reason) ? durationDays : 1,
                     obs: obs
                 }
                 await connect.post("/repo/request", data)
                 showToast("success", "Sucesso na requisição", "Sua requisição foi criada com sucesso, aguarde novidades por email!")
-                selectedReplace(null); selectedLocal(null); selectedAbsent(null); selectedReason(null); setObs(""); selectedWarning(null); setDurationDays(1); setDateChoice("today")
+                selectedReplace(null); selectedAbsent(null); setAbsentDetails(null); selectedReason(null); setObs(""); selectedWarning(null); setDateChoice("today")
             }
             else{showToast("warn", "Atenção!", "Preencha todos os dados")}
         }
@@ -112,16 +130,15 @@ export function Request() {
         getSups();
     }, [])
 
-    // A disponibilidade acompanha a data e todo o período que bloqueará a reserva.
+    // A disponibilidade considera somente a data escolhida para a requisição.
     useEffect(() => {
         let active = true;
 
         async function getReplaces() {
             setLoadingReplaces(true);
             try {
-                const requestedDays = ["ATESTADO", "AFASTAMENTO"].includes(reason) ? durationDays : 1;
                 const { data } = await connect.get("/repo/reservas-uso", {
-                    params: { data: selectedRequestDateKey(), quantidade_dias: requestedDays },
+                    params: { data: selectedRequestDateKey() },
                 });
                 if (!active) return;
                 const available = data.disponiveis.map((item) => ({ ...item, name: item.nome, disabled: false }));
@@ -142,9 +159,9 @@ export function Request() {
 
         getReplaces();
         return () => { active = false; };
-        // replace não dispara uma nova consulta; ele é apenas invalidado quando o período muda.
+        // replace não dispara uma nova consulta; ele é apenas invalidado quando a data muda.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dateChoice, durationDays, reason])
+    }, [dateChoice])
 
     // Formulário público e responsivo de abertura de reposição.
     return (
@@ -164,8 +181,8 @@ export function Request() {
                     </span>
                 </div>
 
-                {/* HEADER */}
-                <div className="request-stepper-shell flexw-full" style={{ height: "50vh", minWidth: "22rem" }}>
+                {/* MAIN */}
+                <div className="request-stepper-shell flex" style={{ height: "50vh", minWidth: "22rem" }}>
                     <Stepper ref={stepperRef}>
                         <StepperPanel header="Login">
                             <div className="flex flex-column text-medium text-center">
@@ -203,20 +220,19 @@ export function Request() {
                                     panelStyle={{ width: '100%' }}
                                     className="w-full mb-3"
                                     value={absent}
-                                    onChange={handleAbsentChange}
-                                    placeholder="Quem faltou?"
+                                    onChange={(id, collaborator) => {
+                                        selectedAbsent(id);
+                                        setAbsentDetails(collaborator);
+                                    }}
+                                    placeholder="Busque quem faltou"
+                                    minSearch={2}
                                     showClear={false}
                                     onError={() => showToast("error", "Erro na busca", "Não foi possível buscar os colaboradores.")}
                                 />
-                                <Dropdown
-                                    appendTo="self"
-                                    panelStyle={{ width: '100%' }}
-                                    className="w-full mb-3"
-                                    value={local}
-                                    options={local ? [local] : []}
-                                    placeholder="O local será definido pela pessoa que faltou"
-                                    optionLabel="name"
-                                    disabled
+                                <SelectedCollaborator
+                                    title="Ausente"
+                                    collaborator={absentDetails}
+                                    icon="pi pi-user-minus"
                                 />
                                 <Dropdown
                                     appendTo="self"
@@ -234,19 +250,18 @@ export function Request() {
                                         <div className="request-reserve-option">
                                             <span>{option.name}</span>
                                             <small className={option.disabled ? "request-reserve-unavailable" : "request-reserve-available"}>
-                                                {option.disabled ? "Indisponível no período" : "Disponível"}
+                                                {option.disabled ? "Indisponível nesta data" : "Disponível"}
                                             </small>
                                         </div>
                                     )}
                                     filter
                                 />
-
                                 <Dropdown
                                     appendTo="self"
                                     panelStyle={{ maxWidth: '100%' }}
                                     className="w-full mb-3"
                                     value={reason}
-                                    onChange={(e) => { selectedReason(e.value); if (!["ATESTADO", "AFASTAMENTO"].includes(e.value)) setDurationDays(1) }}
+                                    onChange={(e) => selectedReason(e.value)}
                                     options={reasonOptions}
                                     placeholder="Selecione o Motivo"
                                     optionLabel="name"
@@ -270,17 +285,6 @@ export function Request() {
                                     placeholder="Observação"
                                 />
                                 
-                                {["ATESTADO", "AFASTAMENTO"].includes(reason) && (
-                                    <div className="flex flex-column gap-2 mb-3">
-                                        <label htmlFor="duration-days">Quantidade de dias do afastamento</label>
-                                        <InputNumber inputId="duration-days" value={durationDays} onValueChange={(e) => setDurationDays(e.value || 1)} min={1} max={365} showButtons />
-                                        <Message
-                                            severity="info"
-                                            text="Informe a quantidade total e correta de dias que a pessoa já está ou ficará afastada, contando a partir da data da ausência selecionada. Faça apenas uma requisição: a reserva ficará bloqueada durante todo esse período."
-                                        />
-                                    </div>
-                                )}
-
                                 <div className="flex justify-content-between align-items-center gap-3 mb-4">
                                     <span className="font-medium">Data da ausência</span>
                                     <SelectButton value={dateChoice} options={dateOptions} onChange={(e) => e.value && setDateChoice(e.value)} allowEmpty={false} />

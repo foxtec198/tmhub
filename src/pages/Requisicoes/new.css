@@ -42,13 +42,48 @@
   color: #b42318;
 }
 
-.request-stepper-shell .p-message {
+.request-collaborator-summary {
+  margin: -.15rem 0 1rem;
+  padding: .85rem 1rem;
+  color: #173f25;
+  background: #effaf2;
+  border: 1px solid #bde5c8;
+  border-radius: 12px;
+}
+
+.request-collaborator-summary__heading {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+  margin-bottom: .65rem;
+  color: #08733f;
+  font-weight: 700;
+}
+
+.request-collaborator-summary dl {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(7rem, .8fr) minmax(0, 1.2fr);
+  gap: .75rem 1rem;
   margin: 0;
 }
 
-.request-stepper-shell .p-message .p-message-wrapper {
-  padding: .7rem .85rem;
-  align-items: flex-start;
+.request-collaborator-summary dl > div {
+  min-width: 0;
+}
+
+.request-collaborator-summary dt {
+  margin-bottom: .15rem;
+  color: #63806b;
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.request-collaborator-summary dd {
+  overflow-wrap: anywhere;
+  margin: 0;
+  font-weight: 600;
 }
 
 :root[data-theme="dark"] .request-create-page {
@@ -62,19 +97,28 @@
 
 :root[data-theme="dark"] .request-stepper-shell .p-stepper,
 :root[data-theme="dark"] .request-stepper-shell .p-stepper-nav {
-  background: transparent;
+  background: transparent !important;
 }
 
 :root[data-theme="dark"] .request-stepper-shell .p-stepper-panels {
   color: #edf7f0;
-  background: linear-gradient(145deg, #101713, #0a0e0b);
-  border-color: #31513a;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, .48), inset 0 1px rgba(99, 229, 139, .06);
+  background: transparent !important;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 :root[data-theme="dark"] .request-stepper-shell .p-stepper-action {
   color: #cfe8d6;
-  background: transparent;
+  background: transparent !important;
+}
+
+:root[data-theme="dark"] .request-stepper-shell .p-stepper-title {
+  color: #cfe8d6;
+  background: transparent !important;
+}
+
+:root[data-theme="dark"] .request-stepper-shell .p-stepper-header.p-highlight .p-stepper-title {
+  color: #63e58b;
 }
 
 :root[data-theme="dark"] .request-stepper-shell .p-stepper-number {
@@ -108,6 +152,20 @@
   color: #ff8a80;
 }
 
+:root[data-theme="dark"] .request-collaborator-summary {
+  color: #edf7f0;
+  background: #13231a;
+  border-color: #315d3d;
+}
+
+:root[data-theme="dark"] .request-collaborator-summary__heading {
+  color: #63e58b;
+}
+
+:root[data-theme="dark"] .request-collaborator-summary dt {
+  color: #9cbca5;
+}
+
 :root[data-theme="dark"] .request-stepper-shell .p-selectbutton {
   overflow: hidden;
   background: transparent !important;
@@ -129,5 +187,9 @@
 
   .request-stepper-shell {
     min-width: 0 !important;
+  }
+
+  .request-collaborator-summary dl {
+    grid-template-columns: 1fr;
   }
 }

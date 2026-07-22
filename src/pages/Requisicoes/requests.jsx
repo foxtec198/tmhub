@@ -13,7 +13,6 @@ import { SpeedDial } from "primereact/speeddial";
 import { Tooltip } from "primereact/tooltip";
 import { Dialog } from "primereact/dialog";
 import { Calendar } from "primereact/calendar";
-import { InputNumber } from "primereact/inputnumber";
 import { QuickRequestDialog } from "./QuickRequestDialog";
 import { RequestImportDialog } from "./RequestImportDialog";
 import "./requests.css";
@@ -106,7 +105,7 @@ export function Requests() {
         return summary;
     }, { open: 0, late: 0, expired: 0 }), [requests, currentTime]);
 
-    // Query a single business day; the backend accounts for multi-day request overlaps.
+    // Consulta somente a data selecionada; cada requisição ocupa um único dia.
     const loadReservationUsage = async (date = usageDate) => {
         const value = new Date(date)
         const yyyyMmDd = `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`
@@ -316,10 +315,8 @@ export function Requests() {
         },
         {
             header: "Dias",
-            field: "quantidade_dias",
-            body: (row) => ["ATESTADO", "AFASTAMENTO"].includes(row.motivo)
-                ? <Inplace closable><InplaceDisplay>{row.quantidade_dias || 1}</InplaceDisplay><InplaceContent><InputNumber value={row.quantidade_dias || 1} min={1} max={365} showButtons onValueChange={(e) => e.value && confirm("Duração", { id: row.id, quantidade_dias: e.value })} /></InplaceContent></Inplace>
-                : "—",
+            field: "dias",
+            body: (row) => <span>{row.dias || 1}</span>,
         },
         {
             header: "Ações",
