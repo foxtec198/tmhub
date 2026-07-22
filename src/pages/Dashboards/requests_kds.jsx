@@ -18,6 +18,13 @@ function parseDate(value) {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
+function shortName(value, fallback = "Não informado") {
+  const parts = String(value || "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return fallback;
+  if (parts.length === 1) return parts[0];
+  return `${parts[0]} ${parts.at(-1)}`;
+}
+
 function elapsedMilliseconds(request, now) {
   const openedAt = parseDate(request.aberta_em || request.abertura);
   if (!openedAt) return 0;
@@ -216,9 +223,9 @@ export function RequestsKDS() {
                   <small>{scheduledLabel(request, now)} • REQ #{request.id}</small>
                 </div>
                 <div><strong>{request.contrato || "Não informado"}</strong><small>DPTO {request.departamento ?? "—"}</small></div>
-                <div><strong>{request.ausente}</strong><small>{request.ausente_matricula || "Sem matrícula"}</small></div>
-                <div><strong>{request.reserva || "SEM COBERTURA"}</strong><small>{request.reserva_matricula || "Aguardando definição"}</small></div>
-                <div><strong>{request.supervisor}</strong></div>
+                <div><strong>{shortName(request.ausente)}</strong><small>{request.ausente_matricula || "Sem matrícula"}</small></div>
+                <div><strong>{shortName(request.reserva, "SEM COBERTURA")}</strong><small>{request.reserva_matricula || "Aguardando definição"}</small></div>
+                <div><strong>{shortName(request.supervisor)}</strong></div>
                 <div><strong>{request.motivo || "Não informado"}</strong>{request.warning ? <small className="is-alert">ADVERTÊNCIA APLICADA</small> : request.obs ? <small title={request.obs}>{request.obs}</small> : null}</div>
                 <div><span className={`requests-kds__badge is-${status.tone}`}><i className={`pi ${status.icon}`} />{status.label}</span></div>
                 <div><span className={`requests-kds__badge is-${requestSituation.tone}`}>{requestSituation.label}</span></div>
