@@ -123,14 +123,15 @@ export function RequestsKDS() {
   }, [loadRequests]);
 
   const sortedRequests = useMemo(() => [...requests].sort((first, second) => {
+    const firstActive = ACTIVE_STATUSES.has(first.status);
+    const secondActive = ACTIVE_STATUSES.has(second.status);
+    if (firstActive !== secondActive) return firstActive ? -1 : 1;
+
     const dayPriority = { today: 0, future: 1, past: 2 };
     const firstDay = dayCategory(first, now);
     const secondDay = dayCategory(second, now);
     if (firstDay !== secondDay) return dayPriority[firstDay] - dayPriority[secondDay];
 
-    const firstActive = ACTIVE_STATUSES.has(first.status);
-    const secondActive = ACTIVE_STATUSES.has(second.status);
-    if (firstActive !== secondActive) return firstActive ? -1 : 1;
     if (firstActive) {
       const severityPriority = { critical: 0, warning: 1, open: 2, scheduled: 3 };
       const severityDifference = severityPriority[situation(first, now).tone] - severityPriority[situation(second, now).tone];
