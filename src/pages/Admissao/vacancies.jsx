@@ -136,7 +136,7 @@ function VagaItem({ vaga, supervisors, onUpdate, onCandidateResult, onDelete }) 
     const [entrevistaHora, setEntrevistaHora] = useState(vaga.entrevista_data ? new Date(vaga.entrevista_data) : null);
     const [showInterviewForm, setShowInterviewForm] = useState(false);
     const [showCompletionForm, setShowCompletionForm] = useState(false);
-    const [completionEmployeeId, setCompletionEmployeeId] = useState(vaga.colaborador_entrada_id || null);
+    const [completionRegistration, setCompletionRegistration] = useState(vaga.colaborador_entrada_matricula || '');
     const [completionDate, setCompletionDate] = useState(vaga.data_inicio ? new Date(vaga.data_inicio) : new Date());
     const [completionText, setCompletionText] = useState(vaga.colaborador_entrada || '');
     const [completionObservation, setCompletionObservation] = useState(vaga.observacao_conclusao || '');
@@ -152,7 +152,7 @@ function VagaItem({ vaga, supervisors, onUpdate, onCandidateResult, onDelete }) 
     async function handleStatusSelect(newStatus) {
         // Conclusão e entrevista exigem dados extras, por isso abrem fluxos próprios antes do PATCH.
         if (newStatus === 'concluido') {
-            setCompletionEmployeeId(vaga.colaborador_entrada_id || null);
+            setCompletionRegistration(vaga.colaborador_entrada_matricula || '');
             setCompletionDate(vaga.data_inicio ? new Date(vaga.data_inicio) : new Date());
             setCompletionText(vaga.colaborador_entrada || '');
             setCompletionObservation(vaga.observacao_conclusao || '');
@@ -193,9 +193,8 @@ function VagaItem({ vaga, supervisors, onUpdate, onCandidateResult, onDelete }) 
     }
 
     async function confirmCompletion() {
-        // Somente aqui o texto do candidato passa a apontar para um colaborador real da base.
-        if (!completionEmployeeId) {
-            showToast('warn', 'Atenção!', 'Selecione o colaborador que vai entrar.');
+        if (!completionRegistration.trim()) {
+            showToast('warn', 'Atenção!', 'Informe a matrícula do colaborador que vai entrar.');
             return;
         }
         if (!completionDate) {
@@ -205,7 +204,7 @@ function VagaItem({ vaga, supervisors, onUpdate, onCandidateResult, onDelete }) 
 
         const updated = await onUpdate(vaga.id, {
             status: 'concluido',
-            colaborador_entrada_id: completionEmployeeId,
+            colaborador_entrada_matricula: completionRegistration.trim(),
             colaborador_entrada: completionText.trim(),
             data_inicio: toApiDate(completionDate),
             observacao_conclusao: completionObservation.trim() || null,
@@ -277,7 +276,11 @@ function VagaItem({ vaga, supervisors, onUpdate, onCandidateResult, onDelete }) 
                 <InfoField label="Motivo da Saída" value={vaga.motivo_saida} />
                 {vaga.entrevistador && <InfoField label="Entrevistadora" value={vaga.entrevistador} />}
                 {vaga.entrevista_data && <InfoField label="Data da Entrevista" value={new Date(vaga.entrevista_data).toLocaleString('pt-br')} />}
-                {vaga.colaborador_entrada_cadastrado && <InfoField label="Colaborador que entrou" value={`${vaga.colaborador_entrada_matricula} - ${vaga.colaborador_entrada_cadastrado}`} />}
+                {vaga.status === 'concluido' && <InfoField label="Matrícula do contratado" value={vaga.colaborador_entrada_matricula} />}
+                {vaga.status === 'concluido' && <InfoField
+                    label="Colaborador que entrou"
+                    value={vaga.colaborador_entrada_cadastrado || 'Colaborador contratado ainda não encontrado'}
+                />}
                 {vaga.data_inicio && <InfoField label="Data de início" value={new Date(vaga.data_inicio).toLocaleString('pt-br')} />}
                 {vaga.concluido_por_usuario && <InfoField label="Concluída por" value={vaga.concluido_por_usuario} />}
                 {vaga.observacao_conclusao && <InfoField label="Observação da conclusão" value={vaga.observacao_conclusao} />}
@@ -434,17 +437,23 @@ function VagaItem({ vaga, supervisors, onUpdate, onCandidateResult, onDelete }) 
                         <span>Recrutador: <strong>{localStorage.getItem('display_name') || 'Usuário do TMHub'}</strong></span>
                     </div>
 
-                    <CollaboratorDropdown
-                        value={completionEmployeeId}
-                        className="w-full"
-                        placeholder="Colaborador que vai entrar *"
-                        onChange={(employeeId, employee) => {
-                            setCompletionEmployeeId(employeeId);
-                            if (employee) setCompletionText(employee.nome || '');
-                        }}
-                        onError={() => showToast('error', 'Erro!', 'Não foi possível buscar os colaboradores.')}
-                    />
+                    <FloatLabel>
+                        <InputText
+                            id={`completion-registration-${vaga.id}`}
+                            value={completionRegistration}
+                            onChange={(event) => setCompletionRegistration(event.target.value)}
+                            className="w-full"
+                            maxLength={50}
+                            autoFocus
+                        />
+                        <label htmlFor={`completion-registration-${vaga.id}`}>Matrícula do colaborador contratado *</label>
+                    </FloatLabel>
 
+                    <small className="completion-schedule-hint">
+                        <i className="pi pi-info-circle" /> A vaga pode ser concluída mesmo que essa matrícula ainda não esteja na base de colaboradores.
+                    </small>
+
+                    {/* O nome continua livre para preservar o candidato enquanto a importação não ocorre. */}
                     <FloatLabel>
                         <InputText
                             id={`completion-text-${vaga.id}`}
@@ -452,9 +461,10 @@ function VagaItem({ vaga, supervisors, onUpdate, onCandidateResult, onDelete }) 
                             value={completionText}
                             onChange={(event) => setCompletionText(event.target.value)}
                         />
-                        <label htmlFor={`completion-text-${vaga.id}`}>Texto do colaborador substituto</label>
+                        <label htmlFor={`completion-text-${vaga.id}`}>Nome do colaborador contratado (opcional)</label>
                     </FloatLabel>
 
+                    {/* A data de início mantém a composição automática com a jornada da vaga. */}
                     <FloatLabel>
                         <Calendar
                             id={`completion-date-${vaga.id}`}

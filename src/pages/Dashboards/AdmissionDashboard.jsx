@@ -176,7 +176,7 @@ export function AdmissionDashboard() {
                     </DataTable>}
 
                     {activeTable === 'recent' && <DataTable value={data?.recentes || []} size="small" stripedRows paginator rows={10} emptyMessage="Sem vagas no período.">
-                        <Column header="Vaga" body={(row) => <div className="admission-vacancy-cell"><strong>{row.candidato || row.colaborador_saida || 'Sem candidato'}</strong><span>{row.contrato}</span></div>} style={{ minWidth: '18rem' }} />
+                        <Column header="Vaga" body={(row) => <div className="admission-vacancy-cell"><strong>{row.candidato || row.colaborador_saida || 'Sem candidato'}</strong><span>{row.candidato_matricula ? `Matrícula ${row.candidato_matricula} • ${row.contrato}` : row.contrato}</span></div>} style={{ minWidth: '18rem' }} />
                         <Column header="Aviso" body={(row) => formatDateTime(row.aviso_em)} sortable sortField="aviso_em" />
                         <Column header="Responsável" field="responsavel" />
                         <Column header="Tentativas" field="tentativas" />
