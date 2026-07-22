@@ -35,12 +35,38 @@ function formatElapsed(milliseconds) {
   return days ? `${days}d ${clock}` : clock;
 }
 
+function startOfDay(value) {
+  const date = value instanceof Date ? new Date(value) : parseDate(value);
+  if (!date) return null;
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+function dayCategory(request, now) {
+  const requestDay = startOfDay(request.abertura);
+  const today = startOfDay(new Date(now));
+  if (!requestDay || !today) return "past";
+  if (requestDay.getTime() === today.getTime()) return "today";
+  return requestDay > today ? "future" : "past";
+}
+
+function scheduledLabel(request, now) {
+  const requestDay = startOfDay(request.abertura);
+  const today = startOfDay(new Date(now));
+  if (!requestDay || !today) return "DATA NÃO INFORMADA";
+  const difference = Math.round((requestDay - today) / 86_400_000);
+  if (difference === 0) return "HOJE";
+  if (difference === 1) return `AMANHÃ • ${requestDay.toLocaleDateString("pt-BR")}`;
+  return requestDay.toLocaleDateString("pt-BR");
+}
+
 function situation(request, now) {
   if (!ACTIVE_STATUSES.has(request.status)) return { label: "FINALIZADA", tone: "closed" };
+  if (dayCategory(request, now) === "future") return { label: "AGENDADA", tone: "scheduled" };
   const hours = elapsedMilliseconds(request, now) / 3_600_000;
-  if (hours >= 6) return { label: "CRÍTICA", tone: "critical" };
-  if (hours >= 4) return { label: "ATENÇÃO", tone: "warning" };
-  return { label: "NO PRAZO", tone: "open" };
+  if (hours >= 6) return { label: "EXPIRADA", tone: "critical" };
+  if (hours >= 4) return { label: "EM ATRASO", tone: "warning" };
+  return { label: "ABERTA", tone: "open" };
 }
 
 export function RequestsKDS() {
@@ -97,12 +123,22 @@ export function RequestsKDS() {
   }, [loadRequests]);
 
   const sortedRequests = useMemo(() => [...requests].sort((first, second) => {
+    const dayPriority = { today: 0, future: 1, past: 2 };
+    const firstDay = dayCategory(first, now);
+    const secondDay = dayCategory(second, now);
+    if (firstDay !== secondDay) return dayPriority[firstDay] - dayPriority[secondDay];
+
     const firstActive = ACTIVE_STATUSES.has(first.status);
     const secondActive = ACTIVE_STATUSES.has(second.status);
     if (firstActive !== secondActive) return firstActive ? -1 : 1;
-    if (firstActive) return (parseDate(first.abertura)?.getTime() || 0) - (parseDate(second.abertura)?.getTime() || 0);
+    if (firstActive) {
+      const severityPriority = { critical: 0, warning: 1, open: 2, scheduled: 3 };
+      const severityDifference = severityPriority[situation(first, now).tone] - severityPriority[situation(second, now).tone];
+      if (severityDifference) return severityDifference;
+      return (parseDate(first.abertura)?.getTime() || 0) - (parseDate(second.abertura)?.getTime() || 0);
+    }
     return (parseDate(second.decidida_em)?.getTime() || 0) - (parseDate(first.decidida_em)?.getTime() || 0);
-  }), [requests]);
+  }), [requests, now]);
 
   const pageCount = Math.max(1, Math.ceil(sortedRequests.length / PAGE_SIZE));
   const visibleRequests = sortedRequests.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -155,14 +191,14 @@ export function RequestsKDS() {
 
       <section className="requests-kds__summary" aria-label="Resumo das requisições">
         <article><span>Em aberto</span><strong>{summary.open}</strong></article>
-        <article className="is-warning"><span>Em atenção</span><strong>{summary.warning}</strong></article>
-        <article className="is-critical"><span>Críticas</span><strong>{summary.critical}</strong></article>
-        <article className="is-closed"><span>Finalizadas recentes</span><strong>{summary.closed}</strong></article>
+        <article className="is-warning"><span>Em atraso</span><strong>{summary.warning}</strong></article>
+        <article className="is-critical"><span>Expiradas</span><strong>{summary.critical}</strong></article>
+        <article className="is-closed"><span>Finalizadas</span><strong>{summary.closed}</strong></article>
       </section>
 
       <section className="requests-kds__board" aria-live="polite">
         <div className="requests-kds__table-header requests-kds__grid">
-          <span>Tempo aberto</span><span>Contrato / posto</span><span>Ausente</span><span>Reserva</span>
+          <span>Tempo / data</span><span>Contrato / posto</span><span>Ausente</span><span>Reserva</span>
           <span>Supervisor</span><span>Motivo</span><span>Status</span><span>Situação</span>
         </div>
 
@@ -170,9 +206,14 @@ export function RequestsKDS() {
           {visibleRequests.map((request) => {
             const status = STATUS[request.status] || { label: String(request.status || "—").toUpperCase(), icon: "pi-circle", tone: "pending" };
             const requestSituation = situation(request, now);
+            const requestDay = dayCategory(request, now);
             return (
               <article key={request.id} className={`requests-kds__row requests-kds__grid is-${requestSituation.tone}`}>
-                <div className="requests-kds__elapsed"><i className="pi pi-clock" /><strong>{formatElapsed(elapsedMilliseconds(request, now))}</strong><small>REQ #{request.id}</small></div>
+                <div className="requests-kds__elapsed">
+                  <i className={`pi ${requestDay === "future" ? "pi-calendar" : "pi-clock"}`} />
+                  <strong>{requestDay === "future" ? "PROGRAMADA" : formatElapsed(elapsedMilliseconds(request, now))}</strong>
+                  <small>{scheduledLabel(request, now)} • REQ #{request.id}</small>
+                </div>
                 <div><strong>{request.contrato || "Não informado"}</strong><small>DPTO {request.departamento ?? "—"}</small></div>
                 <div><strong>{request.ausente}</strong><small>{request.ausente_matricula || "Sem matrícula"}</small></div>
                 <div><strong>{request.reserva || "SEM COBERTURA"}</strong><small>{request.reserva_matricula || "Aguardando definição"}</small></div>
@@ -196,7 +237,7 @@ export function RequestsKDS() {
           {Array.from({ length: pageCount }, (_, index) => <i key={index} className={index === page ? "is-active" : ""} />)}
           <span>PÁGINA {page + 1}/{pageCount}</span>
         </div>
-        <span>Decisões permanecem no painel por 30 minutos</span>
+        <span>HOJE EM PRIMEIRO • ATRASO 4H • EXPIRAÇÃO 6H</span>
       </footer>
     </main>
   );
