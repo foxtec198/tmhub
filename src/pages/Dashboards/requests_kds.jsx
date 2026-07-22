@@ -19,7 +19,7 @@ function parseDate(value) {
 }
 
 function elapsedMilliseconds(request, now) {
-  const openedAt = parseDate(request.abertura);
+  const openedAt = parseDate(request.aberta_em || request.abertura);
   if (!openedAt) return 0;
   const closedAt = parseDate(request.decidida_em);
   return Math.max(0, (closedAt?.getTime() || now) - openedAt.getTime());
