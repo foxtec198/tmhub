@@ -193,7 +193,7 @@ export function RequestsKDS() {
         <article><span>Em aberto</span><strong>{summary.open}</strong></article>
         <article className="is-warning"><span>Em atraso</span><strong>{summary.warning}</strong></article>
         <article className="is-critical"><span>Expiradas</span><strong>{summary.critical}</strong></article>
-        <article className="is-closed"><span>Finalizadas</span><strong>{summary.closed}</strong></article>
+        <article className="is-closed"><span>Finalizadas hoje</span><strong>{summary.closed}</strong></article>
       </section>
 
       <section className="requests-kds__board" aria-live="polite">
@@ -237,7 +237,7 @@ export function RequestsKDS() {
           {Array.from({ length: pageCount }, (_, index) => <i key={index} className={index === page ? "is-active" : ""} />)}
           <span>PÁGINA {page + 1}/{pageCount}</span>
         </div>
-        <span>HOJE EM PRIMEIRO • ATRASO 4H • EXPIRAÇÃO 6H</span>
+        <span>ABERTAS SEM LIMITE • FINALIZADAS DE HOJE</span>
       </footer>
     </main>
   );
