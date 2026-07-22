@@ -10,6 +10,7 @@ import './main.css'
 export function MainLayout() {
   const [displayName, setDisplayName] = useState(() => localStorage.getItem("display_name") || "");
   const [profilePhoto, setProfilePhoto] = useState(() => localStorage.getItem("profile_photo"));
+  const [absenceManager, setAbsenceManager] = useState(() => localStorage.getItem("gerencia_faltas") === "true");
   const [role] = useState(() => {
     const storedRole = localStorage.getItem("role");
     return storedRole ? capitalize(storedRole) : "";
@@ -19,6 +20,7 @@ export function MainLayout() {
   );
   const navigate = useNavigate();
   const deny = deny_roles.includes(role)
+  const canManageAbsences = role === "Admin" || absenceManager;
 
   const navigateTo = (path) => {
     navigate(path);
@@ -95,6 +97,11 @@ export function MainLayout() {
       label: "Reposições",
       icon: 'pi pi-sync',
       items: [
+        ...(canManageAbsences ? [{
+          label: 'Controle de Faltas',
+          icon: 'pi pi-calendar-times',
+          command: () => { navigateTo("/controle-faltas") }
+        }] : []),
         {
           label: 'Requisições',
           icon: 'pi pi-question',
@@ -167,6 +174,7 @@ export function MainLayout() {
     const updateProfile = (profile) => {
       setDisplayName(profile.nome || "");
       setProfilePhoto(profile.foto_perfil || null);
+      setAbsenceManager(Boolean(profile.gerencia_faltas));
     };
     const listener = (event) => updateProfile(event.detail);
     window.addEventListener("tmhub:profile", listener);

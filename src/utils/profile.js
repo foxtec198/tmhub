@@ -9,6 +9,7 @@ export function storeProfile(profile) {
   if (profile.email != null) localStorage.setItem("email", profile.email);
   if (profile.foto_perfil) localStorage.setItem("profile_photo", profile.foto_perfil);
   else localStorage.removeItem("profile_photo");
+  if (profile.gerencia_faltas != null) localStorage.setItem("gerencia_faltas", profile.gerencia_faltas ? "true" : "false");
   if (profile.tema === "dark" || profile.tema === "light") {
     localStorage.setItem("theme", profile.tema);
     document.documentElement.dataset.theme = profile.tema;

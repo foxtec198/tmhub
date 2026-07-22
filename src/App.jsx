@@ -37,6 +37,7 @@ import { Floaters } from "./pages/Requisicoes/floaters";
 import ProjetosPage from "./pages/Projetos/ProjetosPage";
 import { Vacancies } from "./pages/Admissao/vacancies.jsx"
 import { Settings } from "./pages/Configuracoes"
+import { AbsenceControl } from "./pages/ControleFaltas"
 
 document.documentElement.dataset.theme = localStorage.getItem("theme") === "dark" ? "dark" : "light";
 
@@ -103,6 +104,7 @@ export function AppRoutes() {
           <Route path="/init" element={<Init />} />
           <Route path="/projetos" element={<ProjetosPage />} />
           <Route path="/configuracoes" element={<Settings />} />
+          <Route path="/controle-faltas" element={<AbsenceControl />} />
 
           {/* Admissão */}
           <Route path="/admissao/vagas" element={<Vacancies />} />

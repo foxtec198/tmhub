@@ -19,9 +19,13 @@ function SelectedCollaborator({ title, collaborator, icon }) {
     if (!collaborator) return null;
 
     const placeName = collaborator.centro_local || collaborator.lugar || collaborator.local || collaborator.posto;
-    const place = [collaborator.centro_id, placeName, collaborator.departamento]
-        .filter((part, index, parts) => part != null && part !== "" && parts.indexOf(part) === index)
-        .join(" - ") || "Não informado";
+    const place = placeName
+        ? [collaborator.centro_id, placeName, collaborator.departamento]
+            .filter((part, index, parts) => part != null && part !== "" && parts.indexOf(part) === index)
+            .join(" - ")
+        : collaborator.centro_id
+            ? `Centro ${collaborator.centro_id} - local não cadastrado`
+            : "Não informado";
     return (
         <section className="request-collaborator-summary" aria-label={`${title} selecionado`}>
             <div className="request-collaborator-summary__heading">

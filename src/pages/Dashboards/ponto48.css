@@ -107,7 +107,7 @@
 .ponto48-filter-field > span { font-size: .82rem; }
 
 .ponto48-empty { display: grid; min-height: 25rem; place-items: center; align-content: center; gap: .7rem; text-align: center; border: 1px dashed var(--surface-border); border-radius: 16px; background: var(--surface-card); }
-.ponto48-empty > i { color: var(--primary-color); font-size: 3rem; }
+.ponto48-empty > i { color: var(--accent); font-size: 3rem; }
 .ponto48-empty h2, .ponto48-empty p { margin: 0; }
 .ponto48-empty p { color: var(--text-color-secondary); }
 
