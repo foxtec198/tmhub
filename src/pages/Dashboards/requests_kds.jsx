@@ -1,0 +1,203 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import connect from "../../utils/request";
+import { socketio } from "../../utils/socketio";
+import "./requests_kds.css";
+
+const PAGE_SIZE = 9;
+const ACTIVE_STATUSES = new Set(["pending", "updated"]);
+
+const STATUS = {
+  pending: { label: "PENDENTE", icon: "pi-hourglass", tone: "pending" },
+  updated: { label: "ALTERADA", icon: "pi-pencil", tone: "updated" },
+  approved: { label: "APROVADA", icon: "pi-check-circle", tone: "approved" },
+  reproved: { label: "REPROVADA", icon: "pi-times-circle", tone: "reproved" },
+};
+
+function parseDate(value) {
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function elapsedMilliseconds(request, now) {
+  const openedAt = parseDate(request.abertura);
+  if (!openedAt) return 0;
+  const closedAt = parseDate(request.decidida_em);
+  return Math.max(0, (closedAt?.getTime() || now) - openedAt.getTime());
+}
+
+function formatElapsed(milliseconds) {
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const clock = [hours, minutes, seconds].map((value) => String(value).padStart(2, "0")).join(":");
+  return days ? `${days}d ${clock}` : clock;
+}
+
+function situation(request, now) {
+  if (!ACTIVE_STATUSES.has(request.status)) return { label: "FINALIZADA", tone: "closed" };
+  const hours = elapsedMilliseconds(request, now) / 3_600_000;
+  if (hours >= 6) return { label: "CRÍTICA", tone: "critical" };
+  if (hours >= 4) return { label: "ATENÇÃO", tone: "warning" };
+  return { label: "NO PRAZO", tone: "open" };
+}
+
+export function RequestsKDS() {
+  const [requests, setRequests] = useState([]);
+  const [now, setNow] = useState(() => Date.now());
+  const [connected, setConnected] = useState(socketio.connected);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [error, setError] = useState("");
+  const [page, setPage] = useState(0);
+  const [fullscreen, setFullscreen] = useState(Boolean(document.fullscreenElement));
+  const refreshTimer = useRef(null);
+
+  const loadRequests = useCallback(async () => {
+    try {
+      const { data } = await connect.get("/repo/kds");
+      setRequests(data.requisicoes || []);
+      setLastUpdated(new Date());
+      setError("");
+    } catch (requestError) {
+      const message = requestError.response?.data;
+      const readableMessage = typeof message === "string" && !message.trim().startsWith("<")
+        ? message
+        : message?.message;
+      setError(readableMessage || "Não foi possível atualizar o painel.");
+    }
+  }, []);
+
+  useEffect(() => {
+    loadRequests();
+    const clock = window.setInterval(() => setNow(Date.now()), 1000);
+    const fallback = window.setInterval(loadRequests, 60_000);
+    const scheduleRefresh = () => {
+      window.clearTimeout(refreshTimer.current);
+      refreshTimer.current = window.setTimeout(loadRequests, 150);
+    };
+    const handleConnect = () => { setConnected(true); scheduleRefresh(); };
+    const handleDisconnect = () => setConnected(false);
+    const handleFullscreen = () => setFullscreen(Boolean(document.fullscreenElement));
+
+    socketio.on("connect", handleConnect);
+    socketio.on("disconnect", handleDisconnect);
+    socketio.on("kds_update", scheduleRefresh);
+    document.addEventListener("fullscreenchange", handleFullscreen);
+
+    return () => {
+      window.clearInterval(clock);
+      window.clearInterval(fallback);
+      window.clearTimeout(refreshTimer.current);
+      socketio.off("connect", handleConnect);
+      socketio.off("disconnect", handleDisconnect);
+      socketio.off("kds_update", scheduleRefresh);
+      document.removeEventListener("fullscreenchange", handleFullscreen);
+    };
+  }, [loadRequests]);
+
+  const sortedRequests = useMemo(() => [...requests].sort((first, second) => {
+    const firstActive = ACTIVE_STATUSES.has(first.status);
+    const secondActive = ACTIVE_STATUSES.has(second.status);
+    if (firstActive !== secondActive) return firstActive ? -1 : 1;
+    if (firstActive) return (parseDate(first.abertura)?.getTime() || 0) - (parseDate(second.abertura)?.getTime() || 0);
+    return (parseDate(second.decidida_em)?.getTime() || 0) - (parseDate(first.decidida_em)?.getTime() || 0);
+  }), [requests]);
+
+  const pageCount = Math.max(1, Math.ceil(sortedRequests.length / PAGE_SIZE));
+  const visibleRequests = sortedRequests.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+  useEffect(() => {
+    if (page >= pageCount) setPage(0);
+  }, [page, pageCount]);
+
+  useEffect(() => {
+    if (pageCount <= 1) return undefined;
+    const rotation = window.setInterval(() => setPage((current) => (current + 1) % pageCount), 12_000);
+    return () => window.clearInterval(rotation);
+  }, [pageCount]);
+
+  const summary = useMemo(() => requests.reduce((result, request) => {
+    if (ACTIVE_STATUSES.has(request.status)) {
+      result.open += 1;
+      const requestSituation = situation(request, now).tone;
+      if (requestSituation === "warning") result.warning += 1;
+      if (requestSituation === "critical") result.critical += 1;
+    } else {
+      result.closed += 1;
+    }
+    return result;
+  }, { open: 0, warning: 0, critical: 0, closed: 0 }), [requests, now]);
+
+  const toggleFullscreen = async () => {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await document.documentElement.requestFullscreen();
+  };
+
+  return (
+    <main className="requests-kds">
+      <header className="requests-kds__header">
+        <div className="requests-kds__brand">
+          <img src="/brands/main_brand.svg" alt="TM Hub — Painel Executivo" />
+          <div><span>OPERAÇÃO EM TEMPO REAL</span><h1>KDS DE REPOSIÇÕES</h1></div>
+        </div>
+
+        <div className="requests-kds__header-status">
+          <div className={`requests-kds__connection ${connected ? "is-online" : "is-offline"}`}>
+            <i />{connected ? "TEMPO REAL" : "RECONECTANDO"}
+          </div>
+          <time>{new Date(now).toLocaleTimeString("pt-BR")}</time>
+          <button type="button" onClick={toggleFullscreen} aria-label={fullscreen ? "Sair da tela cheia" : "Entrar em tela cheia"}>
+            <i className={`pi ${fullscreen ? "pi-window-minimize" : "pi-window-maximize"}`} />
+          </button>
+        </div>
+      </header>
+
+      <section className="requests-kds__summary" aria-label="Resumo das requisições">
+        <article><span>Em aberto</span><strong>{summary.open}</strong></article>
+        <article className="is-warning"><span>Em atenção</span><strong>{summary.warning}</strong></article>
+        <article className="is-critical"><span>Críticas</span><strong>{summary.critical}</strong></article>
+        <article className="is-closed"><span>Finalizadas recentes</span><strong>{summary.closed}</strong></article>
+      </section>
+
+      <section className="requests-kds__board" aria-live="polite">
+        <div className="requests-kds__table-header requests-kds__grid">
+          <span>Tempo aberto</span><span>Contrato / posto</span><span>Ausente</span><span>Reserva</span>
+          <span>Supervisor</span><span>Motivo</span><span>Status</span><span>Situação</span>
+        </div>
+
+        <div className="requests-kds__rows">
+          {visibleRequests.map((request) => {
+            const status = STATUS[request.status] || { label: String(request.status || "—").toUpperCase(), icon: "pi-circle", tone: "pending" };
+            const requestSituation = situation(request, now);
+            return (
+              <article key={request.id} className={`requests-kds__row requests-kds__grid is-${requestSituation.tone}`}>
+                <div className="requests-kds__elapsed"><i className="pi pi-clock" /><strong>{formatElapsed(elapsedMilliseconds(request, now))}</strong><small>REQ #{request.id}</small></div>
+                <div><strong>{request.contrato || "Não informado"}</strong><small>DPTO {request.departamento ?? "—"}</small></div>
+                <div><strong>{request.ausente}</strong><small>{request.ausente_matricula || "Sem matrícula"}</small></div>
+                <div><strong>{request.reserva || "SEM COBERTURA"}</strong><small>{request.reserva_matricula || "Aguardando definição"}</small></div>
+                <div><strong>{request.supervisor}</strong></div>
+                <div><strong>{request.motivo || "Não informado"}</strong>{request.warning ? <small className="is-alert">ADVERTÊNCIA APLICADA</small> : request.obs ? <small title={request.obs}>{request.obs}</small> : null}</div>
+                <div><span className={`requests-kds__badge is-${status.tone}`}><i className={`pi ${status.icon}`} />{status.label}</span></div>
+                <div><span className={`requests-kds__badge is-${requestSituation.tone}`}>{requestSituation.label}</span></div>
+              </article>
+            );
+          })}
+
+          {!visibleRequests.length && (
+            <div className="requests-kds__empty"><i className="pi pi-check-circle" /><strong>Nenhuma requisição na fila</strong><span>O painel atualizará automaticamente quando houver movimentação.</span></div>
+          )}
+        </div>
+      </section>
+
+      <footer className="requests-kds__footer">
+        <span>{error || `Última sincronização: ${lastUpdated ? lastUpdated.toLocaleTimeString("pt-BR") : "aguardando"}`}</span>
+        <div className="requests-kds__pagination">
+          {Array.from({ length: pageCount }, (_, index) => <i key={index} className={index === page ? "is-active" : ""} />)}
+          <span>PÁGINA {page + 1}/{pageCount}</span>
+        </div>
+        <span>Decisões permanecem no painel por 30 minutos</span>
+      </footer>
+    </main>
+  );
+}

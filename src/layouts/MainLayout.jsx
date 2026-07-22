@@ -39,6 +39,11 @@ export function MainLayout() {
           command: () => { navigateTo("/reports/reposicoes") }
         },
         {
+          label: 'KDS Reposições',
+          icon: 'pi pi-external-link',
+          command: () => { navigateTo("/reports/reposicoes/kds") }
+        },
+        {
           label: 'Colab. por DPTO',
           icon: 'pi pi-users',
           command: () => { navigateTo("/reports/colaboradores-departamento") }

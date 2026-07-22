@@ -11,7 +11,6 @@ import { PrimeReactProvider } from 'primereact/api';
 import { LoadingProvider } from './contexts/LoadingContext';
 import { ToastProvider } from "./contexts/ToastContext";
 
-
 // Styles
 import 'primeicons/primeicons.css';
 import 'primereact/resources/themes/saga-green/theme.css';
@@ -28,6 +27,7 @@ import { Request } from "./pages/Requisicoes/new.jsx"
 import { Frotas } from "./pages/Frotas"
 import { Auth } from "./pages/Auth"
 import { Init } from "./pages/Init"
+import { RequestsKDS } from "./pages/Dashboards/requests_kds";
 import { History } from "./pages/Requisicoes/history";
 import { Products } from "./pages/Estoque/products";
 import { Movements } from "./pages/Estoque/movements";
@@ -96,6 +96,8 @@ export function AppRoutes() {
         <Route path="/login" element={<Auth />} />
         <Route path="/reposicoes/requisicao" element={<Request />} />
         <Route path="/estoque/movimentacao" element={<MobileMovement />} />
+        <Route path="/reports/reposicoes/kds" element={<RequestsKDS />} />
+
         <Route element={<MainLayout />}>
           {/* Init Page */}
           <Route path="/init" element={<Init />} />
