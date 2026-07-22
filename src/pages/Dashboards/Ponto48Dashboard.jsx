@@ -239,14 +239,38 @@ export function Ponto48Dashboard() {
 
   const importReports = async () => {
     if (!absenteeismFile || !overtimeFile || !adjustmentsFile || !mirrorFile) return showToast("warn", "Importação", "Selecione os quatro relatórios CSV.");
-    const body = new FormData();
-    body.append("absenteismo", absenteeismFile);
-    body.append("horas_extras", overtimeFile);
-    body.append("ajustes", adjustmentsFile);
-    body.append("espelho", mirrorFile);
     try {
       setImporting(true);
-      const response = await connect.post("/dash/ponto-48h/importar", body);
+      const uploadId = crypto.randomUUID();
+      const reports = {
+        absenteismo: absenteeismFile,
+        horas_extras: overtimeFile,
+        ajustes: adjustmentsFile,
+        espelho: mirrorFile,
+      };
+      const chunkSize = 512 * 1024;
+      const metadata = {};
+
+      for (const [field, file] of Object.entries(reports)) {
+        const total = Math.ceil(file.size / chunkSize);
+        if (!total) throw new Error(`O arquivo ${file.name} está vazio.`);
+        metadata[field] = { nome: file.name, total };
+        for (let index = 0; index < total; index += 1) {
+          await connect.post(
+            "/dash/ponto-48h/importar/chunk",
+            file.slice(index * chunkSize, Math.min(file.size, (index + 1) * chunkSize)),
+            {
+              params: { upload_id: uploadId, arquivo: field, indice: index, total },
+              headers: { "Content-Type": "application/octet-stream" },
+            },
+          );
+        }
+      }
+
+      const response = await connect.post("/dash/ponto-48h/importar/finalizar", {
+        upload_id: uploadId,
+        arquivos: metadata,
+      });
       showToast("success", "Importação concluída", response.data?.message || "Relatórios importados.");
       setImportVisible(false);
       setAbsenteeismFile(null);
@@ -257,7 +281,7 @@ export function Ponto48Dashboard() {
       setAdjustmentsRefreshKey((current) => current + 1);
       setMirrorRefreshKey((current) => current + 1);
     } catch (error) {
-      showToast("error", "Falha na importação", error.response?.data || "Confira os arquivos enviados.");
+      showToast("error", "Falha na importação", error.response?.data || error.message || "Confira os arquivos enviados.");
     } finally {
       setImporting(false);
     }
