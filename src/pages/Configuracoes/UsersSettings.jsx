@@ -7,12 +7,13 @@ import { Password } from "primereact/password";
 import { FloatLabel } from "primereact/floatlabel";
 import { SpeedDial } from "primereact/speeddial";
 import { Tag } from "primereact/tag";
+import { MultiSelect } from "primereact/multiselect";
 import { Table } from "../../components/tables/Table";
 import connect from "../../utils/request";
 import { useLoading } from "../../contexts/LoadingContext";
 import { useToast } from "../../contexts/ToastContext";
 
-const EMPTY_FORM = { nome: "", cpf: "", email: "", role: "USER", password: "" };
+const EMPTY_FORM = { nome: "", cpf: "", email: "", role: "USER", password: "", filial_ids: [] };
 const ROLE_OPTIONS = [
   { label: "Supervisor", value: "SUPERVISOR" },
   { label: "Gerente", value: "GERENTE" },
@@ -28,6 +29,7 @@ function formatDate(value) {
 
 export function UsersSettings() {
   const [users, setUsers] = useState([]);
+  const [branches, setBranches] = useState([]);
   const [refresh, setRefresh] = useState(0);
   const [userDialog, setUserDialog] = useState(false);
   const [bulkDialog, setBulkDialog] = useState(false);
@@ -50,6 +52,7 @@ export function UsersSettings() {
       }
     }
     loadUsers();
+    if (canManage) connect.get("/filiais").then(({ data }) => setBranches((Array.isArray(data) ? data : []).filter((branch) => branch.ativa))).catch(() => {});
   }, [refresh, showToast]);
 
   const openCreate = () => {
@@ -60,7 +63,7 @@ export function UsersSettings() {
 
   const openEdit = (user) => {
     setEditingId(user.id);
-    setForm({ nome: user.nome || "", cpf: user.cpf || "", email: user.email || "", role: user.role || "USER", password: "" });
+    setForm({ nome: user.nome || "", cpf: user.cpf || "", email: user.email || "", role: user.role || "USER", password: "", filial_ids: user.filial_ids || [] });
     setUserDialog(true);
   };
 
@@ -132,6 +135,7 @@ export function UsersSettings() {
     { header: "E-mail", field: "email", body: (user) => user.email || "—" },
     { header: "CPF", field: "cpf", body: (user) => user.cpf || "Restrito" },
     { header: "Perfil", field: "role", body: (user) => <Tag value={user.role || "USER"} severity={user.role === "ADMIN" ? "success" : "secondary"} /> },
+    { header: "Filiais", body: (user) => user.filial_ids?.length || 0 },
     { header: "Último acesso", field: "last_login", body: (user) => formatDate(user.last_login) },
     ...(canManage ? [{
       header: "Ações",
@@ -159,6 +163,7 @@ export function UsersSettings() {
         <FloatLabel><InputText id="user-cpf" value={form.cpf} onChange={(event) => setForm({ ...form, cpf: event.target.value })} maxLength={14} /><label htmlFor="user-cpf">CPF (opcional)</label></FloatLabel>
         <FloatLabel><InputText id="user-email" type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} /><label htmlFor="user-email">E-mail</label></FloatLabel>
         <FloatLabel><Dropdown inputId="user-role" value={form.role} options={ROLE_OPTIONS} onChange={(event) => setForm({ ...form, role: event.value })} /><label htmlFor="user-role">Perfil</label></FloatLabel>
+        <FloatLabel><MultiSelect inputId="user-branches" value={form.filial_ids} options={branches} optionValue="id" optionLabel="nome" onChange={(event) => setForm({ ...form, filial_ids: event.value })} display="chip" filter /><label htmlFor="user-branches">Filiais com acesso</label></FloatLabel>
         <FloatLabel><Password inputId="user-password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} toggleMask feedback={!editingId} required={!editingId} /><label htmlFor="user-password">{editingId ? "Nova senha (opcional)" : "Senha"}</label></FloatLabel>
         <div className="dialog-actions"><Button type="button" label="Cancelar" text onClick={() => setUserDialog(false)} /><Button type="submit" label={editingId ? "Salvar alterações" : "Criar usuário"} icon="pi pi-check" /></div>
       </form>

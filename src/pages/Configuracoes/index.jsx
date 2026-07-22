@@ -12,12 +12,14 @@ import { getInitials, storeProfile } from "../../utils/profile";
 import { useToast } from "../../contexts/ToastContext";
 import { useLoading } from "../../contexts/LoadingContext";
 import { UsersSettings } from "./UsersSettings";
+import { BranchSettings } from "./BranchSettings";
 import "./settings.css";
 
 // Mantida igual à validação do backend para feedback imediato no formulário.
 const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).{8,}$/;
 
 export function Settings() {
+  const isAdmin = String(localStorage.getItem("role") || "").toUpperCase() === "ADMIN";
   // Perfil, preferência visual e estados dos fluxos de senha/e-mail.
   const [profile, setProfile] = useState({ nome: "", email: "", foto_perfil: null, tema: "light" });
   const [dark, setDark] = useState(() => localStorage.getItem("theme") === "dark");
@@ -151,9 +153,12 @@ export function Settings() {
     </div>
       </TabPanel>
 
-      <TabPanel header="Usuários" leftIcon="pi pi-users mr-2">
+      {isAdmin && <TabPanel header="Usuários" leftIcon="pi pi-users mr-2">
         <UsersSettings />
-      </TabPanel>
+      </TabPanel>}
+      {isAdmin && <TabPanel header="Filiais" leftIcon="pi pi-building mr-2">
+        <BranchSettings />
+      </TabPanel>}
     </TabView>
 
     <Dialog header="Confirme seu novo e-mail" visible={emailDialog} onHide={() => setEmailDialog(false)} className="otp-dialog" modal>

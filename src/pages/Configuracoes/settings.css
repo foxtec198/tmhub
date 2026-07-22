@@ -285,3 +285,4 @@
         min-height: 15rem
     }
 }
+.branch-settings-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:1.25rem}.branch-help-card{align-self:start}.branch-form{display:flex;flex-direction:column;gap:.75rem;margin-top:.75rem}.branch-form>label{font-size:.82rem;font-weight:700}.branch-form .p-multiselect,.branch-form>.p-inputtext{width:100%}.branch-active{display:flex;align-items:center;justify-content:space-between;padding:1rem;border:1px solid var(--surface-border);border-radius:12px}.branch-active div{display:flex;flex-direction:column;gap:.2rem}.branch-active small{color:var(--text-color-secondary)}.branch-dialog{width:min(720px,95vw)}@media(max-width:900px){.branch-settings-layout{grid-template-columns:1fr}}
