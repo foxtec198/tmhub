@@ -78,7 +78,7 @@ export function QuickRequestDialog({ visible, onHide, onCreated }) {
       {!form.noCoverage && <Dropdown value={form.reservation} options={options.reservations} onChange={(e) => setForm({ ...form, reservation: e.value })} placeholder="Reserva" filter />}
       <Dropdown value={form.reason} options={REASONS} onChange={(e) => setForm({ ...form, reason: e.value })} placeholder="Motivo" />
       {form.reason === "INJUSTIFICADA" && <Dropdown value={form.warning} options={["Aplicado", "Não Aplicado"]} onChange={(e) => setForm({ ...form, warning: e.value })} placeholder="Advertência" />}
-      {form.reason === "OUTROS" && <InputText value={form.obs} onChange={(e) => setForm({ ...form, obs: e.target.value })} placeholder="Observação" />}
+      <InputText value={form.obs} onChange={(e) => setForm({ ...form, obs: e.target.value })} placeholder="Observação (opcional)" />
       <Calendar value={form.date} onChange={(e) => e.value && setForm({ ...form, date: e.value })} dateFormat="dd/mm/yy" placeholder="Data da ausência" showIcon readOnlyInput />
       <label className="flex align-items-center gap-2"><Checkbox checked={form.noCoverage} onChange={(e) => setForm({ ...form, noCoverage: e.checked, reservation: e.checked ? null : form.reservation })} />Sem cobertura</label>
       <div className="flex justify-content-end gap-2"><Button type="button" label="Cancelar" text onClick={onHide}/><Button type="submit" label="Criar requisição" icon="pi pi-check"/></div>

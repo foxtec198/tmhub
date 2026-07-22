@@ -283,10 +283,10 @@ export function Request() {
                                 />
 
                                 <InputText
-                                    className={`w-full mb-3 ${reason != "OUTROS" ? "hidden" : null}`}
+                                    className="w-full mb-3"
                                     value={obs}
                                     onChange={(e) => setObs(e.target.value)}
-                                    placeholder="Observação"
+                                    placeholder="Observação (opcional)"
                                 />
                                 
                                 <div className="flex justify-content-between align-items-center gap-3 mb-4">
