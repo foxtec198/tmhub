@@ -27,7 +27,7 @@ import { Request } from "./pages/Requisicoes/new.jsx"
 import { Frotas } from "./pages/Frotas"
 import { Auth } from "./pages/Auth"
 import { Init } from "./pages/Init"
-import { RequestsKDS } from "./pages/Dashboards/requests_kds";
+import { RequestsODS } from "./pages/Dashboards/requests_ods";
 import { History } from "./pages/Requisicoes/history";
 import { Products } from "./pages/Estoque/products";
 import { Movements } from "./pages/Estoque/movements";
@@ -97,7 +97,7 @@ export function AppRoutes() {
         <Route path="/login" element={<Auth />} />
         <Route path="/reposicoes/requisicao" element={<Request />} />
         <Route path="/estoque/movimentacao" element={<MobileMovement />} />
-        <Route path="/reports/reposicoes/kds" element={<RequestsKDS />} />
+        <Route path="/reports/reposicoes/ods" element={<RequestsODS />} />
 
         <Route element={<MainLayout />}>
           {/* Init Page */}

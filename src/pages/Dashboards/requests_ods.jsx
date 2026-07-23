@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import connect from "../../utils/request";
 import { socketio } from "../../utils/socketio";
-import "./requests_kds.css";
+import "./requests_ods.css";
 
 const PAGE_SIZE = 9;
 const ACTIVE_STATUSES = new Set(["pending", "updated"]);
@@ -76,7 +76,7 @@ function situation(request, now) {
   return { label: "ABERTA", tone: "open" };
 }
 
-export function RequestsKDS() {
+export function RequestsODS() {
   const [requests, setRequests] = useState([]);
   const [now, setNow] = useState(() => Date.now());
   const [connected, setConnected] = useState(socketio.connected);
@@ -183,7 +183,7 @@ export function RequestsKDS() {
       <header className="requests-kds__header">
         <div className="requests-kds__brand">
           <img src="/brands/main_brand.svg" alt="TM Hub — Painel Executivo" />
-          <div><span>OPERAÇÃO EM TEMPO REAL</span><h1>KDS DE REPOSIÇÕES</h1></div>
+          <div><span>OPERAÇÃO EM TEMPO REAL</span><h1>ODS DE REPOSIÇÕES</h1></div>
         </div>
 
         <div className="requests-kds__header-status">

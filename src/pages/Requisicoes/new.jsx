@@ -19,8 +19,10 @@ function SelectedCollaborator({ title, collaborator, icon }) {
     if (!collaborator) return null;
 
     const placeName = collaborator.centro_local || collaborator.lugar || collaborator.local || collaborator.posto;
+    const centerId = String(collaborator.centro_id || "");
+    const placeAlreadyIdentified = placeName && (String(placeName).trim() === centerId || String(placeName).trim().startsWith(`${centerId} -`));
     const place = placeName
-        ? [collaborator.centro_id, placeName, collaborator.departamento]
+        ? [placeAlreadyIdentified ? null : collaborator.centro_id, placeName, collaborator.departamento]
             .filter((part, index, parts) => part != null && part !== "" && parts.indexOf(part) === index)
             .join(" - ")
         : collaborator.centro_id
@@ -186,7 +188,7 @@ export function Request() {
                 </div>
 
                 {/* MAIN */}
-                <div className="request-stepper-shell flex" style={{ height: "50vh", minWidth: "22rem" }}>
+                <div className="request-stepper-shell flex" style={{ minWidth: "22rem" }}>
                     <Stepper ref={stepperRef}>
                         <StepperPanel header="Login">
                             <div className="flex flex-column text-medium text-center">

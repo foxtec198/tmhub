@@ -39,7 +39,7 @@ export function Table({
         );
     };
 
-    const header = (
+    const header = search || handleSetDate ? (
         <div className="tm-table-header flex min-w-full justify-content-between align-items-center gap-3">
             {search
                 ? <FloatLabel className="mt-3">
@@ -72,7 +72,7 @@ export function Table({
                 : null
             }
         </div>
-    );
+    ) : undefined;
 
     return (
         <DataTable

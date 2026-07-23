@@ -226,7 +226,7 @@ export function AbsenceControl() {
         <label><span>Classificação</span><Dropdown value={classificationFilter} options={[{ label: "Todas", value: ALL }, ...CLASSIFICATIONS, { label: "Em análise", value: "em_analise" }]} onChange={(event) => setClassificationFilter(event.value)} /></label>
         <label><span>Departamento</span><Dropdown value={departmentFilter} options={[{ label: "Todos", value: ALL }, ...filterOptions.departments]} onChange={(event) => setDepartmentFilter(event.value)} filter /></label>
         <label><span>Supervisor</span><Dropdown value={supervisorFilter} options={[{ label: "Todos", value: ALL }, ...filterOptions.supervisors]} onChange={(event) => setSupervisorFilter(event.value)} filter /></label>
-        <label><span>Motivo</span><Dropdown value={reasonFilter} options={[{ label: "Todos", value: ALL }, ...filterOptions.reasons]} onChange={(event) => setReasonFilter(event.value)} filter /></label>
+        <label className="is-wide"><span>Motivo</span><Dropdown value={reasonFilter} options={[{ label: "Todos", value: ALL }, ...filterOptions.reasons]} onChange={(event) => setReasonFilter(event.value)} filter /></label>
         <label className="is-wide"><span>Contrato</span><Dropdown value={contractFilter} options={[{ label: "Todos", value: ALL }, ...filterOptions.contracts]} onChange={(event) => setContractFilter(event.value)} filter /></label>
         <label className="is-wide"><span>Colaborador</span><Dropdown value={collaboratorFilter} options={[{ label: "Todos", value: ALL }, ...filterOptions.collaborators]} onChange={(event) => setCollaboratorFilter(event.value)} filter /></label>
       </div>

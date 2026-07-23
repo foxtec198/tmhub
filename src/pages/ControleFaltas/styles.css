@@ -3,8 +3,9 @@
 :root[data-theme="dark"] .absence-page{color:var(--text-primary)}
 :root[data-theme="dark"] .absence-header span{color:var(--accent)}
 :root[data-theme="dark"] .absence-header .p-button{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 70%,transparent)}
-:root[data-theme="dark"] .absence-header-actions .p-button:not(.p-button-outlined):not(.p-button-text){color:#07170b!important;background:var(--accent)!important;border-color:var(--accent)!important}
-:root[data-theme="dark"] .absence-header-actions .p-button:not(.p-button-outlined):not(.p-button-text):hover{color:#020a04!important;background:#6bea8a!important;border-color:#6bea8a!important}
+.absence-header-actions .p-button:not(.p-button-outlined):not(.p-button-text){color:#07170b!important;background:var(--accent)!important;border-color:var(--accent)!important}
+.absence-header-actions .p-button:not(.p-button-outlined):not(.p-button-text) .p-button-label,.absence-header-actions .p-button:not(.p-button-outlined):not(.p-button-text) .p-button-icon{color:inherit!important}
+.absence-header-actions .p-button:not(.p-button-outlined):not(.p-button-text):hover{color:#020a04!important;background:#6bea8a!important;border-color:#6bea8a!important}
 :root[data-theme="dark"] .absence-summary article{background:#202923;border-color:#405047;box-shadow:0 10px 28px rgba(0,0,0,.24)}
 :root[data-theme="dark"] .absence-summary article>i{color:var(--accent);background:var(--accent-soft)}
 :root[data-theme="dark"] .absence-panel{background:#111713;border-color:#405047}

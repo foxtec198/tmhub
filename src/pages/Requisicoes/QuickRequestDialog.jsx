@@ -12,12 +12,32 @@ import { useToast } from "../../contexts/ToastContext";
 
 const REASONS = ["AFASTAMENTO", "ATESTADO", "DECLARAÇÃO", "POSTO VAGO", "REMANEJAMENTO", "INJUSTIFICADA", "OUTROS"];
 const initialForm = () => ({ supervisor: null, absent: null, reservation: null, center: null, reason: null, warning: null, obs: "", noCoverage: false, date: new Date() });
+const centerLabel = (center) => {
+  const local = String(center.local || "").trim();
+  const id = String(center.id);
+  const identifiedLocal = local === id || local.startsWith(`${id} -`) ? local : `${id} - ${local}`;
+  return `${identifiedLocal} - DPTO. ${center.departamento}`;
+};
 
 export function QuickRequestDialog({ visible, onHide, onCreated }) {
   const [options, setOptions] = useState({ supervisors: [], reservations: [], centers: [] });
   const [form, setForm] = useState(initialForm);
   const setLoading = useLoading();
   const { showToast } = useToast();
+
+  const selectAbsent = (value, collaborator) => {
+    const centerId = collaborator?.centro_id ?? null;
+    if (centerId && !options.centers.some((center) => center.value === centerId)) {
+      setOptions((current) => ({
+        ...current,
+        centers: [...current.centers, {
+          label: centerLabel({ id: centerId, local: collaborator.centro_local, departamento: collaborator.departamento }),
+          value: centerId,
+        }],
+      }));
+    }
+    setForm((current) => ({ ...current, absent: value, center: centerId }));
+  };
 
   // Carrega apenas os catálogos pequenos ao abrir o diálogo. Funcionários ficam fora
   // deste lote porque a quantidade de registros tornava a abertura da tela muito lenta.
@@ -27,7 +47,7 @@ export function QuickRequestDialog({ visible, onHide, onCreated }) {
       .then(([supervisors, reservations, centers]) => setOptions({
         supervisors: supervisors.data.map((item) => ({ label: item.nome, value: item.id })),
         reservations: reservations.data.map((item) => ({ label: item.nome, value: item.id })),
-        centers: centers.data.map((item) => ({ label: `${item.id} - ${item.local} - ${item.departamento}`, value: item.id })),
+        centers: centers.data.map((item) => ({ label: centerLabel(item), value: item.id })),
       }))
       .catch(() => showToast("error", "Lançamento rápido", "Não foi possível carregar as opções."));
   }, [visible, options.supervisors.length, showToast]);
@@ -69,8 +89,8 @@ export function QuickRequestDialog({ visible, onHide, onCreated }) {
       <Dropdown value={form.supervisor} options={options.supervisors} onChange={(e) => setForm({ ...form, supervisor: e.value })} placeholder="Supervisor" filter />
       <CollaboratorDropdown
         value={form.absent}
-        onChange={(value) => setForm({ ...form, absent: value })}
-        queryParams={{ situacao: 1 }}
+        onChange={selectAbsent}
+        queryParams={{ situacao: 1, com_local: 1 }}
         placeholder="Colaborador ausente"
         onError={() => showToast("error", "Lançamento rápido", "Não foi possível buscar os colaboradores.")}
       />

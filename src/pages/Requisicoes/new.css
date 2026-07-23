@@ -1,8 +1,12 @@
 /* Public request form keeps the original 50vh stepper footprint across both themes. */
 .request-create-page {
   width: 100%;
+  height: 100dvh;
   min-height: 100dvh;
   overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
   background: radial-gradient(circle at 50% 0%, rgba(75, 214, 110, .13), transparent 34%), #f7faf8;
 }
 
@@ -13,7 +17,9 @@
 }
 
 .request-stepper-shell {
-  height: 50vh;
+  height: auto;
+  min-height: 50vh;
+  flex: 0 0 auto;
 }
 
 .request-stepper-shell .p-stepper-panels {
@@ -187,6 +193,9 @@
 
   .request-stepper-shell {
     min-width: 0 !important;
+    width: 100%;
+    min-height: 0;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   }
 
   .request-collaborator-summary dl {
