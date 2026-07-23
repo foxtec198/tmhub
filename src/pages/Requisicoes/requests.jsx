@@ -24,6 +24,7 @@ import { useToast } from "../../contexts/ToastContext";
 import { useLoading } from "../../contexts/LoadingContext";
 import { useNavigate } from "react-router-dom";
 import connect from "../../utils/request";
+import { can } from "../../utils/permissions";
 
 // Opção sentinela usada quando a requisição será concluída sem substituto.
 const NO_REPLACEMENT_OPTION = [
@@ -98,6 +99,8 @@ export function Requests() {
     const { showToast } = useToast();
     const setLoading = useLoading();
     const navigate = useNavigate();
+    const canCreate = can("reposicoes", "create");
+    const canEdit = can("reposicoes", "edit");
 
     const requestSummary = useMemo(() => requests.reduce((summary, request) => {
         const situation = getRequestSituation(request.data, currentTime);
@@ -117,9 +120,11 @@ export function Requests() {
 
     // Quarter-circle actions keep the mobile trigger accessible without covering the table.
     const speedDialItems = [
+        ...(canCreate ? [
         { label: "Abrir em um nova página", icon: "pi pi-external-link", command: () => navigate("/reposicoes/requisicao") },
         { label: "Lançamento rápido", icon: "pi pi-plus-circle", command: () => setQuickDialog(true) },
         { label: "Importar planilha", icon: "pi pi-upload", command: () => setImportDialog(true) },
+        ] : []),
         { label: "Uso diário das reservas", icon: "pi pi-calendar", command: () => { setUsageDialog(true); loadReservationUsage() } },
     ]
 
@@ -204,7 +209,7 @@ export function Requests() {
             field: "data",
             header: "Data",
             class: "text-truncate",
-            body: (row) => <Inplace closable><InplaceDisplay>{new Date(row.data).toLocaleDateString("pt-br")}</InplaceDisplay><InplaceContent><Calendar value={new Date(row.data)} onChange={(e) => e.value && confirm("Data", { id: row.id, data: withCurrentTime(e.value) })} dateFormat="dd/mm/yy" /></InplaceContent></Inplace>
+            body: (row) => <Inplace closable disabled={!canEdit}><InplaceDisplay>{new Date(row.data).toLocaleDateString("pt-br")}</InplaceDisplay><InplaceContent><Calendar value={new Date(row.data)} onChange={(e) => e.value && confirm("Data", { id: row.id, data: withCurrentTime(e.value) })} dateFormat="dd/mm/yy" /></InplaceContent></Inplace>
         },
         {
             field: "status",
@@ -233,7 +238,7 @@ export function Requests() {
             body: (row) => {
                 return (
                     <div className="flex">
-                        <Inplace closable className="text-sm">
+                        <Inplace closable disabled={!canEdit} className="text-sm">
                             <InplaceDisplay>{row.ausencia}</InplaceDisplay>
 
                             <InplaceContent>
@@ -254,7 +259,7 @@ export function Requests() {
             body: (row) => {
                 return (
                     <div className="flex">
-                        <Inplace closable className="text-sm">
+                        <Inplace closable disabled={!canEdit} className="text-sm">
                             <InplaceDisplay>{row.reserva}</InplaceDisplay>
 
                             <InplaceContent>
@@ -277,7 +282,7 @@ export function Requests() {
             body: (row) => {
                 return (
                     <div className="flex">
-                        <Inplace closable className="text-sm">
+                        <Inplace closable disabled={!canEdit} className="text-sm">
                             <InplaceDisplay>{row.local}</InplaceDisplay>
 
                             <InplaceContent>
@@ -321,6 +326,7 @@ export function Requests() {
         {
             header: "Ações",
             body: (row) => {
+                if (!canEdit) return null;
                 return <ButtonGroup className="request-actions-group flex">
                     <Button
                         icon="pi pi-times"

@@ -33,17 +33,13 @@ export function Auth() {
         return salvas ? parseInt(salvas, 10) : 0;
     });
 
-    const [tempoRestante, setTempoRestante] = useState(0);
-
     // useEffect para rodar o cronômetro do bloqueio
     useEffect(() => {
-        if (!bloqueadoAte) { return setTempoRestante(0); }
+        if (!bloqueadoAte) return undefined;
 
         const atualizarCronometro = () => {
             const agora = Date.now();
             const restante = Math.max(0, Math.ceil((bloqueadoAte - agora) / 1000));
-
-            setTempoRestante(restante);
 
             if (restante === 0) {
                 setBloqueadoAte(null);
@@ -75,6 +71,7 @@ export function Auth() {
             localStorage.setItem("display_name", res.data.display_name);
             localStorage.setItem("role", res.data.role);
             localStorage.setItem("gerencia_faltas", res.data.gerencia_faltas ? "true" : "false");
+            localStorage.setItem("permissions", JSON.stringify(res.data.permissions || []));
             if (res.data.email) localStorage.setItem("email", res.data.email);
             if (res.data.foto_perfil) localStorage.setItem("profile_photo", res.data.foto_perfil);
             else localStorage.removeItem("profile_photo");

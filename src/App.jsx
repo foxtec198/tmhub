@@ -38,6 +38,9 @@ import ProjetosPage from "./pages/Projetos/ProjetosPage";
 import { Vacancies } from "./pages/Admissao/vacancies.jsx"
 import { Settings } from "./pages/Configuracoes"
 import { AbsenceControl } from "./pages/ControleFaltas"
+import { DisallowanceControl } from "./pages/ControleGlosas"
+import { AbsenceDashboard } from "./pages/Dashboards/AbsenceDashboard"
+import { PermissionGate } from "./components/PermissionGate"
 
 document.documentElement.dataset.theme = localStorage.getItem("theme") === "dark" ? "dark" : "light";
 
@@ -102,26 +105,28 @@ export function AppRoutes() {
         <Route element={<MainLayout />}>
           {/* Init Page */}
           <Route path="/init" element={<Init />} />
-          <Route path="/projetos" element={<ProjetosPage />} />
+          <Route path="/projetos" element={<PermissionGate screen="projetos"><ProjetosPage /></PermissionGate>} />
           <Route path="/configuracoes" element={<Settings />} />
-          <Route path="/controle-faltas" element={<AbsenceControl />} />
+          <Route path="/controle-faltas" element={<PermissionGate screen="controle_faltas"><AbsenceControl /></PermissionGate>} />
+          <Route path="/controle-glosas" element={<PermissionGate screen="controle_glosas"><DisallowanceControl /></PermissionGate>} />
 
           {/* Admissão */}
-          <Route path="/admissao/vagas" element={<Vacancies />} />
+          <Route path="/admissao/vagas" element={<PermissionGate screen="admissoes"><Vacancies /></PermissionGate>} />
 
           {/* Reposicoes */}
-          <Route path="/reposicoes/requisicoes" element={<Requests />} />
-          <Route path="/reposicoes/reservas" element={<Floaters />} />
-          <Route path="/reposicoes/historico" element={<History />} />
+          <Route path="/reposicoes/requisicoes" element={<PermissionGate screen="reposicoes"><Requests /></PermissionGate>} />
+          <Route path="/reposicoes/reservas" element={<PermissionGate screen="reservas"><Floaters /></PermissionGate>} />
+          <Route path="/reposicoes/historico" element={<PermissionGate screen="historico_reposicoes"><History /></PermissionGate>} />
 
           {/* Estoque */}
-          <Route path="/reports/reposicoes" element={<RequestReport />} />
-          <Route path="/reports/colaboradores-departamento" element={<DepartmentEmployeesDashboard />} />
-          <Route path="/reports/ponto-48-horas" element={<Ponto48Dashboard />} />
-          <Route path="/reports/admissoes" element={<AdmissionDashboard />} />
-          <Route path="/estoque/produtos" element={<Products />} />
-          <Route path="/estoque/codigos-de-barras" element={<BarcodeGenerator />} />
-          <Route path="/estoque/movimentacoes" element={<Movements />} />
+          <Route path="/reports/reposicoes" element={<PermissionGate screen="dashboard_reposicoes"><RequestReport /></PermissionGate>} />
+          <Route path="/reports/colaboradores-departamento" element={<PermissionGate screen="dashboard_colaboradores"><DepartmentEmployeesDashboard /></PermissionGate>} />
+          <Route path="/reports/ponto-48-horas" element={<PermissionGate screen="dashboard_ponto48"><Ponto48Dashboard /></PermissionGate>} />
+          <Route path="/reports/admissoes" element={<PermissionGate screen="dashboard_admissoes"><AdmissionDashboard /></PermissionGate>} />
+          <Route path="/reports/faltas" element={<PermissionGate screen="dashboard_faltas"><AbsenceDashboard /></PermissionGate>} />
+          <Route path="/estoque/produtos" element={<PermissionGate screen="estoque_produtos"><Products /></PermissionGate>} />
+          <Route path="/estoque/codigos-de-barras" element={<PermissionGate screen="estoque_codigos"><BarcodeGenerator /></PermissionGate>} />
+          <Route path="/estoque/movimentacoes" element={<PermissionGate screen="estoque_movimentos"><Movements /></PermissionGate>} />
 
           {/* Frotas */}
           <Route path="/frotas" element={<Frotas />} />

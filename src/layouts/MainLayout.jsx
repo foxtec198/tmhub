@@ -5,12 +5,12 @@ import { Avatar } from "primereact/avatar";
 import { capitalize, deny_roles } from "../utils/ui";
 import connect from "../utils/request";
 import { getInitials, storeProfile } from "../utils/profile";
+import { can } from "../utils/permissions";
 import './main.css'
 
 export function MainLayout() {
   const [displayName, setDisplayName] = useState(() => localStorage.getItem("display_name") || "");
   const [profilePhoto, setProfilePhoto] = useState(() => localStorage.getItem("profile_photo"));
-  const [absenceManager, setAbsenceManager] = useState(() => localStorage.getItem("gerencia_faltas") === "true");
   const [role] = useState(() => {
     const storedRole = localStorage.getItem("role");
     return storedRole ? capitalize(storedRole) : "";
@@ -20,7 +20,7 @@ export function MainLayout() {
   );
   const navigate = useNavigate();
   const deny = deny_roles.includes(role)
-  const canManageAbsences = role === "Admin" || absenceManager;
+  const canManageAbsences = can("controle_faltas");
 
   const navigateTo = (path) => {
     navigate(path);
@@ -38,27 +38,38 @@ export function MainLayout() {
         {
           label: 'Reposições',
           icon: 'pi pi-sync',
+          visible: can("dashboard_reposicoes"),
           command: () => { navigateTo("/reports/reposicoes") }
         },
         {
           label: 'Reposições - ODS',
           icon: 'pi pi-external-link',
+          visible: can("dashboard_reposicoes_ods"),
           command: () => { navigateTo("/reports/reposicoes/ods") }
         },
         {
           label: 'Colab. por DPTO',
           icon: 'pi pi-users',
+          visible: can("dashboard_colaboradores"),
           command: () => { navigateTo("/reports/colaboradores-departamento") }
         },
         {
           label: 'Ponto 48 horas',
           icon: 'pi pi-clock',
+          visible: can("dashboard_ponto48"),
           command: () => { navigateTo("/reports/ponto-48-horas") }
         },
         {
           label: 'Admissões',
           icon: 'pi pi-user-plus',
+          visible: can("dashboard_admissoes"),
           command: () => { navigateTo("/reports/admissoes") }
+        },
+        {
+          label: 'Faltas',
+          icon: 'pi pi-chart-bar',
+          visible: can("dashboard_faltas"),
+          command: () => { navigateTo("/reports/faltas") }
         },
         {
           label: 'Logística',
@@ -75,6 +86,7 @@ export function MainLayout() {
         {
           label: 'Vagas',
           icon: 'pi pi-briefcase',
+          visible: can("admissoes"),
           command: () => { navigateTo("/admissao/vagas") }
         },
       ]
@@ -102,20 +114,28 @@ export function MainLayout() {
           icon: 'pi pi-calendar-times',
           command: () => { navigateTo("/controle-faltas") }
         }] : []),
+        ...(can("controle_glosas") ? [{
+          label: 'Controle de Glosas',
+          icon: 'pi pi-money-bill',
+          command: () => { navigateTo("/controle-glosas") }
+        }] : []),
         {
           label: 'Requisições',
           icon: 'pi pi-question',
+          visible: can("reposicoes"),
           command: () => { navigateTo("/reposicoes/requisicoes") }
         },
         {
           label: 'Histórico',
           icon: 'pi pi-history',
           display: false,
+          visible: can("historico_reposicoes"),
           command: () => { navigateTo("/reposicoes/historico") }
         },
         {
           label: 'Reservas Tecnicas',
           icon: 'pi pi-users',
+          visible: can("reservas"),
           command: () => { navigateTo("/reposicoes/reservas") },
         },
       ]
@@ -127,16 +147,19 @@ export function MainLayout() {
         {
           label: 'Produtos',
           icon: 'pi pi-barcode',
+          visible: can("estoque_produtos"),
           command: () => { navigateTo("/estoque/produtos") }
         },
         {
           label: 'Gerar Códigos',
           icon: 'pi pi-qrcode',
+          visible: can("estoque_codigos"),
           command: () => { navigateTo("/estoque/codigos-de-barras") }
         },
         {
           label: 'Movimentações',
           icon: 'pi pi-arrow-right-arrow-left',
+          visible: can("estoque_movimentos"),
           command: () => { navigateTo("/estoque/movimentacoes") }
         },
       ]
@@ -144,6 +167,7 @@ export function MainLayout() {
     {
       label: 'Meus Projetos',
       icon: 'pi pi-spinner-dotted',
+      visible: can("projetos"),
       command: () => { navigateTo("/projetos") }
     },
     {
@@ -174,7 +198,6 @@ export function MainLayout() {
     const updateProfile = (profile) => {
       setDisplayName(profile.nome || "");
       setProfilePhoto(profile.foto_perfil || null);
-      setAbsenceManager(Boolean(profile.gerencia_faltas));
     };
     const listener = (event) => updateProfile(event.detail);
     window.addEventListener("tmhub:profile", listener);

@@ -13,6 +13,7 @@ import connect from "../../utils/request";
 import { socketio } from "../../utils/socketio";
 import { useLoading } from "../../contexts/LoadingContext";
 import { useToast } from "../../contexts/ToastContext";
+import { can } from "../../utils/permissions";
 import "./styles.css";
 
 const REASONS = ["ATESTADO", "AFASTAMENTO", "DECLARAÇÃO", "INJUSTIFICADA", "POSTO VAGO", "REMANEJAMENTO", "OUTROS"];
@@ -61,6 +62,7 @@ export function AbsenceControl() {
   const filterPanel = useRef(null);
   const setLoading = useLoading();
   const { showToast } = useToast();
+  const canEdit = can("controle_faltas", "edit");
 
   useEffect(() => {
     connect.get("/controle-faltas")
@@ -214,7 +216,7 @@ export function AbsenceControl() {
         <Column header="Prazo do documento" body={timerBody} />
         <Column header="Classificação" field="classificacao" sortable body={classificationBody} />
         <Column field="status" header="Tratativa" sortable body={(record) => <Tag value={record.status === "tratada" ? "TRATADA" : "PENDENTE"} severity={record.status === "tratada" ? "success" : "info"} />} />
-        <Column header="Ações" body={(record) => <Button icon="pi pi-pencil" rounded text aria-label={`Tratar falta de ${record.colaborador}`} onClick={() => open(record)} />} />
+        {canEdit && <Column header="Ações" body={(record) => <Button icon="pi pi-pencil" rounded text aria-label={`Tratar falta de ${record.colaborador}`} onClick={() => open(record)} />} />}
       </DataTable>
     </div>
 

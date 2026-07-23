@@ -9,12 +9,13 @@ import { SpeedDial } from "primereact/speeddial";
 import { Tag } from "primereact/tag";
 import { MultiSelect } from "primereact/multiselect";
 import { InputSwitch } from "primereact/inputswitch";
+import { Checkbox } from "primereact/checkbox";
 import { Table } from "../../components/tables/Table";
 import connect from "../../utils/request";
 import { useLoading } from "../../contexts/LoadingContext";
 import { useToast } from "../../contexts/ToastContext";
 
-const EMPTY_FORM = { nome: "", cpf: "", email: "", role: "USER", password: "", filial_ids: [], gerencia_faltas: false };
+const EMPTY_FORM = { nome: "", cpf: "", email: "", role: "USER", password: "", filial_ids: [], gerencia_faltas: false, permissions: [] };
 const ROLE_OPTIONS = [
   { label: "Supervisor", value: "SUPERVISOR" },
   { label: "Gerente", value: "GERENTE" },
@@ -31,6 +32,7 @@ function formatDate(value) {
 export function UsersSettings() {
   const [users, setUsers] = useState([]);
   const [branches, setBranches] = useState([]);
+  const [permissionCatalog, setPermissionCatalog] = useState([]);
   const [refresh, setRefresh] = useState(0);
   const [userDialog, setUserDialog] = useState(false);
   const [bulkDialog, setBulkDialog] = useState(false);
@@ -53,8 +55,11 @@ export function UsersSettings() {
       }
     }
     loadUsers();
-    if (canManage) connect.get("/filiais").then(({ data }) => setBranches((Array.isArray(data) ? data : []).filter((branch) => branch.ativa))).catch(() => {});
-  }, [refresh, showToast]);
+    if (canManage) {
+      connect.get("/filiais").then(({ data }) => setBranches((Array.isArray(data) ? data : []).filter((branch) => branch.ativa))).catch(() => {});
+      connect.get("/usuarios/permissoes/catalogo").then(({ data }) => setPermissionCatalog(Array.isArray(data) ? data : [])).catch(() => {});
+    }
+  }, [canManage, refresh, showToast]);
 
   const openCreate = () => {
     setEditingId(null);
@@ -64,7 +69,7 @@ export function UsersSettings() {
 
   const openEdit = (user) => {
     setEditingId(user.id);
-    setForm({ nome: user.nome || "", cpf: user.cpf || "", email: user.email || "", role: user.role || "USER", password: "", filial_ids: user.filial_ids || [], gerencia_faltas: Boolean(user.gerencia_faltas) });
+    setForm({ nome: user.nome || "", cpf: user.cpf || "", email: user.email || "", role: user.role || "USER", password: "", filial_ids: user.filial_ids || [], gerencia_faltas: Boolean(user.gerencia_faltas), permissions: user.permissions || [] });
     setUserDialog(true);
   };
 
@@ -131,12 +136,29 @@ export function UsersSettings() {
     { label: "Importar planilha", icon: "pi pi-file-excel", command: () => setBulkDialog(true) },
   ], []);
 
+  const permissionValue = (screen, action) => Boolean(form.permissions.find((item) => item.screen === screen)?.[action]);
+
+  const setPermission = (screen, action, checked) => {
+    const current = form.permissions.find((item) => item.screen === screen) || { screen, view: false, create: false, edit: false };
+    const updated = { ...current, [action]: checked };
+    if ((action === "create" || action === "edit") && checked) updated.view = true;
+    if (action === "view" && !checked) {
+      updated.create = false;
+      updated.edit = false;
+    }
+    setForm({
+      ...form,
+      permissions: [...form.permissions.filter((item) => item.screen !== screen), updated],
+    });
+  };
+
   const columns = [
     { header: "Nome", field: "nome", sortable: true },
     { header: "E-mail", field: "email", body: (user) => user.email || "—" },
     { header: "CPF", field: "cpf", body: (user) => user.cpf || "Restrito" },
     { header: "Perfil", field: "role", body: (user) => <Tag value={user.role || "USER"} severity={user.role === "ADMIN" ? "success" : "secondary"} /> },
     { header: "Filiais", body: (user) => user.filial_ids?.length || 0 },
+    { header: "Telas", body: (user) => user.permissions?.filter((permission) => permission.view).length || 0 },
     { header: "Controle de faltas", body: (user) => <Tag value={user.gerencia_faltas ? "RESPONSÁVEL" : "SEM ACESSO"} severity={user.gerencia_faltas ? "success" : "secondary"} /> },
     { header: "Último acesso", field: "last_login", body: (user) => formatDate(user.last_login) },
     ...(canManage ? [{
@@ -167,6 +189,24 @@ export function UsersSettings() {
         <FloatLabel><Dropdown inputId="user-role" value={form.role} options={ROLE_OPTIONS} onChange={(event) => setForm({ ...form, role: event.value })} /><label htmlFor="user-role">Perfil</label></FloatLabel>
         <FloatLabel><MultiSelect inputId="user-branches" value={form.filial_ids} options={branches} optionValue="id" optionLabel="nome" onChange={(event) => setForm({ ...form, filial_ids: event.value })} display="chip" filter /><label htmlFor="user-branches">Filiais com acesso</label></FloatLabel>
         <div className="theme-option"><div><strong>Responsável pelo Controle de Faltas</strong><span>Permite analisar e concluir tratativas de faltas nas filiais vinculadas.</span></div><InputSwitch checked={form.gerencia_faltas} onChange={(event) => setForm({ ...form, gerencia_faltas: event.value })} /></div>
+        <section className="permission-editor">
+          <header><div><strong>Telas e permissões</strong><span>Criação ou alteração habilitam automaticamente a visualização.</span></div></header>
+          <div className="permission-table">
+            <div className="permission-row permission-head"><span>Tela</span><span>Ver</span><span>Criar</span><span>Alterar</span></div>
+            {permissionCatalog.map((item) => <div className="permission-row" key={item.key}>
+              <span><small>{item.group}</small><strong>{item.label}</strong></span>
+              {["view", "create", "edit"].map((action) => <span key={action}>
+                {item.actions.includes(action) ? <Checkbox
+                  inputId={`${item.key}-${action}`}
+                  checked={form.role === "ADMIN" || permissionValue(item.key, action)}
+                  disabled={form.role === "ADMIN"}
+                  onChange={(event) => setPermission(item.key, action, event.checked)}
+                /> : <i className="pi pi-minus permission-unavailable" />}
+              </span>)}
+            </div>)}
+          </div>
+          {form.role === "ADMIN" && <small className="permission-admin-note"><i className="pi pi-shield" /> Administradores possuem acesso total.</small>}
+        </section>
         <FloatLabel><Password inputId="user-password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} toggleMask feedback={!editingId} required={!editingId} /><label htmlFor="user-password">{editingId ? "Nova senha (opcional)" : "Senha"}</label></FloatLabel>
         <div className="dialog-actions"><Button type="button" label="Cancelar" text onClick={() => setUserDialog(false)} /><Button type="submit" label={editingId ? "Salvar alterações" : "Criar usuário"} icon="pi pi-check" /></div>
       </form>

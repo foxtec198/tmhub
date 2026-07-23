@@ -1,0 +1,7 @@
+import { Navigate } from "react-router-dom";
+import { can } from "../utils/permissions";
+
+
+export function PermissionGate({ screen, action = "view", children }) {
+  return can(screen, action) ? children : <Navigate to="/init" replace />;
+}

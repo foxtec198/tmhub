@@ -1,0 +1,9 @@
+:root[data-theme="dark"] .glosa-heading h1,
+:root[data-theme="dark"] .glosa-summary strong {
+  color: #edf4ef !important;
+}
+
+:root[data-theme="dark"] .glosa-summary small,
+:root[data-theme="dark"] .glosa-summary span {
+  color: #aebbb2 !important;
+}

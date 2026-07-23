@@ -225,7 +225,7 @@
 }
 
 .user-dialog {
-    width: min(34rem, calc(100vw - 2rem))
+    width: min(58rem, calc(100vw - 2rem))
 }
 
 .user-form,
@@ -252,6 +252,14 @@
     border: 1px dashed #9eaaa2;
     border-radius: 10px
 }
+
+.permission-editor{display:flex;flex-direction:column;gap:.8rem;padding:1rem;border:1px solid var(--surface-border);border-radius:14px;background:var(--surface-ground)}
+.permission-editor header span,.permission-row small{display:block;color:var(--text-color-secondary);font-size:.76rem}
+.permission-table{max-height:24rem;overflow:auto;border:1px solid var(--surface-border);border-radius:10px;background:var(--surface-card)}
+.permission-row{display:grid;grid-template-columns:minmax(14rem,1fr) 4.5rem 4.5rem 4.5rem;align-items:center;min-height:3.5rem;border-bottom:1px solid var(--surface-border)}
+.permission-row:last-child{border-bottom:0}.permission-row>span{padding:.65rem;text-align:center}.permission-row>span:first-child{text-align:left}
+.permission-row.permission-head{position:sticky;top:0;z-index:1;min-height:2.6rem;background:var(--surface-section);font-size:.76rem;font-weight:800;text-transform:uppercase}
+.permission-unavailable{color:var(--text-color-secondary);opacity:.45}.permission-admin-note{display:flex;align-items:center;gap:.4rem;color:var(--primary-color)}
 
 :root[data-theme="dark"] .settings-tabs .p-tabview-nav,
 :root[data-theme="dark"] .settings-tabs .p-tabview-nav-link {
@@ -284,5 +292,10 @@
     .users-actions-card {
         min-height: 15rem
     }
+}
+
+@media(max-width:620px) {
+    .permission-table{overflow-x:auto}
+    .permission-row{min-width:31rem}
 }
 .branch-settings-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:1.25rem}.branch-help-card{align-self:start}.branch-form{display:flex;flex-direction:column;gap:.75rem;margin-top:.75rem}.branch-form>label{font-size:.82rem;font-weight:700}.branch-form .p-multiselect,.branch-form>.p-inputtext{width:100%}.branch-active{display:flex;align-items:center;justify-content:space-between;padding:1rem;border:1px solid var(--surface-border);border-radius:12px}.branch-active div{display:flex;flex-direction:column;gap:.2rem}.branch-active small{color:var(--text-color-secondary)}.branch-dialog{width:min(720px,95vw)}@media(max-width:900px){.branch-settings-layout{grid-template-columns:1fr}}

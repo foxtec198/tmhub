@@ -15,6 +15,7 @@ import { InputText } from "primereact/inputtext";
 import { FloatLabel } from "primereact/floatlabel";
 import { useToast } from "../../contexts/ToastContext";
 import { get_first_name } from "../../utils/ui";
+import { can } from "../../utils/permissions";
 import "./floaters.css";
 
 // Login and UI (uiiii)
@@ -22,6 +23,8 @@ export function Floaters() {
     // refresh coordena as duas listas após inclusão ou remoção de reserva.
     const setLoading = useLoading();
     const { showToast } = useToast();
+    const canCreate = can("reservas", "create");
+    const canEdit = can("reservas", "edit");
     const [refresh, setRefresh] = useState(false);
 
     // Handles de Reservas
@@ -191,6 +194,7 @@ export function Floaters() {
                                 </div>
                                 <Button
                                     className="bg-primary"
+                                    disabled={!canCreate}
                                     icon={isMobile ? "pi pi-caret-down" : "pi pi-caret-right"}
                                     aria-label={`Adicionar ${colaborador.nome} às reservas`}
                                     onClick={() => setReserva(colaborador.id, colaborador.nome)}
@@ -235,6 +239,7 @@ export function Floaters() {
                                 </div>
                                 <Button
                                     icon="pi pi-trash"
+                                    disabled={!canEdit}
                                     severity="danger"
                                     onClick={() => delReserva(reserva.floater_id, reserva.nome)}
                                 />
