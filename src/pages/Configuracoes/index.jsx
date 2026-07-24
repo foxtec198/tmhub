@@ -133,7 +133,7 @@ export function Settings() {
 
       <article className="settings-card">
         <div className="settings-card-title"><i className="pi pi-envelope"/><div><h2>E-mail</h2><p>Atual: {profile.email || "Não informado"}</p></div></div>
-        <label>Novo e-mail</label><div className="settings-inline"><InputText type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="voce@empresa.com"/><Button label="Verificar" icon="pi pi-send" onClick={requestCode}/></div>
+        <label>Novo e-mail</label><div className="settings-inline"><InputText autoComplete="off" type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="voce@empresa.com"/><Button label="Verificar" icon="pi pi-send" onClick={requestCode}/></div>
       </article>
       </div>
 
